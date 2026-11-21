@@ -1,0 +1,12 @@
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+data/sheets/
+data/selfcheck-sheets/
+data/debug/
+data/store.json
+data/open-check.json
+data/open-check-sheets/
+.DS_Store
