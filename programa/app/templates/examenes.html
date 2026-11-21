@@ -198,30 +198,29 @@
         <option value="abierta">Abierta, de interpretación</option>
       </select>
       <label for="q-prompt">Pregunta</label>
-      <textarea id="q-prompt" maxlength="220" placeholder="Por ejemplo: Un rectángulo mide 5 cm por 3 cm. ¿Cuál es su área?"></textarea>
+      <textarea id="q-prompt" maxlength="220"></textarea>
       <div id="q-closed">
         <div class="fields">
           <div>
             <label for="q-answer">Respuesta correcta</label>
-            <input id="q-answer" maxlength="40" placeholder="15">
+            <input id="q-answer" maxlength="40">
           </div>
           <div>
             <label for="q-skill">Tema</label>
-            <select id="q-skill">
-              <option value="area">Área y perímetro</option>
-              <option value="operaciones">Operaciones</option>
-              <option value="fracciones">Fracciones</option>
-              <option value="valor_posicional">Valor posicional</option>
-              <option value="comprension">Comprensión lectora</option>
-              <option value="general">Otro</option>
-            </select>
+            <select id="q-skill"></select>
           </div>
         </div>
-        <p class="lede">El programa inventa las opciones A, B, C y D y cambia los números para cada alumno.</p>
+        <label>Respuestas falsas <span class="lede">(opcional)</span></label>
+        <div class="fields" style="grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));">
+          <input id="q-wrong-0" maxlength="40" aria-label="Respuesta falsa 1">
+          <input id="q-wrong-1" maxlength="40" aria-label="Respuesta falsa 2">
+          <input id="q-wrong-2" maxlength="40" aria-label="Respuesta falsa 3">
+        </div>
+        <p class="lede" id="q-closed-note">Si las dejas vacías, el programa inventa las opciones A, B, C y D. En preguntas con números cambia las cifras para cada alumno. Si escribes respuestas falsas, esas se usan tal cual y solo cambia la letra de cada opción.</p>
       </div>
       <div id="q-open" hidden>
         <label for="q-criterion">Qué idea debe lograr el alumno</label>
-        <textarea id="q-criterion" maxlength="180" placeholder="Explica con sus palabras que el área es la superficie de adentro."></textarea>
+        <textarea id="q-criterion" maxlength="180"></textarea>
         <p class="lede">El alumno escribe a mano y tú marcas si lo logró.</p>
       </div>
       <div class="row">
@@ -270,6 +269,30 @@
     let groups = [];
     let questions = [];
     let materias = [];
+    let temas = {};
+    const EJEMPLOS = {
+      "Matemática": { prompt: "Un rectángulo mide 5 cm por 3 cm. ¿Cuál es su área?", answer: "15", criterion: "Explica con sus palabras que el área es la superficie de adentro.", wrong: ["12", "8", "16"] },
+      "Comunicación y Lenguaje": { prompt: "Lee: «El gato duerme en la silla.» ¿Quién duerme?", answer: "el gato", criterion: "Cuenta con sus palabras de qué trata el cuento.", wrong: ["la silla", "el perro", "nadie"] },
+      "Medio Social y Natural": { prompt: "¿Qué necesitan las plantas para crecer?", answer: "agua, luz y tierra", criterion: "Explica con sus palabras por qué debemos cuidar el agua.", wrong: ["solo tierra", "solo sombra", "plástico y piedras"] },
+      "Ciencias Naturales y Tecnología": { prompt: "¿Qué órgano del cuerpo bombea la sangre?", answer: "el corazón", criterion: "Explica con sus palabras cómo las plantas usan la luz del sol.", wrong: ["el pulmón", "el estómago", "el riñón"] },
+      "Ciencias Sociales": { prompt: "¿Cuál es la capital de Guatemala?", answer: "Ciudad de Guatemala", criterion: "Explica con sus palabras por qué se celebra el 15 de septiembre.", wrong: ["Antigua Guatemala", "Quetzaltenango", "Cobán"] },
+      "Expresión Artística": { prompt: "¿Cuáles son los colores primarios?", answer: "rojo, amarillo y azul", criterion: "Cuenta con sus palabras qué siente al escuchar una canción de su comunidad.", wrong: ["verde, naranja y morado", "blanco, negro y gris", "rosado, celeste y café"] },
+      "Formación Ciudadana": { prompt: "¿Qué debes hacer si un compañero necesita ayuda?", answer: "ayudarlo", criterion: "Explica con sus palabras por qué es importante respetar a los demás.", wrong: ["ignorarlo", "burlarse", "irse"] },
+    };
+    const EJEMPLO_OTRA = { generic: true, prompt: "Escribe la pregunta completa, con todo lo que el alumno necesita para responder.", answer: "La respuesta correcta", criterion: "Explica con sus palabras la idea principal.", wrong: ["Una respuesta falsa", "Otra respuesta falsa", "Una más"] };
+    const ejemploDe = (materia) => EJEMPLOS[materia] || EJEMPLO_OTRA;
+    const temasDe = (materia) => temas[materia] || temas.otras || [{ id: "general", nombre: "Otro tema" }];
+
+    function prepareQuestionForm() {
+      const example = ejemploDe(state.materia);
+      $("#q-prompt").placeholder = example.generic ? example.prompt : `Por ejemplo: ${example.prompt}`;
+      $("#q-answer").placeholder = example.answer;
+      $("#q-criterion").placeholder = example.criterion;
+      example.wrong.forEach((text, index) => { $(`#q-wrong-${index}`).placeholder = text; });
+      $("#q-skill").innerHTML = temasDe(state.materia).map((item) => `<option value="${esc(item.id)}">${esc(item.nombre)}</option>`).join("");
+      [0, 1, 2].forEach((index) => { $(`#q-wrong-${index}`).value = ""; });
+    }
+    const wrongAnswers = () => [0, 1, 2].map((index) => $(`#q-wrong-${index}`).value.trim()).filter(Boolean);
     const state = { group: "", materia: "", slot: null, total: 20, totalTouched: false, nombre: "", bim: 1, series: [] };
     let serieUid = 0;
     const round2 = (value) => Math.round(value * 100) / 100;
@@ -716,6 +739,7 @@
       const body = await (await fetch("/api/preguntas")).json();
       questions = body.questions;
       materias = body.materias;
+      temas = body.temas || temas;
       const alive = new Set(questions.map((q) => q.id));
       state.series.forEach((item) => { item.ids = item.ids.filter((id) => alive.has(id)); });
       renderMaterias();
@@ -811,6 +835,7 @@
         skill: $("#q-skill").value,
         materia: state.materia,
         kind: $("#q-kind").value,
+        wrong: wrongAnswers(),
       };
     }
 
@@ -877,6 +902,10 @@
       const item = state.series.find((entry) => entry.uid === uid);
       if (!state.materia || !item) return;
       dialogSeries = uid;
+      prepareQuestionForm();
+      $("#q-prompt").value = "";
+      $("#q-answer").value = "";
+      $("#q-criterion").value = "";
       $("#q-kind").value = item.tipo === "opciones" ? "cerrada" : "abierta";
       showKind();
       $("#dlg-materia").textContent = `${serieName(item, state.series.indexOf(item))}: ${TIPO_NAME[item.tipo].toLowerCase()} de ${state.materia}`;
@@ -898,7 +927,7 @@
     $("#idlg-x").onclick = () => $("#idlg").close();
     $("#idlg").addEventListener("click", (event) => { if (event.target === $("#idlg")) $("#idlg").close(); });
     $("#q-kind").onchange = showKind;
-    ["q-prompt", "q-answer", "q-skill", "q-criterion"].forEach((id) => $(`#${id}`).addEventListener("input", schedulePreview));
+    ["q-prompt", "q-answer", "q-skill", "q-criterion", "q-wrong-0", "q-wrong-1", "q-wrong-2"].forEach((id) => $(`#${id}`).addEventListener("input", schedulePreview));
 
     $("#q-add").onclick = async () => {
       const button = $("#q-add");
@@ -921,6 +950,7 @@
       $("#q-prompt").value = "";
       $("#q-answer").value = "";
       $("#q-criterion").value = "";
+      [0, 1, 2].forEach((index) => { $(`#q-wrong-${index}`).value = ""; });
       renderAdded();
       drawPreview();
       $("#q-prompt").focus();
@@ -1078,6 +1108,7 @@
       const bankBody = await bank.json();
       questions = bankBody.questions;
       materias = bankBody.materias;
+      temas = bankBody.temas || temas;
       const body = await list.json();
       exams = body.exams;
       trashed = body.trash;

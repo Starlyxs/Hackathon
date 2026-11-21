@@ -12,8 +12,50 @@ SKILLS = {
     "valor_posicional": "valor posicional",
     "operaciones": "operaciones",
     "comprension": "comprensión lectora",
+    "vocabulario": "vocabulario",
+    "ortografia": "ortografía",
+    "gramatica": "gramática",
+    "seres_vivos": "seres vivos",
+    "cuerpo_humano": "cuerpo humano",
+    "ambiente": "medio ambiente",
+    "materia_energia": "materia y energía",
+    "tecnologia": "tecnología",
+    "historia": "historia",
+    "geografia": "geografía",
+    "cultura": "cultura y tradiciones",
+    "musica": "música",
+    "artes_visuales": "artes visuales",
+    "valores": "valores",
+    "derechos": "derechos y deberes",
+    "convivencia": "convivencia",
     "general": "ejercicio",
 }
+
+# Temas que se ofrecen al escribir una pregunta, según la materia.
+TEMAS = {
+    "Matemática": ["area", "operaciones", "fracciones", "valor_posicional", "general"],
+    "Comunicación y Lenguaje": ["comprension", "vocabulario", "ortografia", "gramatica", "general"],
+    "Medio Social y Natural": ["seres_vivos", "cuerpo_humano", "ambiente", "cultura", "general"],
+    "Ciencias Naturales y Tecnología": ["seres_vivos", "cuerpo_humano", "materia_energia", "ambiente", "tecnologia", "general"],
+    "Ciencias Sociales": ["historia", "geografia", "cultura", "derechos", "general"],
+    "Expresión Artística": ["musica", "artes_visuales", "cultura", "general"],
+    "Formación Ciudadana": ["valores", "derechos", "convivencia", "general"],
+}
+TEMAS_OTRAS = ["vocabulario", "comprension", "general"]
+
+
+def temas_payload():
+    """Lista de temas por materia para el formulario. La clave «otras» sirve a las materias nuevas."""
+
+    def rows(ids):
+        return [
+            {"id": key, "nombre": "Otro tema" if key == "general" else SKILLS[key][:1].upper() + SKILLS[key][1:]}
+            for key in ids
+        ]
+
+    payload = {materia: rows(ids) for materia, ids in TEMAS.items()}
+    payload["otras"] = rows(TEMAS_OTRAS)
+    return payload
 
 # Cuántas preguntas de cada habilidad entran en un diagnóstico.
 FORM_PLAN = (

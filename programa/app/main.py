@@ -23,6 +23,7 @@ from app.service import (
     add_question,
     class_analysis,
     class_report,
+    clean_wrong,
     create_diagnostic,
     create_reinforcement,
     create_series_exam,
@@ -133,6 +134,7 @@ class QuestionIn(BaseModel):
     skill: str = "general"
     materia: str = "Matemática"
     kind: str = "cerrada"
+    wrong: list[str] = Field(default_factory=list, max_length=3)
 
 
 class MateriaIn(BaseModel):
@@ -350,6 +352,7 @@ def post_question(body: QuestionIn):
             body.materia,
             body.kind,
             body.criterion,
+            body.wrong,
         )
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
@@ -357,7 +360,7 @@ def post_question(body: QuestionIn):
 
 @app.post("/api/preguntas/vista")
 def post_preview(body: QuestionIn):
-    return {"variants": preview_variants(body.prompt, body.answer, body.skill)}
+    return {"variants": preview_variants(body.prompt, body.answer, body.skill, wrong=clean_wrong(body.wrong, body.answer))}
 
 
 @app.post("/api/materias")

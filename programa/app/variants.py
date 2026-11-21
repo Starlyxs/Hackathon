@@ -43,6 +43,10 @@ NOTE_SAME = (
     "No cambié las cifras: la respuesta no sale de operar los números del enunciado. "
     "Sí cambian la letra correcta y las respuestas falsas."
 )
+NOTE_OWN = (
+    "Las respuestas falsas son las que escribiste: el enunciado queda igual "
+    "y solo cambia la letra de cada opción."
+)
 NOTE_TEXT = (
     "La respuesta es una frase: el enunciado queda igual, cambian la letra correcta "
     "y las respuestas falsas salen de otras palabras del texto."
@@ -88,6 +92,9 @@ def _once(source, rng):
     skill = source.get("skill") or "general"
     if skill not in SKILLS and skill != "general":
         skill = "general"
+    own = [item for item in source.get("wrong") or [] if item and item.casefold() != answer.casefold()]
+    if own:
+        return _text_question(prompt, answer, skill, rng, own), NOTE_OWN
     parsed = parse_answer(answer)
     if parsed["kind"] == "text":
         return _text_question(prompt, parsed["text"], skill, rng), NOTE_TEXT
@@ -316,7 +323,7 @@ def _fixed_question(prompt, parsed, skill, rng):
     return _pack(prompt, parsed, correct, None, None, skill, rng, extras=[correct + 1, correct - 1, correct * 2])
 
 
-def _text_question(prompt, answer, skill, rng):
+def _text_question(prompt, answer, skill, rng, own=None):
     words = []
     seen = set()
     for word in _WORD.findall(prompt):
@@ -326,7 +333,12 @@ def _text_question(prompt, answer, skill, rng):
         seen.add(key)
         words.append(word)
     fillers = ["nadie", "otra cosa", "no se dice", "todos"]
-    wrong = words[:3]
+    wrong = list(own or [])[:3]
+    for word in words:
+        if len(wrong) >= 3:
+            break
+        if word.casefold() not in (item.casefold() for item in wrong):
+            wrong.append(word)
     for filler in fillers:
         if len(wrong) >= 3:
             break
@@ -473,14 +485,14 @@ def _gcd(a, b):
     return a or 1
 
 
-def preview_variants(prompt, answer, skill, count=3):
-    rng = random.Random(f"{prompt}|{answer}|{skill}")
+def preview_variants(prompt, answer, skill, count=3, wrong=None):
+    rng = random.Random(f"{prompt}|{answer}|{skill}|{wrong}")
     used = set()
     rows = []
     names = ("Ana", "Luis", "María", "Pedro", "Sofía")
     for name in names[:count]:
         question = vary_question(
-            {"prompt": prompt, "answer": answer, "skill": skill},
+            {"prompt": prompt, "answer": answer, "skill": skill, "wrong": wrong or []},
             random.Random(rng.randrange(1, 10**9)),
             used,
         )

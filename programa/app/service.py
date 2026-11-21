@@ -10,7 +10,7 @@ from PIL import Image
 from app import analisis as analysis
 from app.analisis import patterns_from
 from app import series as seriesmod
-from app.bank import BANK, SKILLS, build_questions
+from app.bank import BANK, SKILLS, build_questions, temas_payload
 from app.grade import GradeError, read_bubbles, read_photo
 from app.materias import ensure_materias
 from app.notas import (
@@ -375,7 +375,7 @@ def list_questions():
     def read(db):
         db.setdefault("authored", [])
         ensure_materias(db)
-        return {"questions": list(db["authored"]), "materias": list(db["materias"])}
+        return {"questions": list(db["authored"]), "materias": list(db["materias"]), "temas": temas_payload()}
 
     return update(read)
 
@@ -394,9 +394,23 @@ def add_materia(name):
     return update(mutate)
 
 
-def add_question(prompt, answer="", skill="general", materia="Matemática", kind="cerrada", criterion=""):
+def clean_wrong(wrong, answer):
+    """Respuestas falsas que escribió el maestro: sin vacías, sin repetidas y distintas de la correcta."""
+    found = []
+    for text in wrong or []:
+        text = " ".join(str(text).split())[:40]
+        if not text or text.casefold() == answer.casefold():
+            continue
+        if text.casefold() in (item.casefold() for item in found):
+            continue
+        found.append(text)
+    return found[:3]
+
+
+def add_question(prompt, answer="", skill="general", materia="Matemática", kind="cerrada", criterion="", wrong=None):
     prompt = " ".join(prompt.split())
     answer = " ".join(answer.split())
+    wrong = clean_wrong(wrong, answer) if kind == "cerrada" else []
     criterion = " ".join(criterion.split())
     materia = " ".join(materia.split())
     if skill not in SKILLS:
@@ -427,6 +441,8 @@ def add_question(prompt, answer="", skill="general", materia="Matemática", kind
             "kind": kind,
             "created": _now(),
         }
+        if wrong:
+            item["wrong"] = wrong
         db["authored"].append(item)
         return item
 

@@ -92,6 +92,32 @@ def check_authored_variants():
         raise SystemExit(f"La vista previa no varió la resta: {preview}")
     print(f"Variantes por alumno: {areas[0]} | {areas[1]}")
 
+    # Otras materias: temas propios y respuestas falsas escritas por el maestro.
+    from app.bank import SKILLS, temas_payload
+
+    temas = temas_payload()
+    for materia in ("Matemática", "Comunicación y Lenguaje", "Medio Social y Natural", "Ciencias Naturales y Tecnología",
+                    "Ciencias Sociales", "Expresión Artística", "Formación Ciudadana", "otras"):
+        ids = [item["id"] for item in temas[materia]]
+        if len(ids) < 3 or "general" not in ids or any(key not in SKILLS for key in ids):
+            raise SystemExit(f"Temas mal armados para {materia}: {ids}")
+    if "area" in [item["id"] for item in temas["Ciencias Sociales"]]:
+        raise SystemExit("Ciencias Sociales no debe ofrecer temas de matemática.")
+    own = ["Antigua Guatemala", "Quetzaltenango", "Cobán"]
+    rows = preview_variants("¿Cuál es la capital de Guatemala?", "Ciudad de Guatemala", "geografia", wrong=own)
+    for row in rows:
+        if sorted(row["options"]) != sorted(own + ["Ciudad de Guatemala"]) or row["options"][row["answer"]] != "Ciudad de Guatemala":
+            raise SystemExit(f"Las respuestas falsas del maestro no se usaron: {row}")
+    partial = preview_variants("¿Qué órgano bombea la sangre?", "el corazón", "cuerpo_humano", wrong=["el pulmón"])
+    if any("el pulmón" not in row["options"] or len(set(row["options"])) != 4 for row in partial):
+        raise SystemExit(f"Con una sola respuesta falsa se debe completar el resto: {partial}")
+    saved = add_question("¿Cuál es la capital de Guatemala?", "Ciudad de Guatemala", "geografia", "Ciencias Sociales",
+                         "cerrada", "", ["Antigua Guatemala", "ciudad de guatemala", " ", "Cobán", "Cobán", "Xela", "Otra"])
+    if saved.get("wrong") != ["Antigua Guatemala", "Cobán", "Xela"]:
+        raise SystemExit(f"Respuestas falsas mal guardadas: {saved.get('wrong')}")
+    delete_question(saved["id"])
+    print("Otras materias: temas por materia y respuestas falsas escritas por el maestro.")
+
 
 def check_notas_y_bimestres():
     import random

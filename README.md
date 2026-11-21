@@ -40,7 +40,7 @@ Si Windows dice «protegió su PC», pulsa **Más información** y **Ejecutar de
 ## Cómo se usa
 
 1. **Grupos:** crea cada grupo con sus alumnos una sola vez.
-2. **Exámenes:** elige grupo, materia y tipo de examen, arma las series y descarga el PDF para imprimir.
+2. **Exámenes:** elige grupo, materia y tipo de examen, arma las series y descarga el PDF para imprimir. Cada materia trae sus propios temas, y en las preguntas de opciones puedes escribir tus respuestas falsas o dejar que el programa las invente.
 3. **Calificar:** escanea las hojas con el celular (Google Drive, Notas del iPhone o CamScanner), junta todo en un PDF y súbelo. Para pasar el PDF a la computadora sirve el cable USB, Quick Share, Google Drive o WhatsApp Web.
 4. **Notas:** tabla por materia y bimestre, descargable para Excel, y boletines para imprimir.
 5. **Análisis:** resultados del grupo y de cada alumno, por examen, por materia o en general.
