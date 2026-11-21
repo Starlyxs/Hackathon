@@ -359,6 +359,36 @@ def check_series_exam():
     if notas != {"Ana" if sheet["student_name"] == "Ana" else "Luis": 18, ("Luis" if sheet["student_name"] == "Ana" else "Ana"): 4}:
         raise SystemExit(f"Las notas del examen por series salieron mal: {notas}")
 
+    from app.service import class_analysis
+
+    report = class_analysis(group, made["form_id"])
+    people = {row["nombre"]: row for row in report["alumnos"]}
+    low = people["Luis" if sheet["student_name"] == "Ana" else "Ana"]
+    high = people[sheet["student_name"]]
+    if not report["hay_datos"] or report["resumen"]["calificados"] != 2 or report["resumen"]["aprueban"] != 1:
+        raise SystemExit(f"El resumen del análisis salió mal: {report['resumen']}")
+    if low["nivel"] != "urgente" or not low["refuerzo"] or "en blanco" not in low["texto"]:
+        raise SystemExit(f"El texto del alumno flojo salió mal: {low['texto']}")
+    if high["nivel"] not in ("excelente", "bien") or low["nombre"] not in low["texto"]:
+        raise SystemExit(f"El texto del alumno fuerte salió mal: {high['texto']}")
+    if [row["nombre"] for row in report["series"]] != ["Serie I", "Serie II"] or sum(b["alumnos"] for b in report["distribucion"]) != 2:
+        raise SystemExit("El análisis por serie o la distribución salieron mal.")
+    for modo, extra in (("materia", {"materia": "Matemática"}), ("general", {})):
+        wide = class_analysis(group, modo=modo, **extra)
+        names = {row["nombre"]: row for row in wide["alumnos"]}
+        if not wide["hay_datos"] or wide["resumen"]["calificados"] != 2 or wide["resumen"]["promedio_pct"] != 55:
+            raise SystemExit(f"El análisis {modo} salió mal: {wide.get('resumen')}")
+        if names[low["nombre"]]["pct"] != 20 or "lleva 20%" not in names[low["nombre"]]["texto"]:
+            raise SystemExit(f"El texto del análisis {modo} salió mal: {names[low['nombre']]['texto']}")
+        if modo == "general" and [row["nombre"] for row in wide["materias"]] != ["Matemática"]:
+            raise SystemExit("El análisis general no separó por materia.")
+        if [row["bimestre"] for row in wide["bimestres"]] != [4]:
+            raise SystemExit("El análisis no separó por bimestre.")
+    if class_analysis(group, modo="general", bimestre=2)["hay_datos"]:
+        raise SystemExit("Un bimestre sin exámenes no debía tener análisis.")
+    if class_analysis("grupo-que-no-existe")["hay_datos"]:
+        raise SystemExit("Un grupo sin exámenes no debía tener análisis.")
+
     # Un examen largo pasa a una segunda hoja sin dejar hojas vacías.
     long_ids = [
         add_question(f"Serie larga: ¿cuánto es {n} + {n}?", str(n + n), "general", "Matemática")["id"]

@@ -6,6 +6,68 @@
   <link rel="icon" href="/static/logo.png">
   <link rel="stylesheet" href="/static/app.css">
   <title>Análisis · Hojas en papel</title>
+  <style>
+    :root { --amber: #d99a00; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
+    .kpi { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: #fff; font-family: "Segoe UI", sans-serif; }
+    .kpi b { display: block; font-size: 1.9rem; line-height: 1.1; color: var(--green); font-family: Georgia, serif; }
+    .kpi span { color: var(--muted); font-size: 0.88rem; }
+    .kpi.alert b { color: var(--rust); }
+    .kpi small { display: block; margin-top: 4px; font-size: 0.82rem; color: var(--ink); }
+
+    .hbar { display: grid; grid-template-columns: minmax(96px, 30%) 1fr 64px; gap: 10px; align-items: center; margin: 7px 0; font-family: "Segoe UI", sans-serif; }
+    .hbar .hl { font-size: 0.92rem; overflow-wrap: anywhere; }
+    .hbar .ht { position: relative; height: 22px; background: #efe9da; border-radius: 11px; overflow: hidden; }
+    .hbar .hf { height: 100%; border-radius: 11px; min-width: 4px; }
+    .hbar .m60 { position: absolute; left: 60%; top: 0; bottom: 0; width: 2px; background: rgba(28, 36, 32, 0.45); }
+    .hbar .hv { font-weight: 700; text-align: right; font-size: 0.92rem; }
+    .hbar .hv small { display: block; font-weight: 400; color: var(--muted); font-size: 0.72rem; }
+    .good { background: var(--green); }
+    .mid { background: var(--amber); }
+    .low { background: var(--rust); }
+
+    .cols { display: flex; gap: 8px; align-items: flex-end; height: 190px; padding: 0 4px; font-family: "Segoe UI", sans-serif; }
+    .col { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
+    .col .bar { width: 100%; max-width: 70px; border-radius: 10px 10px 0 0; min-height: 4px; }
+    .col .num { font-weight: 700; margin-bottom: 4px; }
+    .col.now .bar { outline: 3px solid var(--ink); outline-offset: 2px; }
+    .collabels { display: flex; gap: 8px; padding: 6px 4px 0; font-family: "Segoe UI", sans-serif; font-size: 0.78rem; color: var(--muted); text-align: center; }
+    .collabels div { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+    .legend { font-family: "Segoe UI", sans-serif; font-size: 0.82rem; color: var(--muted); margin: 8px 0 0; }
+    .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin: 0 4px -1px 10px; }
+
+    .person { border: 1px solid var(--line); border-left: 8px solid var(--green); border-radius: 14px; padding: 12px 16px; margin: 12px 0; background: #fff; }
+    .person.bien, .person.excelente { border-left-color: var(--green); }
+    .person.aprobado { border-left-color: var(--amber); }
+    .person.apoyo, .person.urgente { border-left-color: var(--rust); }
+    .person.pendiente { border-left-color: #b6b2a6; background: #f6f3ea; }
+    .person header { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; justify-content: space-between; margin: 0; padding: 0; background: none; border: 0; }
+    .person h3 { margin: 0; font-size: 1.1rem; }
+    .person .badge { font-family: "Segoe UI", sans-serif; font-size: 0.82rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--green-soft); color: var(--green); }
+    .person.aprobado .badge { background: #fbf0cf; color: #7a5600; }
+    .person.apoyo .badge, .person.urgente .badge { background: #fbe4de; color: var(--rust); }
+    .person p.say { font-family: "Segoe UI", sans-serif; line-height: 1.55; margin: 8px 0; }
+    .person .row { margin-top: 6px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+    .empty { font-family: "Segoe UI", sans-serif; color: var(--muted); padding: 10px 0; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+    .toolbar .fields { flex: 1 1 320px; }
+    h4.sub { margin: 12px 0 2px; font-family: "Segoe UI", sans-serif; font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+    @media (max-width: 700px) {
+      .hbar { grid-template-columns: 1fr 56px; }
+      .hbar .hl { grid-column: 1 / -1; margin-bottom: -4px; }
+      .hbar .ht { grid-column: 1; }
+      .hbar .hv { grid-column: 2; }
+      .cols { height: 150px; }
+    }
+    @media print {
+      nav, .toolbar button, .noprint, details.sim, .person .row, .filters, header .lede { display: none !important; }
+      body { background: #fff; font-size: 12pt; }
+      section { break-inside: avoid; box-shadow: none; border: 0; }
+      .person { break-inside: avoid; }
+      .toolbar select { border: 0; appearance: none; font-weight: 700; }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -14,34 +76,44 @@
       <h1>Hojas en papel</h1>
     </div>
     <!--NAV-->
-    <p class="lede">Después de calificar: qué falló el grupo y una hoja de refuerzo para quien la necesita. Es opcional.</p>
+    <p class="lede">Después de calificar: cómo le fue al grupo en un parcial, en una materia o en general, y qué le falta a cada alumno. Es opcional.</p>
   </header>
   <main>
     <section>
-      <div class="fields">
-        <div>
-          <label for="group">Grupo</label>
-          <select id="group"></select>
-        </div>
-        <div>
-          <label for="examen">Examen</label>
-          <select id="examen"></select>
-        </div>
+      <label style="margin-top:0;">¿Qué quieres analizar?</label>
+      <div class="bigchips" id="modes">
+        <button type="button" data-mode="examen">Un parcial o examen<small>cómo le fue al grupo en uno</small></button>
+        <button type="button" data-mode="materia">Una materia<small>todos sus exámenes juntos</small></button>
+        <button type="button" data-mode="general">General<small>todas las materias</small></button>
       </div>
-      <h2 style="margin-top:16px;">Qué falló el grupo</h2>
-      <p class="lede">Si más de la mitad repite el mismo error, aparece aquí.</p>
-      <div id="patterns"></div>
+      <div class="toolbar" style="margin-top:12px;">
+        <div class="fields">
+          <div>
+            <label for="group">Grupo</label>
+            <select id="group"></select>
+          </div>
+          <div id="box-examen">
+            <label for="examen">Examen</label>
+            <select id="examen"></select>
+          </div>
+          <div id="box-materia" hidden>
+            <label for="materia">Materia</label>
+            <select id="materia"></select>
+          </div>
+        </div>
+        <button id="print" type="button" class="secondary">Imprimir informe</button>
+      </div>
+      <div id="box-bim" hidden>
+        <label>Bimestre</label>
+        <div class="chips" id="bim-chips"></div>
+      </div>
+      <p id="title" class="lede" style="margin-top:12px;"></p>
     </section>
 
-    <section>
-      <h2>Hoja de refuerzo</h2>
-      <p class="lede">Una hoja nueva, con otros números, para el alumno que falló.</p>
-      <div id="students"></div>
-      <p id="refuerzo-error" class="error"></p>
-    </section>
+    <div id="report"></div>
 
-    <section>
-      <details>
+    <section class="noprint">
+      <details class="sim">
         <summary>Probar con una clase de ejemplo</summary>
         <p class="lede">Crea un grupo «Ejemplo» con 10 alumnos y lo califica como si hubieran contestado. Después puedes borrarlo en Grupos y Exámenes.</p>
         <button id="simulate" type="button" class="secondary">Simular una clase</button>
@@ -52,8 +124,15 @@
   <script>
     const $ = (selector) => document.querySelector(selector);
     const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
-    const fmt = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
+    const num = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
     const group = () => $("#group").value;
+    const tone = (pct) => (pct >= 80 ? "good" : (pct >= 60 ? "mid" : "low"));
+    const NIVEL = { excelente: "Excelente", bien: "Muy bien", aprobado: "Aprobó", apoyo: "Necesita apoyo", urgente: "Apoyo urgente" };
+    let data = null;
+    let onlyHelp = false;
+    let mode = localStorage.getItem("hp_amodo") || "examen";
+    let bimestre = "";
+    let groupExams = [];
 
     async function readError(response) {
       try {
@@ -66,7 +145,7 @@
 
     function shortDate(value) {
       const date = new Date(value);
-      return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("es-GT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+      return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("es-GT", { day: "numeric", month: "short" });
     }
 
     async function loadGroups(selected) {
@@ -76,46 +155,206 @@
       if (body.groups.includes(wanted)) $("#group").value = wanted;
     }
 
-    async function load() {
-      const select = $("#examen");
-      if (!group()) {
-        select.innerHTML = "";
-        $("#patterns").innerHTML = `<p class="lede">Todavía no hay grupos.</p>`;
-        $("#students").innerHTML = "";
-        return;
+    const hbar = (label, pct, value, sub = "") =>
+      `<div class="hbar"><div class="hl">${esc(label)}</div><div class="ht"><div class="hf ${tone(pct)}" style="width:${Math.max(0, Math.min(100, pct))}%"></div><span class="m60"></span></div><div class="hv">${value}${sub ? `<small>${sub}</small>` : ""}</div></div>`;
+
+    function kpis(report) {
+      const r = report.resumen;
+      const cards = [];
+      cards.push(report.nota_total === null
+        ? `<div class="kpi"><b>${r.promedio_pct}%</b><span>promedio del grupo</span></div>`
+        : `<div class="kpi"><b>${num(r.promedio_nota)}</b><span>promedio, de ${num(report.nota_total)} puntos (${r.promedio_pct}%)</span></div>`);
+      cards.push(`<div class="kpi"><b>${r.aprueban} de ${r.calificados}</b><span>alumnos aprobaron (60% o más)</span></div>`);
+      cards.push(`<div class="kpi ${r.apoyo.length ? "alert" : ""}"><b>${r.apoyo.length}</b><span>${r.apoyo.length === 1 ? "alumno necesita" : "alumnos necesitan"} apoyo</span>${r.apoyo.length ? `<small>${esc(r.apoyo.join(", "))}</small>` : ""}</div>`);
+      const score = (item) => (item.nota === null || item.nota === undefined ? `${item.pct}%` : num(item.nota));
+      if (r.mejor) cards.push(`<div class="kpi"><b>${score(r.mejor)}</b><span>${report.nota_total === null ? "el mejor promedio" : "la nota más alta"}</span><small>${esc(r.mejor.nombre)}</small></div>`);
+      if (r.menor && r.menor.nombre !== (r.mejor && r.mejor.nombre)) cards.push(`<div class="kpi"><b>${score(r.menor)}</b><span>${report.nota_total === null ? "el promedio más bajo" : "la nota más baja"}</span><small>${esc(r.menor.nombre)}</small></div>`);
+      return `<div class="cards">${cards.join("")}</div>` +
+        (r.pendientes.length ? `<p class="warn">Faltan por calificar: ${esc(r.pendientes.join(", "))}. El análisis se completa cuando estén todos.</p>` : "");
+    }
+
+    function distribution(report) {
+      const max = Math.max(1, ...report.distribucion.map((b) => b.alumnos));
+      const colors = ["low", "low", "low", "mid", "good"];
+      const pts = (pct) => (report.nota_total === null ? `${pct}%` : num(report.nota_total * pct / 100));
+      return `<div class="cols">${report.distribucion.map((b, i) =>
+        `<div class="col"><div class="num">${b.alumnos}</div><div class="bar ${colors[i]}" style="height:${Math.round((b.alumnos / max) * 140)}px;${b.alumnos ? "" : "min-height:0;"}"></div></div>`).join("")}</div>
+        <div class="collabels">${report.distribucion.map((b) => `<div>${pts(b.desde)}–${pts(b.hasta)}<br>${report.nota_total === null ? "de promedio" : "puntos"}</div>`).join("")}</div>
+        <p class="legend">Cada columna cuenta cuántos alumnos quedaron en ese rango.</p>`;
+    }
+
+    function students(report) {
+      const rows = report.alumnos.filter((s) => s.pct !== null);
+      return rows.map((s) => (s.nota === null || s.nota === undefined ? hbar(s.nombre, s.pct, `${s.pct}%`) : hbar(s.nombre, s.pct, `${num(s.nota)}`, `${s.pct}%`))).join("") +
+        `<p class="legend"><i class="good"></i>80% o más <i class="mid"></i>60 a 79% <i class="low"></i>menos de 60%. La raya marca el 60%.</p>`;
+    }
+
+    function topics(report) {
+      const parts = [];
+      if (report.series.length) {
+        parts.push(`<h3>Por serie</h3>` + report.series.map((s) => hbar(s.nombre, s.pct, `${s.pct}%`)).join(""));
       }
-      const all = (await (await fetch("/api/examenes")).json()).exams.filter((exam) => exam.group === group());
-      const wanted = select.value;
-      const report = await (await fetch(`/api/clase?group=${encodeURIComponent(group())}${wanted ? `&form_id=${wanted}` : ""}`)).json();
-      select.innerHTML = all.map((exam) =>
-        `<option value="${exam.id}">${esc(exam.titulo_completo)} · ${shortDate(exam.created)} (${exam.calificados} de ${exam.students.length} calificados)</option>`).join("");
-      if (report.form_id) select.value = report.form_id;
-      const patterns = report.patterns || [];
-      $("#patterns").innerHTML = patterns.length
-        ? patterns.map((item) => `<div class="pattern">${esc(item.message)}</div>`).join("")
-        : `<p class="ok">${report.students < 3 ? "Califica al menos 3 hojas de este examen para ver un patrón del grupo." : "Ningún error se repite en la mitad de la clase o más."}</p>`;
-      const rows = (report.results || []).filter((row) => row.state !== "pendiente");
-      $("#students").innerHTML = rows.length
-        ? `<div class="sheet-wrap"><table class="xl"><thead><tr><th>Alumno</th><th>Aciertos</th><th>Nota</th><th>Refuerzo</th></tr></thead><tbody>${rows.map((row) =>
-            `<tr><td>${esc(row.student_name)}</td><td>${fmt(row.score)}/${fmt(row.total)}</td><td>${fmt(row.nota_real)}</td><td><button type="button" class="secondary" data-student="${esc(row.student_name)}">Crear hoja</button> <span data-out></span></td></tr>`).join("")}</tbody></table></div>`
-        : `<p class="lede">Todavía no hay hojas calificadas de este examen.</p>`;
-      $("#students").querySelectorAll("button[data-student]").forEach((button) => {
+      if (report.temas.length) {
+        parts.push(`<h3>Por tema</h3>` + report.temas.map((t) =>
+          hbar(t.nombre, t.pct, `${t.pct}%`, t.flojos ? `${t.flojos} ${t.flojos === 1 ? "alumno flojo" : "alumnos flojos"}` : "")).join(""));
+      }
+      if (!parts.length) return `<p class="empty">Este examen no tiene temas ni series para comparar.</p>`;
+      const weak = report.resumen.tema_debil;
+      return (weak ? `<p class="pattern">Lo más flojo del grupo: <strong>${esc(weak.nombre)}</strong> (${weak.pct}% de acierto). Conviene repasarlo en clase.</p>` : "") + parts.join("");
+    }
+
+    function evolution(report) {
+      if (report.evolucion.length < 2) return "";
+      return `<section><h2>${report.modo === "materia" ? `Cómo va el grupo en ${esc(report.materia)}, examen por examen` : `Cómo va el grupo en ${esc(report.materia || "la materia")}`}</h2>
+        <p class="lede">Promedio de cada examen de esta materia.${report.modo === "examen" ? " El de este análisis tiene un borde oscuro." : ""}</p>
+        <div class="cols">${report.evolucion.map((e) =>
+          `<div class="col ${e.actual ? "now" : ""}"><div class="num">${e.promedio}%</div><div class="bar ${tone(e.promedio)}" style="height:${Math.round(e.promedio * 1.4)}px"></div></div>`).join("")}</div>
+        <div class="collabels">${report.evolucion.map((e) => `<div>${esc(e.corto)}</div>`).join("")}</div></section>`;
+    }
+
+    function person(s) {
+      const level = s.nivel || "pendiente";
+      const bars = (s.detalle.length ? `<h4 class="sub">${mode === "general" ? "Por materia" : "Por examen"}</h4>` + s.detalle.map((t) => hbar(t.nombre, t.pct, `${t.pct}%`)).join("") : "") +
+        (s.temas.length ? `<h4 class="sub">Por tema</h4>` + s.temas.map((t) => hbar(t.nombre, t.pct, `${t.pct}%`, `${t.ok} de ${t.n}`)).join("") : "") +
+        s.series.map((t) => hbar(t.nombre, t.pct, `${t.pct}%`)).join("");
+      return `<article class="person ${level}" data-name="${esc(s.nombre)}">
+        <header><h3>${esc(s.nombre)}</h3>
+          <span class="badge">${s.pct === null ? "Sin calificar" : `${s.nota === null || s.nota === undefined ? "" : `${num(s.nota)} puntos · `}${s.pct}% · ${NIVEL[s.nivel]}`}</span></header>
+        <p class="say">${esc(s.texto)}</p>
+        ${bars ? `<details><summary>Ver el detalle</summary>${bars}</details>` : ""}
+        ${s.refuerzo ? `<div class="row"><button type="button" class="secondary" data-student="${esc(s.nombre)}">Crear hoja de refuerzo</button> <span data-out></span></div>` : ""}
+      </article>`;
+    }
+
+    function renderPeople() {
+      if (!data || !data.hay_datos) return;
+      const list = data.alumnos.filter((s) => !onlyHelp || s.nivel === "apoyo" || s.nivel === "urgente");
+      $("#people").innerHTML = list.length ? list.map(person).join("") : `<p class="empty">Ningún alumno necesita apoyo en este examen.</p>`;
+      $("#people").querySelectorAll("button[data-student]").forEach((button) => {
         button.onclick = async () => {
           $("#refuerzo-error").textContent = "";
+          button.disabled = true;
           const response = await fetch("/api/refuerzo", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ group: group(), student_name: button.dataset.student }),
           });
+          button.disabled = false;
           if (!response.ok) { $("#refuerzo-error").textContent = await readError(response); return; }
           const sheet = await response.json();
-          button.parentElement.querySelector("[data-out]").innerHTML = `<a href="${sheet.pdf}" target="_blank">Descargar PDF</a>`;
+          button.parentElement.querySelector("[data-out]").innerHTML = `<a class="button" href="${sheet.pdf}" target="_blank">Descargar PDF</a>`;
         };
       });
     }
 
+    function breakdown(report) {
+      const parts = [];
+      if (report.materias.length) {
+        parts.push(`<section><h2>Por materia</h2><p class="lede">Promedio del grupo en cada materia.</p>` +
+          report.materias.map((m) => hbar(m.nombre, m.pct, `${m.pct}%`, m.flojos ? `${m.flojos} ${m.flojos === 1 ? "alumno flojo" : "alumnos flojos"}` : "")).join("") + `</section>`);
+      }
+      if (report.bimestres.length > 1) {
+        parts.push(`<section><h2>Por bimestre</h2><p class="lede">Promedio del grupo en cada bimestre.</p>` +
+          report.bimestres.map((b) => hbar(`Bimestre ${b.bimestre}`, b.pct, `${b.pct}%`)).join("") + `</section>`);
+      }
+      return parts.join("");
+    }
+
+    function render(report) {
+      data = report;
+      const box = $("#report");
+      if (!report.hay_datos) {
+        $("#title").innerHTML = report.titulo ? `<strong>${esc(report.titulo)}</strong>` : "";
+        const text = mode === "examen"
+          ? (report.form_id ? "Todavía no hay alumnos con todas sus hojas calificadas en este examen." : "Todavía no hay exámenes calificados en este grupo. Califica algunas hojas y vuelve aquí.")
+          : "No hay exámenes calificados con ese filtro. Solo cuentan los parciales, finales y actividades de un bimestre.";
+        box.innerHTML = `<section><p class="empty">${text}</p></section>`;
+        return;
+      }
+      $("#title").innerHTML = report.modo === "examen"
+        ? `<strong>${esc(report.materia ? report.materia + " · " : "")}${esc(report.titulo)}</strong> · vale ${num(report.nota_total)} puntos`
+        : `<strong>${esc(report.titulo)}</strong> · ${report.examenes} ${report.examenes === 1 ? "examen" : "exámenes"} juntos, cada uno pesa según sus puntos`;
+      const patterns = report.patrones.length
+        ? report.patrones.map((item) => `<div class="pattern">${esc(item.message)}</div>`).join("")
+        : `<p class="ok">${report.resumen.calificados < 3 ? "Califica al menos 3 hojas para ver errores que se repitan en el grupo." : "Ningún error se repite en la mitad de la clase o más."}</p>`;
+      box.innerHTML = `
+        <section><h2>Resumen del grupo</h2>${kpis(report)}</section>
+        <section><h2>Cómo le fue al grupo</h2>${distribution(report)}</section>
+        ${breakdown(report)}
+        <section><h2>${report.modo === "examen" ? "Nota de cada alumno" : "Promedio de cada alumno"}</h2>${students(report)}</section>
+        <section><h2>Qué se domina y qué no</h2>${topics(report)}<h3>Errores que se repiten</h3>${patterns}</section>
+        ${evolution(report)}
+        <section><h2>Análisis de cada alumno</h2>
+          <p class="lede">Qué le falta a cada uno y qué hacer. Los que necesitan apoyo salen con borde rojo.</p>
+          <div class="filters noprint">
+            <button type="button" id="f-all" class="${onlyHelp ? "secondary" : ""}">Todos (${report.alumnos.length})</button>
+            <button type="button" id="f-help" class="${onlyHelp ? "" : "secondary"}">Solo los que necesitan apoyo (${report.resumen.apoyo.length})</button>
+          </div>
+          <div id="people"></div>
+          <p id="refuerzo-error" class="error"></p>
+        </section>`;
+      $("#f-all").onclick = () => { onlyHelp = false; render(data); };
+      $("#f-help").onclick = () => { onlyHelp = true; render(data); };
+      renderPeople();
+    }
+
+    function renderControls(subjects) {
+      document.querySelectorAll("#modes [data-mode]").forEach((button) => button.classList.toggle("on", button.dataset.mode === mode));
+      $("#box-examen").hidden = mode !== "examen";
+      $("#box-materia").hidden = mode !== "materia";
+      $("#box-bim").hidden = mode === "examen";
+      if (mode !== "examen") {
+        $("#bim-chips").innerHTML = [["", "Todo el año"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"]].map(([value, label]) =>
+          `<button type="button" data-b="${value}" class="${value === bimestre ? "on" : ""}">${value ? `Bimestre ${label}` : label}</button>`).join("");
+        $("#bim-chips").querySelectorAll("button").forEach((button) => {
+          button.onclick = () => { bimestre = button.dataset.b; load(); };
+        });
+      }
+      if (subjects) {
+        const keep = $("#materia").value;
+        $("#materia").innerHTML = subjects.map((name) => `<option>${esc(name)}</option>`).join("");
+        if (subjects.includes(keep)) $("#materia").value = keep;
+      }
+    }
+
+    async function load() {
+      const select = $("#examen");
+      if (!group()) {
+        select.innerHTML = "";
+        $("#title").textContent = "";
+        $("#report").innerHTML = `<section><p class="empty">Todavía no hay grupos.</p></section>`;
+        renderControls(null);
+        return;
+      }
+      groupExams = (await (await fetch("/api/examenes")).json()).exams.filter((exam) => exam.group === group());
+      const subjects = [...new Set(groupExams.flatMap((exam) => exam.materias))].sort((a, b) => a.localeCompare(b, "es"));
+      renderControls(subjects);
+      const query = new URLSearchParams({ group: group(), modo: mode });
+      if (mode === "examen" && select.value) query.set("form_id", select.value);
+      if (mode === "materia") {
+        if (!$("#materia").value) {
+          $("#title").textContent = "";
+          $("#report").innerHTML = `<section><p class="empty">Este grupo todavía no tiene exámenes de una materia.</p></section>`;
+          return;
+        }
+        query.set("materia", $("#materia").value);
+      }
+      if (mode !== "examen" && bimestre) query.set("bimestre", bimestre);
+      const report = await (await fetch(`/api/analisis?${query}`)).json();
+      select.innerHTML = groupExams.map((exam) =>
+        `<option value="${exam.id}">${esc((exam.materias[0] ? exam.materias[0] + " · " : "") + exam.titulo_completo)} · ${shortDate(exam.created)} (${exam.calificados} de ${exam.students.length} calificados)</option>`).join("");
+      if (mode === "examen" && report.form_id) select.value = report.form_id;
+      render(report);
+    }
+
     $("#group").onchange = () => { localStorage.setItem("hp_group", group()); $("#examen").value = ""; load(); };
     $("#examen").onchange = load;
+    $("#materia").onchange = load;
+    document.querySelectorAll("#modes [data-mode]").forEach((button) => {
+      button.onclick = () => { mode = button.dataset.mode; localStorage.setItem("hp_amodo", mode); load(); };
+    });
+    $("#print").onclick = () => window.print();
+    window.addEventListener("beforeprint", () => document.querySelectorAll("#report details").forEach((item) => { item.open = true; }));
     $("#simulate").onclick = async () => {
       const button = $("#simulate");
       button.disabled = true;

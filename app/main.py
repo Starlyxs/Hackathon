@@ -16,6 +16,7 @@ from app.notas import csv_grid, csv_yearly, grid, yearly
 from app.service import (
     add_materia,
     add_question,
+    class_analysis,
     class_report,
     create_diagnostic,
     create_reinforcement,
@@ -357,6 +358,11 @@ def post_interpretation(body: InterpretIn):
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
     return with_context(result)
+
+
+@app.get("/api/analisis")
+def get_analysis(group: str, form_id: str = "", modo: str = "examen", materia: str = "", bimestre: int = 0):
+    return class_analysis(group, form_id or None, modo, materia, bimestre or None)
 
 
 @app.get("/api/clase")

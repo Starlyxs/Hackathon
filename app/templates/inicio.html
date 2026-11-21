@@ -20,6 +20,12 @@
       <h2>Cargando…</h2>
     </section>
 
+    <section id="tutorial" hidden>
+      <h2>¿Primera vez? Mira el tutorial</h2>
+      <p class="lede">Dura poco más de un minuto y no necesita sonido: los pasos se leen en pantalla. Va desde crear el examen hasta ver qué le falta a cada alumno.</p>
+      <video id="video" controls preload="none" playsinline poster="/static/tutorial-poster.png" style="width:100%; max-width:none; aspect-ratio:16/9; border-radius:14px; background:#000;"></video>
+    </section>
+
     <div class="steps" id="pasos"></div>
 
     <p class="lede" id="copia"></p>
@@ -53,7 +59,21 @@
         ? `Copia de seguridad automática: ${info.copia}. Tus datos están solo en esta computadora.`
         : "Tus datos están solo en esta computadora. Se hará una copia de seguridad automática cada día.";
     }
+    async function showTutorial() {
+      for (const [file, type] of [["/static/tutorial.webm", "video/webm"], ["/static/tutorial.mp4", "video/mp4"]]) {
+        try {
+          const head = await fetch(file, { method: "HEAD" });
+          if (head.ok && $("#video").canPlayType(type)) {
+            $("#video").src = file;
+            $("#tutorial").hidden = false;
+            return;
+          }
+        } catch { /* sin video: la sección queda oculta */ }
+      }
+    }
+
     start();
+    showTutorial();
   </script>
 </body>
 </html>

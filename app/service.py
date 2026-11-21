@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 
 from PIL import Image
 
+from app import analisis as analysis
+from app.analisis import patterns_from
 from app import series as seriesmod
 from app.bank import BANK, SKILLS, build_questions
 from app.grade import GradeError, read_bubbles, read_photo
@@ -627,6 +629,7 @@ def _grade_series_page(db, sheet_id, aligned):
                 "status": detail["status"],
                 "format": "cerrada",
                 "puntos": question["puntos"],
+                "serie": question.get("serie") or "",
                 "trap": trap,
                 "trap_label": question.get("trap_label") if trap else None,
             }
@@ -691,6 +694,7 @@ def _save_series_interpretation(db, sheet, marks, points):
                 "status": mark,
                 "format": "abierta",
                 "puntos": question["puntos"],
+                "serie": question.get("serie") or "",
                 "trap": mark == "aun_no",
                 "trap_label": f"no logra interpretar: {criterion[:90]}" if mark == "aun_no" else None,
             }
@@ -1100,35 +1104,16 @@ def class_report(group, form_id=None):
     }
 
 
-def patterns_from(results):
-    if len(results) < 3:
-        return []
-    buckets = {}
-    for result in results:
-        seen_labels = set()
-        for item in result["items"]:
-            label = item.get("trap_label")
-            if not label or label in seen_labels:
-                continue
-            seen_labels.add(label)
-            bucket = buckets.setdefault(label, {"students": 0, "skill_name": item["skill_name"]})
-            bucket["students"] += 1
-    messages = []
-    total = len(results)
-    for label, bucket in buckets.items():
-        ratio = bucket["students"] / total
-        if ratio < 0.5:
-            continue
-        percent = round(ratio * 100)
-        messages.append(
-            {
-                "percent": percent,
-                "skill_name": bucket["skill_name"],
-                "message": f"El {percent}% de la clase {label}.",
-            }
-        )
-    messages.sort(key=lambda item: item["percent"], reverse=True)
-    return messages
+def class_analysis(group, form_id=None, modo="examen", materia=None, bimestre=None):
+    """Gráficos del grupo y texto por alumno: de un examen, de una materia o de todo el grupo."""
+    db = load()
+    if modo in ("materia", "general"):
+        try:
+            term = int(bimestre) if bimestre else None
+        except (TypeError, ValueError):
+            term = None
+        return analysis.build_scope(db, group.strip(), modo, (materia or "").strip() or None, term)
+    return analysis.build(db, group.strip(), form_id or None)
 
 
 def _join_materias(rows):
