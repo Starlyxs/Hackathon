@@ -38,6 +38,9 @@ echo Instalando librerias. La primera vez usa internet. Despues ya no hace falta
 ".venv\Scripts\python.exe" -m pip install -r requirements.txt
 if errorlevel 1 goto fail
 
+rem Acceso directo con el logo en el escritorio, solo la primera vez.
+powershell -NoProfile -Command "$d=[Environment]::GetFolderPath('Desktop'); $l=Join-Path $d 'Hojas en papel.lnk'; if (-not (Test-Path $l)) { $s=(New-Object -ComObject WScript.Shell).CreateShortcut($l); $s.TargetPath='%~dp0iniciar.bat'; $s.WorkingDirectory='%~dp0'; $s.IconLocation='%~dp0app\static\logo.ico'; $s.Save(); Write-Host 'Puse un acceso directo en el escritorio.' }" 2>nul
+
 echo.
 echo Abre http://127.0.0.1:8000
 echo Para cerrar el programa, cierra esta ventana o pulsa Ctrl+C.

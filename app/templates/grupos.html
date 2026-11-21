@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/logo.png">
+  <link rel="stylesheet" href="/static/app.css">
+  <title>Grupos · Hojas en papel</title>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="/static/logo.png" alt="">
+      <h1>Hojas en papel</h1>
+    </div>
+    <!--NAV-->
+    <p class="lede">Crea tu grupo una sola vez, con su lista de alumnos. Después los exámenes usan esa lista y no hay que escribirla de nuevo.</p>
+  </header>
+  <main>
+    <section>
+      <h2>Nuevo grupo</h2>
+      <div class="fields">
+        <div>
+          <label for="new-name">Nombre del grupo</label>
+          <input id="new-name" maxlength="40" placeholder="Por ejemplo 6A">
+        </div>
+      </div>
+      <label for="new-students">Alumnos (uno por línea; puedes pegar la lista)</label>
+      <textarea id="new-students" placeholder="Ana&#10;Luis&#10;María"></textarea>
+      <div class="row"><button id="create" type="button">Guardar grupo</button></div>
+      <p id="create-error" class="error"></p>
+    </section>
+
+    <section>
+      <h2>Mis grupos</h2>
+      <div id="list"><p class="lede">Cargando…</p></div>
+    </section>
+  </main>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+    async function readError(response) {
+      try {
+        const body = await response.json();
+        return Array.isArray(body.detail) ? "Revisa los datos e inténtalo de nuevo." : (body.detail || "No se pudo completar.");
+      } catch {
+        return "No se pudo completar.";
+      }
+    }
+
+    async function save(name, students) {
+      return fetch("/api/mis-grupos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, students: students.split("\n") }),
+      });
+    }
+
+    async function load() {
+      const body = await (await fetch("/api/mis-grupos")).json();
+      const box = $("#list");
+      if (!body.groups.length) {
+        box.innerHTML = `<p class="lede">Todavía no tienes grupos. Crea el primero arriba.</p>`;
+        return;
+      }
+      box.innerHTML = body.groups.map((group, index) => `
+        <div class="card" data-name="${esc(group.name)}">
+          <h3>${esc(group.name)} <span class="tag">${group.students.length} alumnos</span> <span class="tag muted">${group.exams} exámenes</span></h3>
+          <label for="s${index}">Alumnos</label>
+          <textarea id="s${index}">${esc(group.students.join("\n"))}</textarea>
+          <div class="row">
+            <button type="button" data-save="${index}">Guardar cambios</button>
+            <a class="button secondary" href="/examenes" data-go="${esc(group.name)}">Crear un examen</a>
+            <button type="button" class="danger" data-del="${index}">Eliminar grupo</button>
+          </div>
+          <p class="error" id="e${index}"></p>
+          <p class="lede">Si cambias la lista, los exámenes que ya creaste no cambian. Los nuevos usan la lista actualizada.</p>
+        </div>`).join("");
+      box.querySelectorAll("[data-save]").forEach((button) => {
+        button.onclick = async () => {
+          const index = button.dataset.save;
+          const card = button.closest(".card");
+          const response = await save(card.dataset.name, $(`#s${index}`).value);
+          $(`#e${index}`).textContent = response.ok ? "" : await readError(response);
+          if (response.ok) load();
+        };
+      });
+      box.querySelectorAll("[data-del]").forEach((button) => {
+        button.onclick = async () => {
+          const card = button.closest(".card");
+          if (!confirm(`¿Eliminar el grupo ${card.dataset.name} y su lista de alumnos?`)) return;
+          const response = await fetch(`/api/mis-grupos/${encodeURIComponent(card.dataset.name)}`, { method: "DELETE" });
+          if (!response.ok) {
+            $(`#e${button.dataset.del}`).textContent = await readError(response);
+            return;
+          }
+          load();
+        };
+      });
+      box.querySelectorAll("[data-go]").forEach((link) => {
+        link.onclick = () => localStorage.setItem("hp_group", link.dataset.go);
+      });
+    }
+
+    $("#create").onclick = async () => {
+      $("#create-error").textContent = "";
+      const response = await save($("#new-name").value, $("#new-students").value);
+      if (!response.ok) {
+        $("#create-error").textContent = await readError(response);
+        return;
+      }
+      const body = await response.json();
+      localStorage.setItem("hp_group", body.name);
+      $("#new-name").value = "";
+      $("#new-students").value = "";
+      load();
+    };
+
+    load();
+  </script>
+</body>
+</html>

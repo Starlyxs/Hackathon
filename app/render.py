@@ -61,6 +61,13 @@ def _heading(sheet, fallback):
     return title if len(title) <= 28 else title[:27] + "…"
 
 
+def _student_line(sheet):
+    line = f"Alumno: {sheet['student_name']}"
+    if sheet.get("hoja"):
+        line += f"   ·   Hoja {sheet['hoja']}"
+    return line
+
+
 def _group_line(sheet):
     line = f"Grupo: {sheet['group']}"
     points = sheet.get("nota_total")
@@ -85,7 +92,7 @@ def render_sheet(sheet):
 
     draw.text((72, 58), _heading(sheet, "Diagnóstico"), fill=ACCENT, font=title_font)
     draw.text((72, 112), sheet.get("materia_label") or "Matemática y lectura  ·  4° a 6°", fill=INK, font=meta_font)
-    draw.text((72, 154), f"Alumno: {sheet['student_name']}", fill=INK, font=meta_font)
+    draw.text((72, 154), _student_line(sheet), fill=INK, font=meta_font)
     draw.text((72, 188), _group_line(sheet), fill=INK, font=meta_font)
     draw.text(
         (72, 232),
@@ -136,7 +143,7 @@ def _render_open(sheet):
     draw.text((72, 58), _heading(sheet, "Interpretación"), fill=ACCENT, font=title_font)
     subject = sheet.get("materia_label") or "Varias materias"
     draw.text((72, 112), f"Interpretación · {subject}" if sheet.get("titulo") else subject, fill=INK, font=meta_font)
-    draw.text((72, 154), f"Alumno: {sheet['student_name']}", fill=INK, font=meta_font)
+    draw.text((72, 154), _student_line(sheet), fill=INK, font=meta_font)
     draw.text((72, 188), _group_line(sheet), fill=INK, font=meta_font)
     draw.text(
         (72, 232),

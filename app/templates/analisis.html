@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/logo.png">
+  <link rel="stylesheet" href="/static/app.css">
+  <title>Análisis · Hojas en papel</title>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="/static/logo.png" alt="">
+      <h1>Hojas en papel</h1>
+    </div>
+    <!--NAV-->
+    <p class="lede">Después de calificar: qué falló el grupo y una hoja de refuerzo para quien la necesita. Es opcional.</p>
+  </header>
+  <main>
+    <section>
+      <div class="fields">
+        <div>
+          <label for="group">Grupo</label>
+          <select id="group"></select>
+        </div>
+        <div>
+          <label for="examen">Examen</label>
+          <select id="examen"></select>
+        </div>
+      </div>
+      <h2 style="margin-top:16px;">Qué falló el grupo</h2>
+      <p class="lede">Si más de la mitad repite el mismo error, aparece aquí.</p>
+      <div id="patterns"></div>
+    </section>
+
+    <section>
+      <h2>Hoja de refuerzo</h2>
+      <p class="lede">Una hoja nueva, con otros números, para el alumno que falló.</p>
+      <div id="students"></div>
+      <p id="refuerzo-error" class="error"></p>
+    </section>
+
+    <section>
+      <details>
+        <summary>Probar con una clase de ejemplo</summary>
+        <p class="lede">Crea un grupo «Ejemplo» con 10 alumnos y lo califica como si hubieran contestado. Después puedes borrarlo en Grupos y Exámenes.</p>
+        <button id="simulate" type="button" class="secondary">Simular una clase</button>
+        <p id="sim-error" class="error"></p>
+      </details>
+    </section>
+  </main>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+    const fmt = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
+    const group = () => $("#group").value;
+
+    async function readError(response) {
+      try {
+        const body = await response.json();
+        return Array.isArray(body.detail) ? "Revisa los datos e inténtalo de nuevo." : (body.detail || "No se pudo completar.");
+      } catch {
+        return "No se pudo completar.";
+      }
+    }
+
+    function shortDate(value) {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("es-GT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    }
+
+    async function loadGroups(selected) {
+      const body = await (await fetch("/api/grupos")).json();
+      const wanted = selected || localStorage.getItem("hp_group") || "";
+      $("#group").innerHTML = body.groups.map((name) => `<option>${esc(name)}</option>`).join("");
+      if (body.groups.includes(wanted)) $("#group").value = wanted;
+    }
+
+    async function load() {
+      const select = $("#examen");
+      if (!group()) {
+        select.innerHTML = "";
+        $("#patterns").innerHTML = `<p class="lede">Todavía no hay grupos.</p>`;
+        $("#students").innerHTML = "";
+        return;
+      }
+      const all = (await (await fetch("/api/examenes")).json()).exams.filter((exam) => exam.group === group());
+      const wanted = select.value;
+      const report = await (await fetch(`/api/clase?group=${encodeURIComponent(group())}${wanted ? `&form_id=${wanted}` : ""}`)).json();
+      select.innerHTML = all.map((exam) =>
+        `<option value="${exam.id}">${esc(exam.titulo_completo)} · ${shortDate(exam.created)} (${exam.calificados} de ${exam.students.length} calificados)</option>`).join("");
+      if (report.form_id) select.value = report.form_id;
+      const patterns = report.patterns || [];
+      $("#patterns").innerHTML = patterns.length
+        ? patterns.map((item) => `<div class="pattern">${esc(item.message)}</div>`).join("")
+        : `<p class="ok">${report.students < 3 ? "Califica al menos 3 hojas de este examen para ver un patrón del grupo." : "Ningún error se repite en la mitad de la clase o más."}</p>`;
+      const rows = (report.results || []).filter((row) => row.state !== "pendiente");
+      $("#students").innerHTML = rows.length
+        ? `<div class="sheet-wrap"><table class="xl"><thead><tr><th>Alumno</th><th>Aciertos</th><th>Nota</th><th>Refuerzo</th></tr></thead><tbody>${rows.map((row) =>
+            `<tr><td>${esc(row.student_name)}</td><td>${fmt(row.score)}/${fmt(row.total)}</td><td>${fmt(row.nota_real)}</td><td><button type="button" class="secondary" data-student="${esc(row.student_name)}">Crear hoja</button> <span data-out></span></td></tr>`).join("")}</tbody></table></div>`
+        : `<p class="lede">Todavía no hay hojas calificadas de este examen.</p>`;
+      $("#students").querySelectorAll("button[data-student]").forEach((button) => {
+        button.onclick = async () => {
+          $("#refuerzo-error").textContent = "";
+          const response = await fetch("/api/refuerzo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ group: group(), student_name: button.dataset.student }),
+          });
+          if (!response.ok) { $("#refuerzo-error").textContent = await readError(response); return; }
+          const sheet = await response.json();
+          button.parentElement.querySelector("[data-out]").innerHTML = `<a href="${sheet.pdf}" target="_blank">Descargar PDF</a>`;
+        };
+      });
+    }
+
+    $("#group").onchange = () => { localStorage.setItem("hp_group", group()); $("#examen").value = ""; load(); };
+    $("#examen").onchange = load;
+    $("#simulate").onclick = async () => {
+      const button = $("#simulate");
+      button.disabled = true;
+      $("#sim-error").textContent = "Generando y calificando 10 hojas…";
+      const response = await fetch("/api/simular", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ group: "Ejemplo" }),
+      });
+      button.disabled = false;
+      if (!response.ok) { $("#sim-error").textContent = await readError(response); return; }
+      $("#sim-error").textContent = "Listo. El grupo «Ejemplo» ya aparece arriba.";
+      localStorage.setItem("hp_group", "Ejemplo");
+      await loadGroups("Ejemplo");
+      $("#examen").value = "";
+      load();
+    };
+
+    (async () => { await loadGroups(); load(); })();
+  </script>
+</body>
+</html>

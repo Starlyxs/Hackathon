@@ -157,6 +157,26 @@ def find_qr(bgr):
     return None, None
 
 
+def quick_sheet_id(bgr):
+    """Lectura rápida del QR para la cámara en vivo. No endereza ni califica."""
+    long_side = max(bgr.shape[:2])
+    if long_side > 1000:
+        factor = 1000.0 / long_side
+        bgr = cv2.resize(bgr, None, fx=factor, fy=factor, interpolation=cv2.INTER_AREA)
+    gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    detectors = [cv2.QRCodeDetector()]
+    if hasattr(cv2, "QRCodeDetectorAruco"):
+        try:
+            detectors.append(cv2.QRCodeDetectorAruco())
+        except cv2.error:
+            pass
+    for detector in detectors:
+        found = _detect_with(detector, gray, 1.0)
+        if found:
+            return found[0]
+    return None
+
+
 def _quad_ok(corners, shape):
     pts = np.array(corners, dtype=np.float32).reshape(4, 2)
     if not cv2.isContourConvex(np.round(pts).astype(np.int32).reshape(-1, 1, 2)):

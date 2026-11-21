@@ -11,6 +11,7 @@ from app.bank import BANK, SKILLS, build_questions
 from app.grade import GradeError, read_bubbles, read_photo
 from app.materias import ensure_materias
 from app.notas import (
+    active_forms,
     clean_meta,
     exam_rows,
     form_meta,
@@ -20,7 +21,7 @@ from app.notas import (
     sort_key,
 )
 from app.render import render_sheet, save_pdf
-from app.store import SHEETS, ensure_dirs, load, update
+from app.store import SHEETS, ensure_dirs, last_backup, load, update
 from app.variants import vary_question
 
 
@@ -41,7 +42,7 @@ def _check_duplicate(db, group, info, materias_used):
         return
     wanted = group.strip().lower()
     candidate = form_meta({"id": "nuevo", "group": group, **info})
-    for other in db["forms"].values():
+    for other in active_forms(db):
         if (other.get("group") or "").strip().lower() != wanted:
             continue
         found = form_meta(other)
@@ -60,18 +61,56 @@ def _check_duplicate(db, group, info, materias_used):
         )
 
 
-def create_diagnostic(group, names, rng, source="auto", materias=None, meta=None):
-    names = [name.strip() for name in names if name and name.strip()]
-    if not names:
-        raise ValueError("Escribe al menos un nombre.")
+def _canon_group(db, name):
+    """«6a» y «6A» son el mismo grupo."""
+    name = " ".join((name or "").split())
+    for known in list_groups(db):
+        if known.lower() == name.lower():
+            return known
+    return name
+
+
+def _register_group(db, name, students):
+    groups = db.setdefault("groups", {})
+    if name not in groups:
+        groups[name] = {"name": name, "students": list(students), "created": _now()}
+    return groups[name]
+
+
+def _pick_questions(db, picked, chosen):
+    """Las preguntas del examen: las que eligió la maestra, o todas las de las materias marcadas."""
+    if picked:
+        byid = {row["id"]: row for row in db["authored"]}
+        if any(item not in byid for item in picked):
+            raise ValueError("Una de las preguntas elegidas ya no existe.")
+        return [byid[item] for item in picked]
+    seeds = list(db["authored"])
+    if chosen:
+        seeds = [item for item in seeds if item.get("materia") in chosen]
+    return seeds
+
+
+def create_diagnostic(group, names, rng, source="auto", materias=None, meta=None, question_ids=None):
+    names = [name.strip() for name in (names or []) if name and name.strip()]
     chosen = [item.strip() for item in (materias or []) if item and item.strip()]
+    picked = [item for item in (question_ids or []) if item]
     info = clean_meta(meta)
-    exam = form_meta({"id": "nuevo", "group": group, **info})
 
     def mutate(db):
+        nonlocal group, names
         db.setdefault("authored", [])
         ensure_materias(db)
-        use_authored = source == "authored" or (source == "auto" and db["authored"])
+        group = _canon_group(db, group)
+        if not group:
+            raise ValueError("Elige el grupo.")
+        if not names:
+            names = list_students(db, group)
+        if not names:
+            raise ValueError("Este grupo todavía no tiene alumnos. Agrégalos primero en «Grupos».")
+        if len(names) > 60:
+            raise ValueError("Un grupo admite hasta 60 alumnos.")
+        exam = form_meta({"id": "nuevo", "group": group, **info})
+        use_authored = bool(picked) or source == "authored" or (source == "auto" and db["authored"])
         if source == "authored" and not db["authored"]:
             raise ValueError("Agrega al menos una pregunta.")
         warnings = []
@@ -79,23 +118,28 @@ def create_diagnostic(group, names, rng, source="auto", materias=None, meta=None
         closed = []
         opened = []
         if use_authored:
-            seeds = list(db["authored"])
-            if chosen:
-                seeds = [item for item in seeds if item.get("materia") in chosen]
+            seeds = _pick_questions(db, picked, chosen)
             closed = [item for item in seeds if item.get("kind", "cerrada") != "abierta"]
             opened = [item for item in seeds if item.get("kind") == "abierta"]
-            if len(closed) > 8:
-                warnings.append("La hoja de burbujas tiene espacio para 8 preguntas.")
-            if len(opened) > 4:
-                warnings.append("La hoja de interpretación tiene espacio para 4 preguntas.")
-            closed = closed[:8]
-            opened = opened[:4]
+            if picked:
+                if len(closed) > 8:
+                    raise ValueError(f"Elegiste {len(closed)} preguntas de opciones y la hoja tiene espacio para 8.")
+                if len(opened) > 4:
+                    raise ValueError(f"Elegiste {len(opened)} preguntas abiertas y la hoja tiene espacio para 4.")
+            else:
+                if len(closed) > 8:
+                    warnings.append("La hoja de burbujas tiene espacio para 8 preguntas.")
+                if len(opened) > 4:
+                    warnings.append("La hoja de interpretación tiene espacio para 4 preguntas.")
+                closed = closed[:8]
+                opened = opened[:4]
             if not closed and not opened:
                 raise ValueError("No hay preguntas en las materias elegidas.")
         else:
             shared = build_questions(rng)
         materias_used = sorted({row["materia"] for row in (closed + opened) if row.get("materia")})
         _check_duplicate(db, group, info, materias_used)
+        _register_group(db, group, names)
         form_id = _new_id(db["forms"])
         db["forms"][form_id] = {
             "id": form_id,
@@ -103,6 +147,7 @@ def create_diagnostic(group, names, rng, source="auto", materias=None, meta=None
             "kind": "diagnostico",
             "created": _now(),
             "questions": [item["prompt"] for item in (shared or closed or opened)],
+            "question_ids": [row["id"] for row in (closed + opened)],
             "materias": materias_used,
             **info,
         }
@@ -111,6 +156,7 @@ def create_diagnostic(group, names, rng, source="auto", materias=None, meta=None
             "bimestre": info["bimestre"],
             "nota_total": info["nota_total"],
         }
+        two = bool(closed and opened)
         created = []
         used = {}
         sheet_ids = []
@@ -131,7 +177,7 @@ def create_diagnostic(group, names, rng, source="auto", materias=None, meta=None
                     form_id,
                     materia_label=_join_materias(closed),
                     label=f"{name} · opciones",
-                    extra=extra,
+                    extra={**extra, "hoja": "1 de 2"} if two else extra,
                 )
                 created.append(_publish(sheet))
                 sheet_ids.append(sheet["id"])
@@ -147,7 +193,7 @@ def create_diagnostic(group, names, rng, source="auto", materias=None, meta=None
                     sheet_format="abierta",
                     materia_label=_join_materias(opened),
                     label=f"{name} · interpretación",
-                    extra=extra,
+                    extra={**extra, "hoja": "2 de 2"} if two else extra,
                 )
                 created.append(_publish(sheet))
                 sheet_ids.append(sheet["id"])
@@ -294,11 +340,41 @@ def create_reinforcement(group, student_name):
     return update(mutate)
 
 
-def grade_photo(image_bgr):
+def check_sheet(db, sheet, form_id=None):
+    """La hoja debe ser de un examen encendido y, si la maestra eligió uno, de ese examen."""
+    form = db["forms"].get(sheet.get("form_id") or "")
+    if form is not None:
+        title = form_meta(form)["titulo_completo"]
+        if form.get("papelera"):
+            raise GradeError(f"{title} está en la papelera. Restáuralo en Exámenes para calificarlo.")
+        if form.get("apagado"):
+            raise GradeError(f"{title} está apagado. Enciéndelo en Exámenes para seguir calificando.")
+    if form_id and (form is None or form["id"] != form_id):
+        name = form_meta(form)["titulo_completo"] if form else "refuerzo"
+        raise GradeError(f"Esa hoja es de «{name}», no del examen que estás calificando.")
+    return form
+
+
+def sheet_status(sheet_id, form_id=None):
+    """Respuesta rápida para la cámara en vivo: de quién es la hoja y si se puede calificar."""
+    db = load()
+    sheet = db["sheets"].get(sheet_id)
+    if sheet is None:
+        return {"ok": False, "mensaje": "Ese QR no es de esta laptop."}
+    try:
+        check_sheet(db, sheet, form_id)
+    except GradeError as exc:
+        return {"ok": False, "student_name": sheet["student_name"], "mensaje": str(exc)}
+    return {"ok": True, "sheet_id": sheet_id, "student_name": sheet["student_name"], "hoja": sheet.get("hoja") or ""}
+
+
+def grade_photo(image_bgr, form_id=None):
     aligned, sheet_id = read_photo(image_bgr)
-    preview = load().get("sheets", {}).get(sheet_id)
+    db = load()
+    preview = db.get("sheets", {}).get(sheet_id)
     if preview is None:
         raise GradeError("Ese QR no está en esta laptop. Genera la hoja desde aquí antes de calificarla.")
+    check_sheet(db, preview, form_id)
     if preview.get("format") == "abierta":
         return {
             "needs_review": True,
@@ -427,11 +503,52 @@ def exam_summary(sheet_id):
     }
 
 
-def delete_exam(form_id):
+def _form_or_fail(db, form_id):
+    form = db["forms"].get(form_id)
+    if form is None:
+        raise ValueError("Ese examen ya no existe.")
+    return form
+
+
+def trash_exam(form_id):
+    """Eliminar manda el examen a la papelera. Se puede restaurar."""
+
     def mutate(db):
-        form = db["forms"].pop(form_id, None)
-        if form is None:
-            raise ValueError("Ese examen ya no existe.")
+        _form_or_fail(db, form_id)["papelera"] = _now()
+        return {"ok": True}
+
+    return update(mutate)
+
+
+delete_exam = trash_exam
+
+
+def restore_exam(form_id):
+    def mutate(db):
+        form = _form_or_fail(db, form_id)
+        form.pop("papelera", None)
+        return {"ok": True}
+
+    return update(mutate)
+
+
+def set_exam_off(form_id, off):
+    """Un examen apagado ya no recibe hojas en la cámara, pero conserva sus notas."""
+
+    def mutate(db):
+        form = _form_or_fail(db, form_id)
+        form["apagado"] = bool(off)
+        return {"ok": True, "apagado": bool(off)}
+
+    return update(mutate)
+
+
+def purge_exam(form_id):
+    """Borra el examen, sus hojas y sus notas para siempre."""
+
+    def mutate(db):
+        _form_or_fail(db, form_id)
+        db["forms"].pop(form_id)
         ids = {sid for sid, sheet in db["sheets"].items() if sheet.get("form_id") == form_id}
         for sid in ids:
             db["sheets"].pop(sid, None)
@@ -446,6 +563,108 @@ def delete_exam(form_id):
         return {"ok": True}
 
     return update(mutate)
+
+
+def _group_rows(db):
+    """Lista de grupos. Los grupos de versiones anteriores se registran aquí la primera vez."""
+    registry = db.setdefault("groups", {})
+    known = {name.lower() for name in registry}
+    for form in db["forms"].values():
+        name = (form.get("group") or "").strip()
+        if name and name.lower() not in known:
+            students = sorted(
+                {sheet["student_name"] for sheet in db["sheets"].values() if sheet.get("form_id") == form["id"]},
+                key=str.lower,
+            )
+            registry[name] = {"name": name, "students": students, "created": form.get("created") or _now()}
+            known.add(name.lower())
+    rows = []
+    for name in sorted(registry, key=str.lower):
+        exams = [f for f in active_forms(db) if (f.get("group") or "").strip().lower() == name.lower()]
+        rows.append({"name": name, "students": list(registry[name].get("students") or []), "exams": len(exams)})
+    return rows
+
+
+def list_my_groups():
+    return update(lambda db: {"groups": _group_rows(db)})
+
+
+def save_group(name, students):
+    name = " ".join((name or "").split())
+    if not 1 <= len(name) <= 40:
+        raise ValueError("Escribe el nombre del grupo, por ejemplo 6A.")
+    clean, seen = [], set()
+    for item in students or []:
+        item = " ".join(str(item).split())[:80]
+        if item and item.lower() not in seen:
+            seen.add(item.lower())
+            clean.append(item)
+    if len(clean) > 60:
+        raise ValueError("Un grupo admite hasta 60 alumnos.")
+
+    def mutate(db):
+        _group_rows(db)
+        key = _canon_group(db, name)
+        created = (db["groups"].get(key) or {}).get("created") or _now()
+        db["groups"][key] = {"name": key, "students": clean, "created": created}
+        return {"ok": True, "name": key, "students": clean}
+
+    return update(mutate)
+
+
+def delete_group(name):
+    def mutate(db):
+        _group_rows(db)
+        key = _canon_group(db, name)
+        if any((f.get("group") or "").strip().lower() == key.lower() for f in active_forms(db)):
+            raise ValueError("Este grupo tiene exámenes. Elimínalos primero en «Exámenes».")
+        db["groups"].pop(key, None)
+        return {"ok": True}
+
+    return update(mutate)
+
+
+def overview():
+    """Lo que ya hay y cuál es el siguiente paso."""
+
+    def read(db):
+        rows = _group_rows(db)
+        students = sum(len(row["students"]) for row in rows)
+        questions = len(db.get("authored") or [])
+        latest = latest_by_sheet(db)
+        exams = active_forms(db)
+        pending, pending_titles = 0, []
+        for form in exams:
+            if form.get("apagado"):
+                continue
+            meta, grades = exam_rows(db, form, latest)
+            missing = sum(1 for row in grades if row["state"] != "listo")
+            if missing:
+                pending += missing
+                pending_titles.append(f"{meta['titulo_completo']} ({meta['group']})")
+        if not rows or students == 0:
+            step = {"paso": "grupos", "texto": "Empieza creando tu grupo y poniendo la lista de alumnos.", "enlace": "/grupos", "boton": "Crear mi grupo"}
+        elif questions == 0:
+            step = {"paso": "preguntas", "texto": "Escribe las preguntas de tu examen con su respuesta correcta.", "enlace": "/preguntas", "boton": "Escribir preguntas"}
+        elif not exams:
+            step = {"paso": "examenes", "texto": "Crea tu primer examen: elige el bimestre, si es parcial o final, y la nota total.", "enlace": "/examenes", "boton": "Crear un examen"}
+        elif pending:
+            where = ", ".join(pending_titles[:2]) + ("…" if len(pending_titles) > 2 else "")
+            step = {"paso": "calificar", "texto": f"Quedan {pending} alumnos por calificar en {where}.", "enlace": "/calificar", "boton": "Calificar con la cámara"}
+        else:
+            step = {"paso": "notas", "texto": "Todo está calificado. Revisa las notas del año.", "enlace": "/notas", "boton": "Ver notas del año"}
+        return {
+            "siguiente": step,
+            "grupos": len(rows),
+            "alumnos": students,
+            "preguntas": questions,
+            "examenes": len(exams),
+            "apagados": sum(1 for form in exams if form.get("apagado")),
+            "pendientes": pending,
+            "copia": last_backup(),
+        }
+
+    return update(read)
 
 
 def _write_group_pdf(form_id, sheet_ids):
@@ -467,7 +686,12 @@ def list_exams():
     def read(db):
         latest = latest_by_sheet(db)
         exams = []
+        trash = []
         for form in db.get("forms", {}).values():
+            if form.get("papelera"):
+                meta = form_meta(form)
+                trash.append({"id": form["id"], "titulo_completo": meta["titulo_completo"], "group": meta["group"], "papelera": form["papelera"]})
+                continue
             sheets = [sheet for sheet in db["sheets"].values() if sheet.get("form_id") == form["id"]]
             sheets.sort(key=lambda sheet: (sheet["student_name"], sheet.get("format") == "abierta"))
             sheet_ids = [sheet["id"] for sheet in sheets]
@@ -480,6 +704,7 @@ def list_exams():
                 {
                     **meta,
                     "students": sorted({sheet["student_name"] for sheet in sheets}),
+                    "question_ids": list(form.get("question_ids") or []),
                     "pdf": pdf,
                     "preview": f"/archivos/{sheets[0]['id']}.png" if sheets else None,
                     "grades": rows,
@@ -487,7 +712,8 @@ def list_exams():
                 }
             )
         exams.sort(key=lambda exam: (exam["group"].lower(),) + sort_key(exam))
-        return {"exams": exams, "groups": list_groups(db)}
+        trash.sort(key=lambda item: item["papelera"], reverse=True)
+        return {"exams": exams, "trash": trash, "groups": list_groups(db)}
 
     return update(read)
 
@@ -497,20 +723,19 @@ def groups_and_students(group=None):
     return {"groups": list_groups(db), "students": list_students(db, group) if group else []}
 
 
-def preview_diagnostic(group, names, rng, materias=None, meta=None):
-    names = [name.strip() for name in names if name and name.strip()]
-    if not names:
-        raise ValueError("Escribe al menos un nombre.")
+def preview_diagnostic(group, names, rng, materias=None, meta=None, question_ids=None):
+    names = [name.strip() for name in (names or []) if name and name.strip()]
     chosen = [item.strip() for item in (materias or []) if item and item.strip()]
+    picked = [item for item in (question_ids or []) if item]
     info = clean_meta(meta)
-    exam = form_meta({"id": "vista", "group": group, **info})
     db = load()
     ensure_materias(db)
-    name = names[0]
-    if db.get("authored"):
-        seeds = list(db["authored"])
-        if chosen:
-            seeds = [item for item in seeds if item.get("materia") in chosen]
+    group = _canon_group(db, group) or "Grupo"
+    exam = form_meta({"id": "vista", "group": group, **info})
+    roster = names or list_students(db, group)
+    name = roster[0] if roster else "Nombre del alumno"
+    if db.get("authored") or picked:
+        seeds = _pick_questions(db, picked, chosen)
         closed = [item for item in seeds if item.get("kind", "cerrada") != "abierta"][:8]
         opened = [item for item in seeds if item.get("kind") == "abierta"][:4]
         if not closed and not opened:
@@ -550,7 +775,7 @@ def class_report(group, form_id=None):
     db = load()
     latest = latest_by_sheet(db)
     wanted = group.strip().lower()
-    forms = [form for form in db["forms"].values() if (form.get("group") or "").strip().lower() == wanted]
+    forms = [form for form in active_forms(db) if (form.get("group") or "").strip().lower() == wanted]
     graded_forms = [
         form
         for form in forms

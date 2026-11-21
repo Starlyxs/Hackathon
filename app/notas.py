@@ -94,6 +94,8 @@ def form_meta(form):
         "nota_total": _num(nota_total) if nota_total else 100.0,
         "materias": list(form.get("materias") or []),
         "suma": tipo != "diagnostico" and bimestre in BIMESTRES,
+        "apagado": bool(form.get("apagado")),
+        "papelera": form.get("papelera") or "",
     }
 
 
@@ -144,14 +146,20 @@ def exam_rows(db, form, latest=None):
     return meta, rows
 
 
+def active_forms(db):
+    return [form for form in db["forms"].values() if not form.get("papelera")]
+
+
 def _group_forms(db, group):
     wanted = (group or "").strip().lower()
-    return [form for form in db["forms"].values() if (form.get("group") or "").strip().lower() == wanted]
+    return [form for form in active_forms(db) if (form.get("group") or "").strip().lower() == wanted]
 
 
 def list_groups(db):
     names = {}
-    for form in db["forms"].values():
+    for name in db.get("groups", {}):
+        names.setdefault(name.lower(), name)
+    for form in active_forms(db):
         name = (form.get("group") or "").strip()
         if name:
             names.setdefault(name.lower(), name)
@@ -159,6 +167,11 @@ def list_groups(db):
 
 
 def list_students(db, group):
+    """La lista que se guardó en Grupos. Si el grupo es antiguo, la que sale de sus hojas."""
+    wanted = (group or "").strip().lower()
+    for name, row in db.get("groups", {}).items():
+        if name.lower() == wanted and row.get("students"):
+            return list(row["students"])
     ids = {form["id"] for form in _group_forms(db, group)}
     names = {}
     for sheet in db["sheets"].values():

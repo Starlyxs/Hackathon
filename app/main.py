@@ -5,13 +5,13 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from app.demo import simulate_class
-from app.grade import GradeError
+from app.grade import GradeError, quick_sheet_id
 from app.notas import csv_grid, csv_yearly, grid, yearly
 from app.service import (
     add_materia,
@@ -19,15 +19,23 @@ from app.service import (
     class_report,
     create_diagnostic,
     create_reinforcement,
-    delete_exam,
+    delete_group,
     delete_question,
     exam_summary,
     grade_photo,
     groups_and_students,
     list_exams,
+    list_my_groups,
     list_questions,
+    overview,
     preview_diagnostic,
+    purge_exam,
+    restore_exam,
+    save_group,
     save_interpretation,
+    set_exam_off,
+    sheet_status,
+    trash_exam,
 )
 from app.store import SHEETS, ensure_dirs, load
 from app.variants import preview_variants
@@ -40,10 +48,13 @@ app.mount("/archivos", StaticFiles(directory=str(SHEETS)), name="archivos")
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
 PASOS = (
-    ("preguntas", "/preguntas", "1. Preguntas"),
-    ("examenes", "/examenes", "2. Exámenes"),
-    ("calificar", "/", "3. Calificar"),
-    ("notas", "/notas", "4. Notas del año"),
+    ("inicio", "/", "Inicio"),
+    ("grupos", "/grupos", "1. Grupos"),
+    ("preguntas", "/preguntas", "2. Preguntas"),
+    ("examenes", "/examenes", "3. Exámenes"),
+    ("calificar", "/calificar", "4. Calificar"),
+    ("notas", "/notas", "5. Notas del año"),
+    ("analisis", "/analisis", "Análisis"),
 )
 
 
@@ -59,8 +70,9 @@ def html_page(name, active=""):
 
 class DiagnosticIn(BaseModel):
     group: str = Field(min_length=1, max_length=40)
-    names: list[str]
+    names: list[str] = []
     materias: list[str] = []
+    question_ids: list[str] = []
     bimestre: int = 1
     tipo: str = "parcial"
     numero: int = 1
@@ -75,6 +87,15 @@ class DiagnosticIn(BaseModel):
             "nombre": self.nombre,
             "nota_total": self.nota_total,
         }
+
+
+class GroupIn(BaseModel):
+    name: str = Field(min_length=1, max_length=40)
+    students: list[str] = []
+
+
+class OffIn(BaseModel):
+    off: bool = True
 
 
 class QuestionIn(BaseModel):
@@ -115,7 +136,48 @@ def with_context(result):
 
 @app.get("/")
 def home():
-    return html_page("index.html", "calificar")
+    return html_page("inicio.html", "inicio")
+
+
+@app.get("/calificar")
+def grade_page():
+    return html_page("calificar.html", "calificar")
+
+
+@app.get("/grupos")
+def groups_page():
+    return html_page("grupos.html", "grupos")
+
+
+@app.get("/analisis")
+def analysis_page():
+    return html_page("analisis.html", "analisis")
+
+
+@app.get("/api/estado")
+def get_overview():
+    return overview()
+
+
+@app.get("/api/mis-grupos")
+def get_my_groups():
+    return list_my_groups()
+
+
+@app.post("/api/mis-grupos")
+def post_group(body: GroupIn):
+    try:
+        return save_group(body.name, body.students)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.delete("/api/mis-grupos/{name}")
+def remove_group(name: str):
+    try:
+        return delete_group(name)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
 
 
 @app.get("/preguntas")
@@ -141,10 +203,15 @@ def get_exams():
 @app.post("/api/vista-examen")
 def post_exam_preview(body: DiagnosticIn):
     names = [name.strip() for name in body.names if name.strip()]
-    if not names:
-        raise HTTPException(400, "Escribe al menos un nombre para la vista previa.")
     try:
-        return preview_diagnostic(body.group.strip(), names, random.Random(), materias=body.materias, meta=body.meta())
+        return preview_diagnostic(
+            body.group.strip(),
+            names,
+            random.Random(),
+            materias=body.materias,
+            meta=body.meta(),
+            question_ids=body.question_ids,
+        )
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
 
@@ -190,26 +257,44 @@ def remove_question(question_id: str):
 @app.post("/api/diagnostico")
 def post_diagnostic(body: DiagnosticIn):
     names = [name.strip() for name in body.names if name.strip()]
-    if not names or len(names) > 40:
-        raise HTTPException(400, "Escribe entre 1 y 40 nombres.")
     try:
         return create_diagnostic(
-            body.group.strip(), names, random.Random(), materias=body.materias, meta=body.meta()
+            body.group.strip(),
+            names,
+            random.Random(),
+            materias=body.materias,
+            meta=body.meta(),
+            question_ids=body.question_ids,
         )
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
 
 
-@app.post("/api/calificar")
-async def post_grade(file: UploadFile = File(...)):
+async def read_image(file):
     raw = await file.read()
     if not raw:
         raise HTTPException(400, "La imagen llegó vacía.")
     image = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR)
     if image is None:
         raise HTTPException(400, "Ese archivo no es una imagen.")
+    return image
+
+
+@app.post("/api/escanear")
+async def post_scan(file: UploadFile = File(...), form_id: str = Form("")):
+    """Cuadro de la cámara en vivo: ¿hay una hoja a la vista y de quién es?"""
+    image = await read_image(file)
+    sheet_id = quick_sheet_id(image)
+    if sheet_id is None:
+        return {"estado": "buscando"}
+    return {"estado": "qr", **sheet_status(sheet_id, form_id or None)}
+
+
+@app.post("/api/calificar")
+async def post_grade(file: UploadFile = File(...), form_id: str = Form("")):
+    image = await read_image(file)
     try:
-        result = grade_photo(image)
+        result = grade_photo(image, form_id or None)
     except GradeError as exc:
         raise HTTPException(400, str(exc)) from exc
     return with_context(result)
@@ -273,12 +358,31 @@ def get_csv(group: str, vista: str = "cuadro", bimestre: str = "", modo: str = "
     )
 
 
-@app.delete("/api/examenes/{form_id}")
-def remove_exam(form_id: str):
+def _exam_action(action, *args):
     try:
-        return delete_exam(form_id)
+        return action(*args)
     except ValueError as exc:
         raise HTTPException(404, str(exc)) from exc
+
+
+@app.delete("/api/examenes/{form_id}")
+def remove_exam(form_id: str):
+    return _exam_action(trash_exam, form_id)
+
+
+@app.post("/api/examenes/{form_id}/restaurar")
+def undo_remove_exam(form_id: str):
+    return _exam_action(restore_exam, form_id)
+
+
+@app.delete("/api/examenes/{form_id}/definitivo")
+def purge_exam_route(form_id: str):
+    return _exam_action(purge_exam, form_id)
+
+
+@app.post("/api/examenes/{form_id}/apagar")
+def switch_exam(form_id: str, body: OffIn):
+    return _exam_action(set_exam_off, form_id, body.off)
 
 
 @app.post("/api/refuerzo")

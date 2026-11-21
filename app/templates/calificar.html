@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/logo.png">
+  <link rel="stylesheet" href="/static/app.css">
+  <title>Calificar · Hojas en papel</title>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="/static/logo.png" alt="">
+      <h1>Hojas en papel</h1>
+    </div>
+    <!--NAV-->
+    <p class="lede">Elige el examen, enciende la cámara y ve pasando las hojas. El programa las lee solo y suena un aviso con cada una.</p>
+  </header>
+  <main>
+    <p id="no-exams" class="warn" hidden>No hay exámenes encendidos en este grupo. Créalos o enciéndelos en <a href="/examenes">Exámenes</a>.</p>
+
+    <section>
+      <div class="fields">
+        <div>
+          <label for="group">Grupo</label>
+          <select id="group"></select>
+        </div>
+        <div>
+          <label for="examen">Examen que estás calificando</label>
+          <select id="examen"></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <button id="cam" type="button">Encender cámara</button>
+        <button id="shoot" type="button" class="secondary" disabled>Capturar ahora</button>
+        <label class="file-btn secondary" style="background:transparent;color:var(--green);border:1px solid var(--green);">Subir foto<input id="file" type="file" accept="image/*" hidden></label>
+      </div>
+      <div id="banner" class="banner">Enciende la cámara para empezar.</div>
+      <video id="video" autoplay playsinline muted hidden></video>
+      <canvas id="frame"></canvas>
+      <p id="grade-error" class="error"></p>
+      <div id="grade"></div>
+      <p class="lede">El QR tiene que verse grande, quieto y sin flash. Desde un celular en la red puedes subir la foto.</p>
+    </section>
+
+    <section>
+      <h2>Cuadro de notas</h2>
+      <div class="row" style="justify-content: space-between; margin-top:0;">
+        <div class="chips" id="bimestres"></div>
+        <div class="row" style="margin: 0;">
+          <select id="modo" style="width:auto;">
+            <option value="real">Nota real</option>
+            <option value="relativa">Nota relativa</option>
+          </select>
+          <a id="csv" class="button secondary" href="#">Descargar para Excel</a>
+        </div>
+      </div>
+      <p class="lede" id="explica"></p>
+      <div id="grid"></div>
+      <p id="grid-error" class="error"></p>
+    </section>
+  </main>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const groupSelect = $("#group");
+    const examSelect = $("#examen");
+    const gradeBox = $("#grade");
+    const gradeError = $("#grade-error");
+    const video = $("#video");
+    const frame = $("#frame");
+    const scanCanvas = document.createElement("canvas");
+    let stream = null;
+    let timer = null;
+    let busy = false;
+    let paused = false;
+    let streak = 0;
+    let streakId = "";
+    let lastGraded = "";
+    let missing = 0;
+    let lastBad = "";
+    let audio = null;
+    let bimestre = "";
+    let bimestresDisponibles = [];
+
+    const fmt = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
+    const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+    const group = () => groupSelect.value;
+    const examId = () => examSelect.value;
+
+    async function readError(response) {
+      try {
+        const body = await response.json();
+        if (Array.isArray(body.detail)) return "Revisa los datos e inténtalo de nuevo.";
+        return body.detail || "No se pudo completar.";
+      } catch {
+        return "No se pudo completar.";
+      }
+    }
+
+    function banner(kind, title, detail = "") {
+      const box = $("#banner");
+      box.className = `banner ${kind}`;
+      box.innerHTML = `<strong>${esc(title)}</strong>${detail ? esc(detail) : ""}`;
+    }
+
+    function beep(ok) {
+      try {
+        if (!audio) return;
+        const osc = audio.createOscillator();
+        const gain = audio.createGain();
+        osc.frequency.value = ok ? 880 : 220;
+        gain.gain.value = 0.08;
+        osc.connect(gain);
+        gain.connect(audio.destination);
+        osc.start();
+        osc.stop(audio.currentTime + (ok ? 0.15 : 0.35));
+      } catch { /* sin sonido */ }
+    }
+
+    /* ---------- grupos y exámenes ---------- */
+    async function loadGroups() {
+      const body = await (await fetch("/api/grupos")).json();
+      const wanted = localStorage.getItem("hp_group") || "";
+      groupSelect.innerHTML = body.groups.map((name) => `<option>${esc(name)}</option>`).join("");
+      if (body.groups.includes(wanted)) groupSelect.value = wanted;
+    }
+
+    async function loadExams() {
+      const body = await (await fetch("/api/examenes")).json();
+      const open = body.exams.filter((exam) => exam.group === group() && !exam.apagado);
+      const previous = examSelect.value || localStorage.getItem("hp_exam") || "";
+      examSelect.innerHTML = open.map((exam) =>
+        `<option value="${exam.id}">${esc(exam.titulo_completo)} · ${exam.calificados} de ${exam.students.length} calificados</option>`).join("");
+      const pending = open.find((exam) => exam.calificados < exam.students.length);
+      const pick = open.find((exam) => exam.id === previous) || pending || open[0];
+      if (pick) examSelect.value = pick.id;
+      $("#no-exams").hidden = open.length > 0;
+      $("#cam").disabled = open.length === 0;
+    }
+
+    /* ---------- resultado de una hoja ---------- */
+    function renderGrade(result) {
+      if (result.needs_review) {
+        renderReview(result);
+        return;
+      }
+      const items = result.items.map((item) => {
+        const mark = item.correct ? "Bien" : (item.status === "vacia" ? "En blanco" : "Revisar");
+        return `<li>${mark}. ${esc(item.prompt)}</li>`;
+      }).join("");
+      const exam = result.exam;
+      let nota = "";
+      if (exam) {
+        nota = exam.state === "listo"
+          ? `Nota ${fmt(exam.nota_real)} de ${fmt(exam.nota_total)}`
+          : "Falta calificar otra hoja de este alumno para dar la nota.";
+      }
+      gradeBox.innerHTML = `
+        <p class="score">${esc(result.student_name)}: ${fmt(result.score)}/${fmt(result.total)} aciertos</p>
+        <p class="lede">${exam ? esc(exam.titulo) + " · " : ""}${nota}</p>
+        <details><summary>Ver respuestas</summary><ul>${items}</ul></details>`;
+      return exam;
+    }
+
+    function renderReview(result) {
+      paused = true;
+      const marks = new Array(result.items.length);
+      banner("look", `Hoja de ${result.student_name}`, "Tiene preguntas abiertas: lee lo que escribió y marca cada una.");
+      gradeBox.innerHTML = `
+        <p class="score">${esc(result.student_name)}</p>
+        ${result.items.map((item, index) => `
+          <div class="card">
+            <p>${esc(item.prompt)}</p>
+            <p class="lede">Se espera: ${esc(item.criterion)}</p>
+            <div class="row">
+              <button type="button" data-i="${index}" data-mark="logrado">Logrado</button>
+              <button type="button" class="secondary" data-i="${index}" data-mark="parcial">Parcial</button>
+              <button type="button" class="secondary" data-i="${index}" data-mark="aun_no">Aún no</button>
+            </div>
+          </div>`).join("")}
+        <div class="row"><button type="button" id="save-review" disabled>Guardar y seguir</button></div>`;
+      gradeBox.querySelectorAll("button[data-mark]").forEach((button) => {
+        button.onclick = () => {
+          marks[Number(button.dataset.i)] = button.dataset.mark;
+          button.parentElement.querySelectorAll("button").forEach((peer) => {
+            peer.classList.toggle("secondary", peer !== button);
+          });
+          $("#save-review").disabled = marks.some((mark) => !mark);
+        };
+      });
+      $("#save-review").onclick = async () => {
+        const response = await fetch("/api/interpretar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sheet_id: result.sheet_id, marks }),
+        });
+        if (!response.ok) {
+          gradeError.textContent = await readError(response);
+          return;
+        }
+        const saved = await response.json();
+        const exam = renderGrade(saved);
+        lastGraded = result.sheet_id;
+        paused = false;
+        success(saved, exam);
+        refreshAll();
+      };
+    }
+
+    function success(result, exam) {
+      const nota = exam && exam.state === "listo" ? `Nota ${fmt(exam.nota_real)} de ${fmt(exam.nota_total)}` : `${fmt(result.score)}/${fmt(result.total)} aciertos`;
+      banner("ok", `${result.student_name} ✓`, `${nota}. Pasa la siguiente hoja.`);
+      beep(true);
+    }
+
+    async function sendForGrade(blob, name) {
+      const data = new FormData();
+      data.append("file", blob, name);
+      data.append("form_id", examId());
+      return fetch("/api/calificar", { method: "POST", body: data });
+    }
+
+    async function gradeFile(file) {
+      gradeError.textContent = "";
+      const response = await sendForGrade(file, file.name || "captura.jpg");
+      if (!response.ok) {
+        const message = await readError(response);
+        gradeError.textContent = message;
+        banner("bad", "No se pudo calificar", message);
+        beep(false);
+        return;
+      }
+      const result = await response.json();
+      const exam = renderGrade(result);
+      if (!result.needs_review) {
+        lastGraded = result.sheet_id;
+        success(result, exam);
+        refreshAll();
+      }
+    }
+
+    /* ---------- cámara en vivo ---------- */
+    const toBlob = (canvas, quality) => new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+
+    async function tick() {
+      if (!stream || busy || paused || !video.videoWidth || !examId()) return;
+      busy = true;
+      try {
+        const width = Math.min(960, video.videoWidth);
+        const height = Math.round(video.videoHeight * width / video.videoWidth);
+        scanCanvas.width = width;
+        scanCanvas.height = height;
+        scanCanvas.getContext("2d").drawImage(video, 0, 0, width, height);
+        const data = new FormData();
+        data.append("file", await toBlob(scanCanvas, 0.7), "scan.jpg");
+        data.append("form_id", examId());
+        const response = await fetch("/api/escanear", { method: "POST", body: data });
+        if (!response.ok) {
+          banner("bad", "No pude leer la imagen", await readError(response));
+          return;
+        }
+        const seen = await response.json();
+        if (seen.estado === "buscando") {
+          streak = 0;
+          streakId = "";
+          lastBad = "";
+          missing += 1;
+          if (missing >= 2) lastGraded = "";
+          banner("look", "Buscando la hoja…", "Muestra la hoja a la cámara con el QR bien visible.");
+          return;
+        }
+        missing = 0;
+        if (!seen.ok) {
+          streak = 0;
+          banner("bad", seen.student_name ? `Hoja de ${seen.student_name}` : "Hoja no válida", seen.mensaje);
+          if (lastBad !== seen.mensaje) beep(false);
+          lastBad = seen.mensaje;
+          return;
+        }
+        lastBad = "";
+        if (seen.sheet_id === lastGraded) {
+          banner("ok", `${seen.student_name} ya está calificada`, "Pasa la siguiente hoja.");
+          return;
+        }
+        streak = seen.sheet_id === streakId ? streak + 1 : 1;
+        streakId = seen.sheet_id;
+        if (streak < 2) {
+          banner("look", `Veo la hoja de ${seen.student_name}`, "Sostenla quieta un momento…");
+          return;
+        }
+        await gradeLive(seen);
+      } catch {
+        banner("bad", "Se perdió la conexión con el programa.", "Revisa que la ventana negra siga abierta.");
+      } finally {
+        busy = false;
+      }
+    }
+
+    async function gradeLive(seen) {
+      banner("look", `Calificando a ${seen.student_name}…`);
+      frame.width = video.videoWidth;
+      frame.height = video.videoHeight;
+      frame.getContext("2d").drawImage(video, 0, 0);
+      const response = await sendForGrade(await toBlob(frame, 0.92), "captura.jpg");
+      streak = 0;
+      if (!response.ok) {
+        const message = await readError(response);
+        banner("bad", `No pude calificar a ${seen.student_name}`, message);
+        gradeError.textContent = "";
+        beep(false);
+        lastBad = message;
+        return;
+      }
+      const result = await response.json();
+      const exam = renderGrade(result);
+      if (!result.needs_review) {
+        lastGraded = result.sheet_id;
+        success(result, exam);
+        refreshAll();
+      }
+    }
+
+    $("#cam").onclick = async () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        stream = null;
+        clearInterval(timer);
+        video.hidden = true;
+        $("#cam").textContent = "Encender cámara";
+        $("#shoot").disabled = true;
+        banner("", "Cámara apagada.");
+        return;
+      }
+      gradeError.textContent = "";
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false,
+        });
+      } catch {
+        gradeError.textContent = "Esta laptop no dejó usar la cámara. Sube una foto de la hoja.";
+        return;
+      }
+      video.hidden = false;
+      video.srcObject = stream;
+      $("#cam").textContent = "Apagar cámara";
+      $("#shoot").disabled = false;
+      paused = false;
+      streak = 0;
+      lastGraded = "";
+      banner("look", "Buscando la hoja…", "Muestra la hoja a la cámara con el QR bien visible.");
+      timer = setInterval(tick, 650);
+    };
+
+    $("#shoot").onclick = () => {
+      frame.width = video.videoWidth;
+      frame.height = video.videoHeight;
+      frame.getContext("2d").drawImage(video, 0, 0);
+      frame.toBlob((blob) => gradeFile(blob), "image/jpeg", 0.92);
+    };
+
+    $("#file").onchange = () => {
+      const file = $("#file").files[0];
+      if (file) gradeFile(file);
+      $("#file").value = "";
+    };
+
+    /* ---------- cuadro de notas ---------- */
+    function chips() {
+      const box = $("#bimestres");
+      const options = [["", "Todos"], ["1", "Bimestre 1"], ["2", "Bimestre 2"], ["3", "Bimestre 3"], ["4", "Bimestre 4"]];
+      if (bimestresDisponibles.includes(0)) options.push(["0", "Sin bimestre"]);
+      box.innerHTML = options.map(([value, label]) =>
+        `<button type="button" data-b="${value}" class="${value === bimestre ? "on" : ""}">${label}</button>`).join("");
+      box.querySelectorAll("button").forEach((button) => {
+        button.onclick = () => { bimestre = button.dataset.b; loadGrid(); };
+      });
+    }
+
+    function renderGrid(data) {
+      const modo = $("#modo").value;
+      const key = modo === "relativa" ? "nota_relativa" : "nota_real";
+      const totalKey = modo === "relativa" ? "total_relativa" : "total_real";
+      const avgKey = modo === "relativa" ? "promedio_relativa" : "promedio_real";
+      $("#explica").textContent = modo === "relativa"
+        ? "Nota relativa: el mejor del examen se lleva la nota completa y los demás se comparan con él."
+        : "Nota real: los puntos que sacó el alumno sobre la nota total del examen.";
+      const box = $("#grid");
+      if (!data.exams.length) {
+        box.innerHTML = `<div class="empty">${group() ? "No hay exámenes en esta selección." : "Todavía no hay exámenes."} Créalos en <a href="/examenes">Exámenes</a>.</div>`;
+        return;
+      }
+      const head = data.exams.map((exam) =>
+        `<th title="${esc(exam.materias.join(", "))}">${esc(exam.titulo)}<small>B${exam.bimestre || "–"} · de ${fmt(exam.nota_total)}${exam.apagado ? " · apagado" : ""}</small></th>`).join("");
+      const rows = data.students.map((student) => {
+        const cells = data.exams.map((exam) => {
+          const cell = student.cells[exam.id];
+          if (!cell || cell.state === "pendiente") return `<td class="pend">—</td>`;
+          if (cell.state === "parcial") return `<td class="pend" title="Falta calificar otra hoja de este alumno">…</td>`;
+          const value = cell[key];
+          const low = value < exam.nota_total * 0.6 ? " low" : "";
+          return `<td class="${low}" title="${fmt(cell.score)} de ${fmt(cell.total)} aciertos">${fmt(value)}</td>`;
+        }).join("");
+        return `<tr><td>${esc(student.student_name)}</td>${cells}<td class="total">${fmt(student[totalKey])}${student.faltan ? " *" : ""}</td></tr>`;
+      }).join("");
+      const foot = data.exams.map((exam) => `<td>${fmt(exam[avgKey])}</td>`).join("");
+      box.innerHTML = `
+        <div class="sheet-wrap"><table class="xl">
+          <thead><tr><th>Alumno</th>${head}<th class="total">Total<small>de ${fmt(data.max_total)}</small></th></tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr><td>Promedio</td>${foot}<td></td></tr></tfoot>
+        </table></div>
+        <p class="lede">— sin calificar. … falta una hoja del alumno. * al total le faltan exámenes por calificar. En rojo, menos del 60% de la nota del examen. El diagnóstico no suma al total.</p>`;
+    }
+
+    function updateCsv() {
+      const q = new URLSearchParams({ group: group(), modo: $("#modo").value });
+      if (bimestre) q.set("bimestre", bimestre);
+      $("#csv").href = `/api/notas.csv?${q}`;
+    }
+
+    async function loadGrid() {
+      $("#grid-error").textContent = "";
+      if (!group()) {
+        renderGrid({ exams: [], students: [] });
+        return;
+      }
+      const q = new URLSearchParams({ group: group() });
+      if (bimestre) q.set("bimestre", bimestre);
+      const response = await fetch(`/api/notas?${q}`);
+      if (!response.ok) {
+        $("#grid-error").textContent = await readError(response);
+        return;
+      }
+      const data = await response.json();
+      bimestresDisponibles = data.bimestres;
+      chips();
+      updateCsv();
+      renderGrid(data);
+    }
+
+    async function refreshAll() {
+      await loadGrid();
+      const keep = examSelect.value;
+      await loadExams();
+      if ([...examSelect.options].some((option) => option.value === keep)) examSelect.value = keep;
+    }
+
+    groupSelect.onchange = async () => {
+      localStorage.setItem("hp_group", group());
+      bimestre = "";
+      examSelect.value = "";
+      await loadExams();
+      loadGrid();
+    };
+    examSelect.onchange = () => {
+      localStorage.setItem("hp_exam", examId());
+      lastGraded = "";
+      streak = 0;
+    };
+    $("#modo").onchange = loadGrid;
+
+    (async () => {
+      await loadGroups();
+      await loadExams();
+      loadGrid();
+    })();
+  </script>
+</body>
+</html>

@@ -152,6 +152,92 @@ def check_notas_y_bimestres():
     print("Notas: nota total, relativa, duplicados bloqueados y resumen por bimestre.")
 
 
+def check_grupos_apagar_papelera():
+    import random
+
+    from app.grade import quick_sheet_id
+    from app.service import (
+        create_diagnostic,
+        delete_group,
+        list_my_groups,
+        overview,
+        restore_exam,
+        save_group,
+        set_exam_off,
+        sheet_status,
+        trash_exam,
+    )
+
+    group = f"grupo-{random.randrange(10**6)}"
+    save_group(group, ["Ana", "Luis", "ana", "  María  "])
+    mine = next(row for row in list_my_groups()["groups"] if row["name"] == group)
+    if mine["students"] != ["Ana", "Luis", "María"]:
+        raise SystemExit(f"La lista del grupo salió mal: {mine['students']}")
+    save_group(group.upper(), ["Ana", "Luis", "María"])
+    if sum(1 for row in list_my_groups()["groups"] if row["name"].lower() == group.lower()) != 1:
+        raise SystemExit("Un grupo con otras mayúsculas se creó como grupo distinto.")
+
+    bank = load()["authored"]
+    closed = [row["id"] for row in bank if row.get("kind", "cerrada") != "abierta"][:2]
+    if len(closed) < 2:
+        raise SystemExit("El selfcheck necesita al menos dos preguntas cerradas.")
+    meta = {"tipo": "parcial", "bimestre": 3, "numero": 1, "nota_total": 20}
+    made = create_diagnostic(group.lower(), [], random.Random(8), meta=meta, question_ids=closed)
+    db = load()
+    sheets = [db["sheets"][info["id"]] for info in made["sheets"]]
+    if len(sheets) != 3 or {sheet["group"] for sheet in sheets} != {group}:
+        raise SystemExit("El examen no usó la lista del grupo o no unificó el nombre.")
+    if any(len(sheet["questions"]) != 2 for sheet in sheets):
+        raise SystemExit("El examen no respetó las preguntas elegidas.")
+    if db["forms"][made["form_id"]]["question_ids"] != closed:
+        raise SystemExit("El examen no guardó qué preguntas usó.")
+
+    sheet = sheets[0]
+    photo = simulate_photo(
+        mark_bubbles(pil_to_bgr(render_sheet(sheet)), [q["answer"] for q in sheet["questions"]]), seed=77
+    )
+    if quick_sheet_id(photo) != sheet["id"]:
+        raise SystemExit("La lectura rápida del QR no encontró la hoja.")
+    other = grade_photo(photo, made["form_id"])
+    if other["score"] != other["total"]:
+        raise SystemExit("La hoja del examen elegido no se calificó.")
+    try:
+        grade_photo(photo, "no-es-este")
+    except GradeError as exc:
+        if "no del examen que estás calificando" not in str(exc):
+            raise SystemExit(f"Mensaje de otro examen inesperado: {exc}") from exc
+    else:
+        raise SystemExit("Se calificó una hoja de otro examen.")
+
+    set_exam_off(made["form_id"], True)
+    if sheet_status(sheet["id"], made["form_id"])["ok"]:
+        raise SystemExit("Un examen apagado sigue aceptando hojas.")
+    try:
+        grade_photo(photo, made["form_id"])
+    except GradeError as exc:
+        if "apagado" not in str(exc):
+            raise SystemExit(f"Mensaje de examen apagado inesperado: {exc}") from exc
+    else:
+        raise SystemExit("Se calificó una hoja de un examen apagado.")
+    set_exam_off(made["form_id"], False)
+    if not sheet_status(sheet["id"], made["form_id"])["ok"]:
+        raise SystemExit("Encender el examen no lo dejó listo.")
+
+    trash_exam(made["form_id"])
+    again = create_diagnostic(group, [], random.Random(9), meta=meta, question_ids=closed)
+    trash_exam(again["form_id"])
+    restore_exam(made["form_id"])
+    if not overview()["siguiente"]["texto"]:
+        raise SystemExit("El resumen de inicio salió vacío.")
+    try:
+        delete_group(group)
+    except ValueError:
+        pass
+    else:
+        raise SystemExit("Se borró un grupo que todavía tiene exámenes.")
+    print("Grupos, preguntas elegidas, examen apagado y papelera.")
+
+
 def main():
     ensure_dirs()
     try:
@@ -159,6 +245,7 @@ def main():
         check_class_pattern()
         check_authored_variants()
         check_notas_y_bimestres()
+        check_grupos_apagar_papelera()
     except GradeError as exc:
         print(f"Falló la visión: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc

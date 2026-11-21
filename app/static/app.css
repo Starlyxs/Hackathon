@@ -70,3 +70,24 @@ table.xl { border-collapse: collapse; font-family: "Segoe UI", sans-serif; font-
 .xl .total { background: #eef6f0; font-weight: 700; }
 .xl .group { background: #d8e7dc; }
 .empty { text-align: center; padding: 28px 12px; color: var(--muted); font-family: "Segoe UI", sans-serif; }
+
+/* Inicio */
+.next { background: var(--green); color: #fff; border-color: var(--green); }
+.next h2 { color: #fff; font-size: 1.5rem; }
+.next p { color: #e5f2eb; font-size: 1.05rem; }
+.next a.button { background: #fff; color: var(--green); font-size: 1.05rem; padding: 12px 22px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 16px; }
+.step { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.step h3 { display: flex; gap: 10px; align-items: center; }
+.step .n { width: 28px; height: 28px; border-radius: 50%; background: var(--green-soft); color: var(--green); display: inline-flex; align-items: center; justify-content: center; font-family: "Segoe UI", sans-serif; font-size: 0.9rem; flex: none; }
+.step p { margin: 0; color: var(--muted); }
+.step .status { font-family: "Segoe UI", sans-serif; font-weight: 600; color: var(--ink); }
+.step a.button { margin-top: auto; align-self: flex-start; }
+
+/* Cámara en vivo */
+.banner { border-radius: 14px; padding: 14px 18px; margin-top: 12px; font-family: "Segoe UI", sans-serif; background: #eee9dc; color: var(--ink); }
+.banner strong { display: block; font-size: 1.35rem; }
+.banner.ok { background: var(--green-soft); color: var(--green); }
+.banner.bad { background: var(--rust-soft); color: var(--rust); }
+.banner.look { background: var(--amber); }
+.tag.off { background: #e7e1d3; color: #6a5f46; }

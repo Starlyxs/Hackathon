@@ -8,12 +8,23 @@
   <title>Exámenes · Hojas en papel</title>
   <style>
     .exam { display: grid; grid-template-columns: 150px 1fr; gap: 16px; border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 12px 0; background: #fff; }
+    .exam.off { background: #f3f0e6; }
     img.thumb { width: 150px; border-radius: 8px; border: 1px solid var(--line); background: white; }
     .bim h2 { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
     .bim h2 small { font-family: "Segoe UI", sans-serif; font-size: 0.85rem; color: var(--muted); font-weight: 400; }
     details summary { cursor: pointer; font-family: "Segoe UI", sans-serif; color: var(--green); margin-top: 10px; }
     table.mini { width: 100%; border-collapse: collapse; font-family: "Segoe UI", sans-serif; margin-top: 8px; }
     table.mini th, table.mini td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+    .picker { border: 1px solid var(--line); border-radius: 12px; padding: 4px 14px 10px; background: #fff; }
+    .picker h4 { margin: 14px 0 4px; display: flex; gap: 10px; align-items: baseline; font-family: "Segoe UI", sans-serif; }
+    .picker h4 button { padding: 3px 10px; font-size: 0.8rem; }
+    .q { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid #eee7d8; font-family: "Segoe UI", sans-serif; }
+    .q input { width: auto; margin-top: 4px; }
+    .q small { color: var(--muted); display: block; }
+    .count { font-family: "Segoe UI", sans-serif; }
+    .count.over { color: var(--rust); font-weight: 700; }
+    .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px; font-family: "Segoe UI", sans-serif; z-index: 10; }
+    .toast button { background: transparent; color: #9fe0c3; padding: 0 0 0 10px; border: 0; text-decoration: underline; }
     @media (max-width: 700px) { .exam { grid-template-columns: 1fr; } img.thumb { width: 100%; } }
   </style>
 </head>
@@ -24,16 +35,16 @@
       <h1>Hojas en papel</h1>
     </div>
     <!--NAV-->
-    <p class="lede">Aquí se crean los exámenes del año y se guardan ordenados por bimestre. Todo queda en esta computadora: otra persona que instale el programa empieza con su propia lista.</p>
+    <p class="lede">Aquí se crean los exámenes del año y se guardan ordenados por bimestre. Todo queda en esta computadora.</p>
   </header>
   <main>
     <section>
       <h2>Crear un examen</h2>
+      <p id="no-groups" class="warn" hidden>Primero crea tu grupo y su lista de alumnos en <a href="/grupos">Grupos</a>.</p>
       <div class="fields">
         <div>
           <label for="group">Grupo</label>
-          <input id="group" list="groups" maxlength="40" placeholder="Por ejemplo 6A">
-          <datalist id="groups"></datalist>
+          <select id="group"></select>
         </div>
         <div>
           <label for="bimestre">Bimestre</label>
@@ -70,13 +81,11 @@
       </div>
       <p id="resumen" class="ok"></p>
 
-      <h3 style="margin-top:14px;">Materias que entran</h3>
-      <p id="question-source" class="lede"></p>
-      <div id="materias" class="checks"></div>
-
-      <label for="names">Alumnos (uno por línea)</label>
-      <textarea id="names" placeholder="Ana&#10;Luis&#10;María"></textarea>
-      <p class="lede" id="names-hint"></p>
+      <h3 style="margin-top:16px;">Preguntas de este examen</h3>
+      <p id="picker-help" class="lede"></p>
+      <div id="picker" class="picker"></div>
+      <p id="counts" class="count"></p>
+      <p id="roster" class="lede"></p>
 
       <div class="row">
         <button id="preview-exam" type="button" class="secondary">Ver cómo queda</button>
@@ -101,14 +110,27 @@
       </div>
       <div id="list"><p class="lede">Cargando exámenes…</p></div>
     </section>
+
+    <section id="trash-section" hidden>
+      <details>
+        <summary>Papelera (<span id="trash-count">0</span>)</summary>
+        <p class="lede">Los exámenes eliminados se quedan aquí. Puedes restaurarlos con sus notas.</p>
+        <div id="trash"></div>
+      </details>
+    </section>
   </main>
   <script>
     const $ = (selector) => document.querySelector(selector);
     const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
     const fmt = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
+    const MAX_CLOSED = 8;
+    const MAX_OPEN = 4;
     let exams = [];
+    let groups = [];
+    let questions = [];
+    let materias = [];
     let filterBimestre = "";
-    let autofilled = "";
+    let toastTimer = null;
 
     async function readError(response) {
       try {
@@ -120,11 +142,32 @@
       }
     }
 
+    function toast(text, undo) {
+      document.querySelector(".toast")?.remove();
+      const box = document.createElement("div");
+      box.className = "toast";
+      box.textContent = text;
+      if (undo) {
+        const button = document.createElement("button");
+        button.textContent = "Deshacer";
+        button.onclick = () => { box.remove(); undo(); };
+        box.append(button);
+      }
+      document.body.append(box);
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => box.remove(), 8000);
+    }
+
+    /* ---------- formulario ---------- */
+    function pickedIds() {
+      return [...document.querySelectorAll("#picker input:checked")].map((input) => input.value);
+    }
+
     function payload() {
       return {
-        group: $("#group").value.trim(),
-        names: $("#names").value.split("\n"),
-        materias: [...document.querySelectorAll("#materias input:checked")].map((input) => input.value),
+        group: $("#group").value,
+        names: [],
+        question_ids: pickedIds(),
         bimestre: Number($("#bimestre").value),
         tipo: $("#tipo").value,
         numero: Number($("#numero").value),
@@ -147,45 +190,66 @@
       $("#nombre").placeholder = tipo === "otro" ? "Por ejemplo Tarea 2" : "Opcional";
       const p = payload();
       const where = tipo === "diagnostico" ? "No suma a la nota del bimestre." : `Bimestre ${p.bimestre}.`;
-      $("#resumen").textContent = `Se creará: ${titleOf(p)} · vale ${p.nota_total || "?"} puntos · grupo ${p.group || "(escribe el grupo)"}. ${where}`;
+      $("#resumen").textContent = `Se creará: ${titleOf(p)} · vale ${p.nota_total || "?"} puntos · grupo ${p.group || "(elige el grupo)"}. ${where}`;
+      const groupInfo = groups.find((item) => item.name === p.group);
+      $("#roster").innerHTML = groupInfo
+        ? `Se imprimirá una hoja para cada uno de los ${groupInfo.students.length} alumnos de ${esc(groupInfo.name)}. <a href="/grupos">Cambiar la lista</a>`
+        : "";
+      updateCounts();
     }
 
-    async function loadQuestionSource() {
-      const body = await (await fetch("/api/preguntas")).json();
-      const count = body.questions.length;
-      const box = $("#materias");
-      box.replaceChildren();
-      if (!count) {
-        $("#question-source").innerHTML = `Todavía no escribiste preguntas, así que se usará un diagnóstico de ejemplo. <a href="/preguntas">Escribir mis preguntas</a>`;
+    function usedIn(question) {
+      const group = $("#group").value;
+      return exams.filter((exam) => exam.group === group && exam.question_ids.includes(question.id)).map((exam) => exam.titulo_completo);
+    }
+
+    function updateCounts() {
+      if (!questions.length) {
+        $("#counts").textContent = "";
         return;
       }
-      body.materias.forEach((name) => {
-        const amount = body.questions.filter((question) => question.materia === name).length;
-        const label = document.createElement("label");
-        const input = document.createElement("input");
-        input.type = "checkbox";
-        input.value = name;
-        input.checked = amount > 0;
-        input.disabled = amount === 0;
-        input.onchange = updateForm;
-        label.append(input, document.createTextNode(` ${name} (${amount})`));
-        box.append(label);
-      });
-      $("#question-source").innerHTML = `Hay ${count} ${count === 1 ? "pregunta tuya" : "preguntas tuyas"}. Marca las materias de este examen. <a href="/preguntas">Editar preguntas</a>`;
+      const picked = new Set(pickedIds());
+      const closed = questions.filter((q) => picked.has(q.id) && q.kind !== "abierta").length;
+      const open = questions.filter((q) => picked.has(q.id) && q.kind === "abierta").length;
+      $("#counts").innerHTML = `<span class="${closed > MAX_CLOSED ? "over" : ""}">Opciones: ${closed} de ${MAX_CLOSED}</span> · <span class="${open > MAX_OPEN ? "over" : ""}">Abiertas: ${open} de ${MAX_OPEN}</span>`;
     }
 
-    async function loadRoster() {
-      const name = $("#group").value.trim();
-      if (!name) return;
-      const body = await (await fetch(`/api/grupos?group=${encodeURIComponent(name)}`)).json();
-      const textarea = $("#names");
-      if (body.students.length && (!textarea.value.trim() || textarea.value.trim() === autofilled)) {
-        autofilled = body.students.join("\n");
-        textarea.value = autofilled;
-        $("#names-hint").textContent = `Puse los ${body.students.length} alumnos que ya tiene el grupo ${name}. Puedes cambiarlos.`;
-      } else {
-        $("#names-hint").textContent = "";
+    function renderPicker() {
+      const box = $("#picker");
+      if (!questions.length) {
+        $("#picker-help").innerHTML = `Todavía no escribiste preguntas, así que se usará un diagnóstico de ejemplo. <a href="/preguntas">Escribir mis preguntas</a>`;
+        box.hidden = true;
+        return;
       }
+      box.hidden = false;
+      $("#picker-help").innerHTML = `Marca las preguntas que entran en este examen (hasta ${MAX_CLOSED} de opciones y ${MAX_OPEN} abiertas). Las que no se han usado ya vienen marcadas. <a href="/preguntas">Editar preguntas</a>`;
+      const used = new Set(exams.filter((exam) => exam.group === $("#group").value).flatMap((exam) => exam.question_ids));
+      let closedLeft = MAX_CLOSED;
+      let openLeft = MAX_OPEN;
+      const preset = new Set();
+      questions.forEach((q) => {
+        if (used.has(q.id)) return;
+        if (q.kind === "abierta" && openLeft > 0) { preset.add(q.id); openLeft -= 1; }
+        if (q.kind !== "abierta" && closedLeft > 0) { preset.add(q.id); closedLeft -= 1; }
+      });
+      const order = materias.filter((name) => questions.some((q) => q.materia === name));
+      box.innerHTML = order.map((name) => `
+        <h4>${esc(name)} <button type="button" class="secondary" data-all="${esc(name)}">marcar todas</button></h4>
+        ${questions.filter((q) => q.materia === name).map((q) => {
+          const before = usedIn(q);
+          return `<label class="q"><input type="checkbox" value="${q.id}" ${preset.has(q.id) ? "checked" : ""}>
+            <span>${esc(q.prompt)}<small>${q.kind === "abierta" ? "Abierta" : "Opciones"}${before.length ? ` · ya usada en ${esc(before.join(", "))}` : ""}</small></span></label>`;
+        }).join("")}`).join("");
+      box.querySelectorAll("input").forEach((input) => { input.onchange = updateCounts; });
+      box.querySelectorAll("[data-all]").forEach((button) => {
+        button.onclick = () => {
+          const name = button.dataset.all;
+          const ids = new Set(questions.filter((q) => q.materia === name).map((q) => q.id));
+          box.querySelectorAll("input").forEach((input) => { if (ids.has(input.value)) input.checked = true; });
+          updateCounts();
+        };
+      });
+      updateCounts();
     }
 
     $("#preview-exam").onclick = async () => {
@@ -209,6 +273,10 @@
       const button = $("#make");
       $("#make-error").textContent = "";
       $("#made").innerHTML = "";
+      if (questions.length && !pickedIds().length) {
+        $("#make-error").textContent = "Marca al menos una pregunta para este examen.";
+        return;
+      }
       button.disabled = true;
       const response = await fetch("/api/diagnostico", {
         method: "POST",
@@ -225,10 +293,11 @@
       const warning = body.warning ? `<p class="error">${esc(body.warning)}</p>` : "";
       $("#made").innerHTML = `${warning}<div class="ok"><strong>Listo: ${esc(body.titulo)}.</strong> ${body.sheets.length} hojas.
         ${body.pdf ? `<a class="button" style="margin-left:8px;" href="${body.pdf}" target="_blank">Imprimir todo en un PDF</a>` : ""}
-        <a href="/" style="margin-left:8px;">Ir a calificar</a></div>`;
+        <a href="/calificar" style="margin-left:8px;">Ir a calificar</a></div>`;
       await loadList();
     };
 
+    /* ---------- lista ---------- */
     function chips() {
       const options = [["", "Todos"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["0", "Sin bimestre"]];
       $("#f-bimestre").innerHTML = options.map(([value, label]) =>
@@ -242,11 +311,11 @@
       if (!exam.grades.length) return "";
       const rows = exam.grades.map((row) => {
         const done = row.state === "listo";
-        const state = done ? "" : (row.state === "parcial" ? "falta una hoja" : "sin calificar");
+        const state = row.state === "parcial" ? "falta una hoja" : "sin calificar";
         return `<tr><td>${esc(row.student_name)}</td><td>${done ? `${fmt(row.score)}/${fmt(row.total)}` : state}</td><td>${done ? fmt(row.nota_real) : "—"}</td><td>${done ? fmt(row.nota_relativa) : "—"}</td></tr>`;
       }).join("");
       return `<details><summary>Ver notas (${exam.calificados} de ${exam.grades.length} calificados)</summary>
-        <table class="mini"><thead><tr><th>Alumno</th><th>Aciertos</th><th>Nota real (de ${fmt(exam.nota_total)})</th><th>Nota relativa</th></tr></thead><tbody>${rows}</tbody></table></details>`;
+        <table class="mini"><thead><tr><th>Alumno</th><th>Aciertos</th><th>Nota real (de ${fmt(exam.nota_total)})</th><th title="El mejor del examen se lleva la nota completa">Nota relativa</th></tr></thead><tbody>${rows}</tbody></table></details>`;
     }
 
     function when(value) {
@@ -258,12 +327,13 @@
       const thumb = exam.preview ? `<img class="thumb" src="${exam.preview}" alt="Primera hoja">` : "<div></div>";
       const pdf = exam.pdf ? `<a class="button" href="${exam.pdf}" target="_blank">Imprimir todo en un PDF</a>` : "";
       const tag = exam.tipo === "final" ? "tag final" : (exam.tipo === "diagnostico" ? "tag muted" : "tag");
-      const materias = exam.materias.length ? ` · ${esc(exam.materias.join(", "))}` : "";
-      return `<div class="exam">${thumb}<div>
-        <h3>${esc(exam.titulo)} <span class="${tag}">vale ${fmt(exam.nota_total)}</span>${exam.suma ? "" : `<span class="tag muted">no suma</span>`}</h3>
-        <p class="lede">Grupo ${esc(exam.group)}${materias} · ${when(exam.created)} · ${exam.students.length} alumnos</p>
+      const materiasText = exam.materias.length ? ` · ${esc(exam.materias.join(", "))}` : "";
+      return `<div class="exam ${exam.apagado ? "off" : ""}">${thumb}<div>
+        <h3>${esc(exam.titulo)} <span class="${tag}">vale ${fmt(exam.nota_total)}</span>${exam.suma ? "" : `<span class="tag muted">no suma</span>`}${exam.apagado ? `<span class="tag off">apagado</span>` : ""}</h3>
+        <p class="lede">Grupo ${esc(exam.group)}${materiasText} · ${when(exam.created)} · ${exam.students.length} alumnos</p>
         <div class="row" style="margin-top:6px;">${pdf}
-          <button type="button" class="danger" data-del="${exam.id}" data-name="${esc(exam.titulo_completo)} de ${esc(exam.group)}">Eliminar</button></div>
+          <button type="button" class="secondary" data-off="${exam.id}" data-to="${exam.apagado ? "0" : "1"}" title="Un examen apagado ya no recibe hojas en la cámara, pero conserva sus notas.">${exam.apagado ? "Encender examen" : "Apagar examen"}</button>
+          <button type="button" class="danger" data-del="${exam.id}">Eliminar</button></div>
         ${gradesTable(exam)}
       </div></div>`;
     }
@@ -281,23 +351,56 @@
         box.innerHTML = `<p class="lede">No hay exámenes con ese filtro.</p>`;
         return;
       }
-      const blocks = [1, 2, 3, 4, 0].map((number) => {
+      box.innerHTML = [1, 2, 3, 4, 0].map((number) => {
         const items = shown.filter((exam) => exam.bimestre === number);
         if (!items.length) return "";
         const sum = items.filter((exam) => exam.suma).reduce((acc, exam) => acc + exam.nota_total, 0);
         const totalNote = group && sum ? `<small>Suman ${fmt(sum)} puntos${sum === 100 ? " ✓" : " de 100"}</small>` : "";
         return `<div class="bim"><h2>${number ? `Bimestre ${number}` : "Sin bimestre"} ${totalNote}</h2>${items.map(card).join("")}</div>`;
       }).join("");
-      box.innerHTML = blocks;
       box.querySelectorAll("button[data-del]").forEach((button) => {
         button.onclick = async () => {
-          if (!confirm(`¿Eliminar ${button.dataset.name}? Se borran sus hojas y sus notas. No se puede deshacer.`)) return;
-          const response = await fetch(`/api/examenes/${button.dataset.del}`, { method: "DELETE" });
-          if (!response.ok) {
-            alert(await readError(response));
-            return;
-          }
+          const id = button.dataset.del;
+          const exam = exams.find((item) => item.id === id);
+          const response = await fetch(`/api/examenes/${id}`, { method: "DELETE" });
+          if (!response.ok) { alert(await readError(response)); return; }
           await loadList();
+          toast(`${exam.titulo_completo} se movió a la papelera.`, async () => {
+            await fetch(`/api/examenes/${id}/restaurar`, { method: "POST" });
+            loadList();
+          });
+        };
+      });
+      box.querySelectorAll("button[data-off]").forEach((button) => {
+        button.onclick = async () => {
+          const response = await fetch(`/api/examenes/${button.dataset.off}/apagar`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ off: button.dataset.to === "1" }),
+          });
+          if (!response.ok) { alert(await readError(response)); return; }
+          loadList();
+        };
+      });
+    }
+
+    function renderTrash(items) {
+      $("#trash-section").hidden = !items.length;
+      $("#trash-count").textContent = items.length;
+      $("#trash").innerHTML = items.map((item) => `
+        <div class="card"><strong>${esc(item.titulo_completo)}</strong> · grupo ${esc(item.group)}
+          <div class="row">
+            <button type="button" data-restore="${item.id}">Restaurar</button>
+            <button type="button" class="danger" data-purge="${item.id}" data-name="${esc(item.titulo_completo)}">Borrar para siempre</button>
+          </div></div>`).join("");
+      $("#trash").querySelectorAll("[data-restore]").forEach((button) => {
+        button.onclick = async () => { await fetch(`/api/examenes/${button.dataset.restore}/restaurar`, { method: "POST" }); loadList(); };
+      });
+      $("#trash").querySelectorAll("[data-purge]").forEach((button) => {
+        button.onclick = async () => {
+          if (!confirm(`¿Borrar ${button.dataset.name} para siempre? Se pierden sus hojas y sus notas.`)) return;
+          await fetch(`/api/examenes/${button.dataset.purge}/definitivo`, { method: "DELETE" });
+          loadList();
         };
       });
     }
@@ -305,25 +408,37 @@
     async function loadList() {
       const body = await (await fetch("/api/examenes")).json();
       exams = body.exams;
+      renderTrash(body.trash);
       const wanted = $("#f-group").value || localStorage.getItem("hp_group") || "";
       $("#f-group").innerHTML = `<option value="">Todos los grupos</option>` + body.groups.map((name) => `<option>${esc(name)}</option>`).join("");
       $("#f-group").value = body.groups.includes(wanted) ? wanted : "";
-      $("#groups").innerHTML = body.groups.map((name) => `<option value="${esc(name)}">`).join("");
-      if (!$("#group").value) $("#group").value = body.groups.includes(wanted) ? wanted : (body.groups[0] || "");
       chips();
       renderList();
+      renderPicker();
       updateForm();
-      loadRoster();
     }
 
-    ["group", "bimestre", "tipo", "numero", "nombre", "nota-total"].forEach((id) => {
+    async function start() {
+      const [mine, bank] = await Promise.all([fetch("/api/mis-grupos"), fetch("/api/preguntas")]);
+      groups = (await mine.json()).groups;
+      const bankBody = await bank.json();
+      questions = bankBody.questions;
+      materias = bankBody.materias;
+      const wanted = localStorage.getItem("hp_group") || "";
+      $("#group").innerHTML = groups.map((item) => `<option>${esc(item.name)}</option>`).join("");
+      if (groups.some((item) => item.name === wanted)) $("#group").value = wanted;
+      $("#no-groups").hidden = groups.length > 0;
+      $("#make").disabled = groups.length === 0;
+      await loadList();
+    }
+
+    ["bimestre", "tipo", "numero", "nombre", "nota-total"].forEach((id) => {
       $(`#${id}`).addEventListener("input", updateForm);
     });
-    $("#group").addEventListener("change", loadRoster);
+    $("#group").addEventListener("change", () => { renderPicker(); updateForm(); });
     $("#f-group").onchange = renderList;
 
-    loadQuestionSource();
-    loadList();
+    start();
   </script>
 </body>
 </html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/logo.png">
+  <link rel="stylesheet" href="/static/app.css">
+  <title>Inicio · Hojas en papel</title>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="/static/logo.png" alt="">
+      <h1>Hojas en papel</h1>
+    </div>
+    <!--NAV-->
+  </header>
+  <main>
+    <section class="next" id="siguiente">
+      <h2>Cargando…</h2>
+    </section>
+
+    <div class="steps" id="pasos"></div>
+
+    <p class="lede" id="copia"></p>
+  </main>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+    async function start() {
+      const info = await (await fetch("/api/estado")).json();
+      const next = info.siguiente;
+      $("#siguiente").innerHTML = `
+        <h2>Lo que sigue</h2>
+        <p>${next.texto}</p>
+        <a class="button" href="${next.enlace}">${next.boton}</a>`;
+      const steps = [
+        { n: 1, title: "Grupos", href: "/grupos", text: "Crea tu grupo y la lista de alumnos una sola vez.", status: `${plural(info.grupos, "grupo", "grupos")} · ${plural(info.alumnos, "alumno", "alumnos")}`, key: "grupos" },
+        { n: 2, title: "Preguntas", href: "/preguntas", text: "Escribe preguntas por materia, con su respuesta correcta.", status: plural(info.preguntas, "pregunta", "preguntas"), key: "preguntas" },
+        { n: 3, title: "Exámenes", href: "/examenes", text: "Crea parciales y finales por bimestre, con su nota total.", status: `${plural(info.examenes, "examen", "exámenes")}${info.apagados ? ` · ${plural(info.apagados, "apagado", "apagados")}` : ""}`, key: "examenes" },
+        { n: 4, title: "Calificar", href: "/calificar", text: "Elige el examen y pasa las hojas frente a la cámara.", status: info.pendientes ? `${plural(info.pendientes, "alumno", "alumnos")} por calificar` : "Nada pendiente", key: "calificar" },
+        { n: 5, title: "Notas del año", href: "/notas", text: "Los cuatro bimestres juntos. Se descargan para Excel.", status: "Ver el cuadro", key: "notas" },
+        { n: "+", title: "Análisis", href: "/analisis", text: "Qué falló el grupo y hojas de refuerzo para quien lo necesita.", status: "Opcional", key: "analisis" },
+      ];
+      $("#pasos").innerHTML = steps.map((step) => `
+        <div class="step">
+          <h3><span class="n">${step.n}</span>${step.title}</h3>
+          <p>${step.text}</p>
+          <p class="status">${step.status}</p>
+          <a class="button ${step.key === next.paso ? "" : "secondary"}" href="${step.href}">Abrir</a>
+        </div>`).join("");
+      $("#copia").textContent = info.copia
+        ? `Copia de seguridad automática: ${info.copia}. Tus datos están solo en esta computadora.`
+        : "Tus datos están solo en esta computadora. Se hará una copia de seguridad automática cada día.";
+    }
+    start();
+  </script>
+</body>
+</html>
