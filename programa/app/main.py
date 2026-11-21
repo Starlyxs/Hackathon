@@ -52,7 +52,7 @@ from app.variants import preview_variants
 ensure_dirs()
 STATIC = Path(__file__).resolve().parent / "static"
 STATIC.mkdir(parents=True, exist_ok=True)
-app = FastAPI(title="Hojas en papel")
+app = FastAPI(title="EduScan")
 app.mount("/archivos", StaticFiles(directory=str(SHEETS)), name="archivos")
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
@@ -209,7 +209,7 @@ def get_backup(escaneos: bool = False):
             folder = SHEETS / "escaneos"
             for path in sorted(folder.glob("*.jpg")) if folder.exists() else []:
                 archive.write(path, f"escaneos/{path.name}")
-    name = f"respaldo-hojas-en-papel-{date.today().isoformat()}.zip"
+    name = f"respaldo-eduscan-{date.today().isoformat()}.zip"
     return Response(buffer.getvalue(), media_type="application/zip", headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
 

@@ -49,7 +49,7 @@ def main():
         return
 
     print()
-    print(f"  Hojas en papel esta listo en {url}")
+    print(f"  EduScan esta listo en {url}")
     print("  Si el navegador no se abre solo, copia esa direccion en Chrome, Edge o Firefox.")
     print("  Para cerrar el programa, cierra esta ventana.")
     print()

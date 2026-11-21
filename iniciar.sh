@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Abre Hojas en papel en Mac o Linux. Uso: bash iniciar.sh
+# Abre EduScan en Mac o Linux. Uso: bash iniciar.sh
 set -u
 cd "$(dirname "$0")/programa" || { echo "No encuentro la carpeta 'programa'."; exit 1; }
 

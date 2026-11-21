@@ -77,7 +77,7 @@ def build(shots):
     writer = cv2.VideoWriter(str(OUT / "tutorial.webm"), cv2.VideoWriter_fourcc(*"VP80"), FPS, (W, H))
     if not writer.isOpened():
         raise SystemExit("No se pudo abrir el escritor de video.")
-    title = card("Hojas en papel", "Tutorial rápido: de crear el examen a ver qué le falta a cada alumno")
+    title = card("EduScan", "Tutorial rápido: de crear el examen a ver qué le falta a cada alumno")
     cv2.imwrite(str(OUT / "tutorial-poster.png"), title)
     end = card("¡Listo para empezar!", "Tus datos están solo en esta computadora y se copian cada día.")
     clips = [(title, 3.5)]
