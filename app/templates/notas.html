@@ -24,6 +24,10 @@
           <select id="group"></select>
         </div>
         <div>
+          <label for="materia">Materia</label>
+          <select id="materia"></select>
+        </div>
+        <div>
           <label for="modo">Mostrar</label>
           <select id="modo">
             <option value="real">Nota real</option>
@@ -82,17 +86,34 @@
 
     function updateCsv() {
       const q = new URLSearchParams({ group: $("#group").value, vista: "anual", modo: $("#modo").value });
+      if ($("#materia").value) q.set("materia", $("#materia").value);
       $("#csv").href = `/api/notas.csv?${q}`;
     }
 
+    async function fetchYear() {
+      const q = new URLSearchParams({ group: $("#group").value });
+      if ($("#materia").value) q.set("materia", $("#materia").value);
+      return (await fetch(`/api/notas-anuales?${q}`)).json();
+    }
+
     async function load() {
-      updateCsv();
       if (!$("#group").value) {
+        $("#materia").innerHTML = "";
+        updateCsv();
         render({ students: [], bimestres: [] });
         return;
       }
-      const response = await fetch(`/api/notas-anuales?group=${encodeURIComponent($("#group").value)}`);
-      render(await response.json());
+      let data = await fetchYear();
+      const subjects = data.materias || [];
+      const keep = $("#materia").value || localStorage.getItem("hp_materia") || "";
+      $("#materia").innerHTML = subjects.length
+        ? subjects.map((name) => `<option>${esc(name)}</option>`).join("")
+        : `<option value="">Sin materia</option>`;
+      const wanted = subjects.includes(keep) ? keep : (subjects[0] || "");
+      $("#materia").value = wanted;
+      if (wanted !== (data.materia || "")) data = await fetchYear();
+      updateCsv();
+      render(data);
     }
 
     async function start() {
@@ -103,7 +124,8 @@
       load();
     }
 
-    $("#group").onchange = () => { localStorage.setItem("hp_group", $("#group").value); load(); };
+    $("#group").onchange = () => { localStorage.setItem("hp_group", $("#group").value); $("#materia").value = ""; load(); };
+    $("#materia").onchange = () => { localStorage.setItem("hp_materia", $("#materia").value); load(); };
     $("#modo").onchange = load;
     start();
   </script>

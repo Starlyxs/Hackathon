@@ -65,7 +65,7 @@
         return;
       }
       box.innerHTML = body.groups.map((group, index) => `
-        <div class="card" data-name="${esc(group.name)}">
+        <div class="card" data-name="${esc(group.name)}" data-exams="${group.exams}">
           <h3>${esc(group.name)} <span class="tag">${group.students.length} alumnos</span> <span class="tag muted">${group.exams} exámenes</span></h3>
           <label for="s${index}">Alumnos</label>
           <textarea id="s${index}">${esc(group.students.join("\n"))}</textarea>
@@ -89,7 +89,9 @@
       box.querySelectorAll("[data-del]").forEach((button) => {
         button.onclick = async () => {
           const card = button.closest(".card");
-          if (!confirm(`¿Eliminar el grupo ${card.dataset.name} y su lista de alumnos?`)) return;
+          const exams = Number(card.dataset.exams || 0);
+          const extra = exams ? `\n\n${exams === 1 ? "Su examen pasa" : `Sus ${exams} exámenes pasan`} a la papelera con sus notas. Podrás restaurarlos desde Exámenes.` : "";
+          if (!confirm(`¿Eliminar el grupo ${card.dataset.name} y su lista de alumnos?${extra}`)) return;
           const response = await fetch(`/api/mis-grupos/${encodeURIComponent(card.dataset.name)}`, { method: "DELETE" });
           if (!response.ok) {
             $(`#e${button.dataset.del}`).textContent = await readError(response);

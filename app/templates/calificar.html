@@ -26,6 +26,10 @@
           <select id="group"></select>
         </div>
         <div>
+          <label for="materia">Materia</label>
+          <select id="materia"></select>
+        </div>
+        <div>
           <label for="examen">Examen que estás calificando</label>
           <select id="examen"></select>
         </div>
@@ -86,6 +90,8 @@
     const fmt = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
     const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
     const group = () => groupSelect.value;
+    const materiaSelect = $("#materia");
+    const materia = () => materiaSelect.value;
     const examId = () => examSelect.value;
 
     async function readError(response) {
@@ -128,7 +134,14 @@
 
     async function loadExams() {
       const body = await (await fetch("/api/examenes")).json();
-      const open = body.exams.filter((exam) => exam.group === group() && !exam.apagado);
+      const inGroup = body.exams.filter((exam) => exam.group === group());
+      const subjects = [...new Set(inGroup.flatMap((exam) => exam.materias))].sort((a, b) => a.localeCompare(b, "es"));
+      const keepSubject = materiaSelect.value || localStorage.getItem("hp_materia") || "";
+      materiaSelect.innerHTML = (subjects.length > 1 ? `<option value="">Todas las materias</option>` : "") +
+        subjects.map((name) => `<option>${esc(name)}</option>`).join("");
+      if (!subjects.length) materiaSelect.innerHTML = `<option value="">Sin materia</option>`;
+      materiaSelect.value = subjects.includes(keepSubject) || (keepSubject === "" && subjects.length > 1) ? keepSubject : (subjects[0] || "");
+      const open = inGroup.filter((exam) => !exam.apagado && (!materia() || exam.materias.includes(materia())));
       const previous = examSelect.value || localStorage.getItem("hp_exam") || "";
       examSelect.innerHTML = open.map((exam) =>
         `<option value="${exam.id}">${esc(exam.titulo_completo)} · ${exam.calificados} de ${exam.students.length} calificados</option>`).join("");
@@ -418,6 +431,7 @@
     function updateCsv() {
       const q = new URLSearchParams({ group: group(), modo: $("#modo").value });
       if (bimestre) q.set("bimestre", bimestre);
+      if (materia()) q.set("materia", materia());
       $("#csv").href = `/api/notas.csv?${q}`;
     }
 
@@ -429,6 +443,7 @@
       }
       const q = new URLSearchParams({ group: group() });
       if (bimestre) q.set("bimestre", bimestre);
+      if (materia()) q.set("materia", materia());
       const response = await fetch(`/api/notas?${q}`);
       if (!response.ok) {
         $("#grid-error").textContent = await readError(response);
@@ -451,6 +466,13 @@
     groupSelect.onchange = async () => {
       localStorage.setItem("hp_group", group());
       bimestre = "";
+      examSelect.value = "";
+      materiaSelect.value = "";
+      await loadExams();
+      loadGrid();
+    };
+    materiaSelect.onchange = async () => {
+      localStorage.setItem("hp_materia", materia());
       examSelect.value = "";
       await loadExams();
       loadGrid();

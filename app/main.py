@@ -330,26 +330,28 @@ def _bimestre(value):
 
 
 @app.get("/api/notas")
-def get_grid(group: str, bimestre: str = ""):
-    return grid(load(), group.strip(), _bimestre(bimestre))
+def get_grid(group: str, bimestre: str = "", materia: str = ""):
+    return grid(load(), group.strip(), _bimestre(bimestre), materia.strip() or None)
 
 
 @app.get("/api/notas-anuales")
-def get_yearly(group: str):
-    return yearly(load(), group.strip())
+def get_yearly(group: str, materia: str = ""):
+    return yearly(load(), group.strip(), materia.strip() or None)
 
 
 @app.get("/api/notas.csv")
-def get_csv(group: str, vista: str = "cuadro", bimestre: str = "", modo: str = "real"):
+def get_csv(group: str, vista: str = "cuadro", bimestre: str = "", modo: str = "real", materia: str = ""):
     group = group.strip()
+    materia = materia.strip() or None
     modo = "relativa" if modo == "relativa" else "real"
+    label = f"{group}-{materia}" if materia else group
     if vista == "anual":
-        body = csv_yearly(yearly(load(), group), modo)
-        name = f"notas-{group}-anual.csv"
+        body = csv_yearly(yearly(load(), group, materia), modo)
+        name = f"notas-{label}-anual.csv"
     else:
         number = _bimestre(bimestre)
-        body = csv_grid(grid(load(), group, number), modo)
-        name = f"notas-{group}-{'bimestre-' + str(number) if number else 'todo'}.csv"
+        body = csv_grid(grid(load(), group, number, materia), modo)
+        name = f"notas-{label}-{'bimestre-' + str(number) if number else 'todo'}.csv"
     safe = "".join(ch if ch.isalnum() or ch in "-_." else "_" for ch in name)
     return Response(
         body.encode("utf-8"),
@@ -362,7 +364,7 @@ def _exam_action(action, *args):
     try:
         return action(*args)
     except ValueError as exc:
-        raise HTTPException(404, str(exc)) from exc
+        raise HTTPException(409 if str(exc).startswith("Ya existe") else 404, str(exc)) from exc
 
 
 @app.delete("/api/examenes/{form_id}")

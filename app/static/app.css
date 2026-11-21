@@ -91,3 +91,40 @@ table.xl { border-collapse: collapse; font-family: "Segoe UI", sans-serif; font-
 .banner.bad { background: var(--rust-soft); color: var(--rust); }
 .banner.look { background: var(--amber); }
 .tag.off { background: #e7e1d3; color: #6a5f46; }
+
+/* Pantallas pequeñas y manos poco expertas: letra clara, botones grandes, nada que se corte */
+html { -webkit-text-size-adjust: 100%; }
+body { font-size: 17px; }
+button, a.button, .file-btn { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
+input, select { min-height: 46px; }
+select { padding-right: 8px; }
+:focus-visible { outline: 3px solid #e0a100; outline-offset: 2px; }
+nav a { min-height: 44px; display: inline-flex; align-items: center; white-space: nowrap; }
+.stepbox { border-top: 1px solid var(--line); padding: 16px 0 8px; }
+.stepbox:first-of-type { border-top: 0; padding-top: 4px; }
+.stepbox > h3 { display: flex; gap: 10px; align-items: center; font-size: 1.15rem; margin-bottom: 8px; }
+.stepbox > h3 .n { width: 30px; height: 30px; border-radius: 50%; background: var(--green); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-family: "Segoe UI", sans-serif; font-size: 0.95rem; flex: none; }
+.bigchips { display: flex; flex-wrap: wrap; gap: 8px; font-family: "Segoe UI", sans-serif; }
+.bigchips button { background: #fff; color: var(--ink); border: 2px solid var(--line); border-radius: 14px; padding: 8px 16px; min-height: 52px; font-size: 1rem; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+.bigchips button small { color: var(--muted); font-size: 0.8rem; font-weight: 400; }
+.bigchips button.on { border-color: var(--green); background: var(--green-soft); color: var(--green); font-weight: 700; }
+.bigchips button.on small { color: var(--green); }
+.bigchips button.add { border-style: dashed; color: var(--green); background: transparent; }
+
+@media (max-width: 700px) {
+  body { font-size: 16.5px; }
+  header, main { width: calc(100% - 20px); }
+  header { padding-top: 14px; }
+  h1 { font-size: 1.45rem; }
+  .brand img { width: 42px; height: 42px; }
+  nav { flex-wrap: nowrap; overflow-x: auto; margin-right: -10px; padding-bottom: 6px; scrollbar-width: none; scroll-snap-type: x proximity; }
+  nav::-webkit-scrollbar { display: none; }
+  nav a { flex: none; scroll-snap-align: start; padding: 8px 14px; }
+  section { padding: 14px; border-radius: 14px; margin-top: 12px; }
+  .row > button, .row > a.button, .row > .file-btn { flex: 1 1 140px; }
+  .bigchips button { flex: 1 1 140px; }
+  .fields { grid-template-columns: 1fr; }
+  video, canvas { max-width: 100%; }
+}
+
+[hidden] { display: none !important; }

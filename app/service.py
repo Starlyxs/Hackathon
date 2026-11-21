@@ -83,7 +83,12 @@ def _pick_questions(db, picked, chosen):
         byid = {row["id"]: row for row in db["authored"]}
         if any(item not in byid for item in picked):
             raise ValueError("Una de las preguntas elegidas ya no existe.")
-        return [byid[item] for item in picked]
+        rows = [byid[item] for item in picked]
+        if chosen:
+            outside = [row for row in rows if row.get("materia") not in chosen]
+            if outside:
+                raise ValueError(f"Este examen es de {', '.join(chosen)}; quita las preguntas de otra materia.")
+        return rows
     seeds = list(db["authored"])
     if chosen:
         seeds = [item for item in seeds if item.get("materia") in chosen]
@@ -526,7 +531,18 @@ delete_exam = trash_exam
 def restore_exam(form_id):
     def mutate(db):
         form = _form_or_fail(db, form_id)
+        if form.get("papelera"):
+            info = {key: form.get(key) for key in ("tipo", "bimestre", "numero", "nombre", "nota_total")}
+            _check_duplicate(db, form.get("group") or "", info, sorted(form.get("materias") or []))
         form.pop("papelera", None)
+        _group_rows(db)
+        name = (form.get("group") or "").strip()
+        if name and name.lower() not in {key.lower() for key in db["groups"]}:
+            students = sorted(
+                {sheet["student_name"] for sheet in db["sheets"].values() if sheet.get("form_id") == form["id"]},
+                key=str.lower,
+            )
+            _register_group(db, name, students)
         return {"ok": True}
 
     return update(mutate)
@@ -568,16 +584,19 @@ def purge_exam(form_id):
 def _group_rows(db):
     """Lista de grupos. Los grupos de versiones anteriores se registran aquí la primera vez."""
     registry = db.setdefault("groups", {})
-    known = {name.lower() for name in registry}
-    for form in db["forms"].values():
-        name = (form.get("group") or "").strip()
-        if name and name.lower() not in known:
-            students = sorted(
-                {sheet["student_name"] for sheet in db["sheets"].values() if sheet.get("form_id") == form["id"]},
-                key=str.lower,
-            )
-            registry[name] = {"name": name, "students": students, "created": form.get("created") or _now()}
-            known.add(name.lower())
+    if not db.get("groups_migrated"):
+        # Solo una vez: así un grupo que se elimina no vuelve a aparecer.
+        known = {name.lower() for name in registry}
+        for form in db["forms"].values():
+            name = (form.get("group") or "").strip()
+            if name and name.lower() not in known:
+                students = sorted(
+                    {sheet["student_name"] for sheet in db["sheets"].values() if sheet.get("form_id") == form["id"]},
+                    key=str.lower,
+                )
+                registry[name] = {"name": name, "students": students, "created": form.get("created") or _now()}
+                known.add(name.lower())
+        db["groups_migrated"] = True
     rows = []
     for name in sorted(registry, key=str.lower):
         exams = [f for f in active_forms(db) if (f.get("group") or "").strip().lower() == name.lower()]
@@ -616,10 +635,13 @@ def delete_group(name):
     def mutate(db):
         _group_rows(db)
         key = _canon_group(db, name)
-        if any((f.get("group") or "").strip().lower() == key.lower() for f in active_forms(db)):
-            raise ValueError("Este grupo tiene exámenes. Elimínalos primero en «Exámenes».")
-        db["groups"].pop(key, None)
-        return {"ok": True}
+        # Sus exámenes van a la papelera con sus notas; se pueden restaurar.
+        moved = [f for f in active_forms(db) if (f.get("group") or "").strip().lower() == key.lower()]
+        for form in moved:
+            form["papelera"] = _now()
+        for stored in [n for n in db["groups"] if n.lower() == key.lower()]:
+            db["groups"].pop(stored, None)
+        return {"ok": True, "examenes": len(moved)}
 
     return update(mutate)
 

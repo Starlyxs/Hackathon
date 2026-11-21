@@ -230,11 +230,53 @@ def check_grupos_apagar_papelera():
     if not overview()["siguiente"]["texto"]:
         raise SystemExit("El resumen de inicio salió vacío.")
     try:
-        delete_group(group)
+        create_diagnostic(group, [], random.Random(10), meta=meta, question_ids=closed)
     except ValueError:
         pass
     else:
-        raise SystemExit("Se borró un grupo que todavía tiene exámenes.")
+        raise SystemExit("Se creó dos veces el mismo examen.")
+    first_materia = next(row["materia"] for row in bank if row["id"] == closed[0])
+    from app.service import add_question
+
+    stranger = add_question(
+        "Explica con tus palabras por qué el agua es importante.",
+        materia="Ciencias Sociales" if first_materia != "Ciencias Sociales" else "Matemática",
+        kind="abierta",
+        criterion="Dice que todos los seres vivos la necesitan.",
+    )
+    other_materia = [stranger["id"]]
+    if other_materia:
+        try:
+            create_diagnostic(
+                group,
+                [],
+                random.Random(11),
+                materias=[first_materia],
+                meta={**meta, "numero": 2},
+                question_ids=other_materia,
+            )
+        except ValueError as exc:
+            if "quita las preguntas de otra materia" not in str(exc):
+                raise SystemExit(f"Mensaje de materia inesperado: {exc}") from exc
+        else:
+            raise SystemExit("Un examen de una materia aceptó preguntas de otra.")
+    from app.notas import grid, yearly
+
+    if len(grid(load(), group, None, first_materia)["exams"]) != 1:
+        raise SystemExit("El cuadro de notas no mostró el examen de su materia.")
+    if grid(load(), group, None, stranger["materia"])["exams"]:
+        raise SystemExit("El cuadro de notas mezcló materias distintas.")
+    if yearly(load(), group, stranger["materia"])["bimestres"][2]["examenes"]:
+        raise SystemExit("Las notas del año mezclaron materias distintas.")
+    result = delete_group(group)
+    if result["examenes"] != 1:
+        raise SystemExit("Eliminar el grupo no movió su examen a la papelera.")
+    for _ in range(2):
+        if any(row["name"].lower() == group.lower() for row in list_my_groups()["groups"]):
+            raise SystemExit("El grupo eliminado volvió a aparecer.")
+    restore_exam(made["form_id"])
+    if not any(row["name"].lower() == group.lower() for row in list_my_groups()["groups"]):
+        raise SystemExit("Restaurar el examen no devolvió su grupo.")
     print("Grupos, preguntas elegidas, examen apagado y papelera.")
 
 

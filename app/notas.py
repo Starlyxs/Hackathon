@@ -155,6 +155,21 @@ def _group_forms(db, group):
     return [form for form in active_forms(db) if (form.get("group") or "").strip().lower() == wanted]
 
 
+def group_materias(db, group):
+    """Materias con exámenes en el grupo, para elegir cuál ver."""
+    found = set()
+    for form in _group_forms(db, group):
+        found.update(form.get("materias") or [])
+    return sorted(found, key=str.lower)
+
+
+def _forms_for(db, group, materia=None):
+    forms = _group_forms(db, group)
+    if materia:
+        forms = [form for form in forms if materia in (form.get("materias") or [])]
+    return forms
+
+
 def list_groups(db):
     names = {}
     for name in db.get("groups", {}):
@@ -185,10 +200,10 @@ def _sum(values):
     return _num(sum(values)) if values else None
 
 
-def grid(db, group, bimestre=None):
+def grid(db, group, bimestre=None, materia=None):
     """Cuadro tipo Excel: alumnos en filas, exámenes en columnas."""
     latest = latest_by_sheet(db)
-    all_forms = _group_forms(db, group)
+    all_forms = _forms_for(db, group, materia)
     available = sorted({form_meta(form)["bimestre"] for form in all_forms})
     tables = []
     for form in all_forms:
@@ -243,6 +258,8 @@ def grid(db, group, bimestre=None):
         )
     return {
         "group": group,
+        "materia": materia or "",
+        "materias": group_materias(db, group),
         "bimestres": available,
         "exams": exams,
         "students": students,
@@ -250,12 +267,12 @@ def grid(db, group, bimestre=None):
     }
 
 
-def yearly(db, group):
+def yearly(db, group, materia=None):
     """Zona (parciales y actividades), examen final y total de cada bimestre."""
     latest = latest_by_sheet(db)
     by_bimestre = {number: [] for number in BIMESTRES}
     names = {}
-    for form in _group_forms(db, group):
+    for form in _forms_for(db, group, materia):
         meta, rows = exam_rows(db, form, latest)
         if not meta["suma"]:
             continue
@@ -314,7 +331,13 @@ def yearly(db, group):
                 "promedio_relativa": promedio["relativa"],
             }
         )
-    return {"group": group, "bimestres": blocks, "students": students}
+    return {
+        "group": group,
+        "materia": materia or "",
+        "materias": group_materias(db, group),
+        "bimestres": blocks,
+        "students": students,
+    }
 
 
 def _cell(value):

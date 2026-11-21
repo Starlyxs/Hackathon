@@ -5,6 +5,7 @@ import os
 import shutil
 import sys
 import threading
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -52,8 +53,17 @@ def load():
 def save(db):
     ensure_dirs()
     tmp = STORE.with_suffix(".tmp")
-    tmp.write_text(json.dumps(db, ensure_ascii=False, indent=2), encoding="utf-8")
-    tmp.replace(STORE)
+    text = json.dumps(db, ensure_ascii=False, indent=2)
+    # OneDrive y los antivirus a veces bloquean el archivo un instante: se reintenta.
+    for attempt in range(8):
+        try:
+            tmp.write_text(text, encoding="utf-8")
+            tmp.replace(STORE)
+            return
+        except PermissionError:
+            if attempt == 7:
+                raise
+            time.sleep(0.25)
 
 
 BACKUPS = STORE.parent / "copias"
