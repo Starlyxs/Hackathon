@@ -50,6 +50,25 @@ def _qr_image(payload):
     return img.resize((QR_SIZE, QR_SIZE), Image.Resampling.NEAREST)
 
 
+def _heading(sheet, fallback):
+    if sheet.get("kind") == "refuerzo":
+        return "Hoja de refuerzo"
+    title = sheet.get("titulo")
+    if not title:
+        return fallback
+    if sheet.get("bimestre"):
+        title = f"{title} · Bimestre {sheet['bimestre']}"
+    return title if len(title) <= 28 else title[:27] + "…"
+
+
+def _group_line(sheet):
+    line = f"Grupo: {sheet['group']}"
+    points = sheet.get("nota_total")
+    if points and sheet.get("kind") != "refuerzo":
+        line += f"   ·   Vale {points:g} puntos"
+    return line
+
+
 def render_sheet(sheet):
     if sheet.get("format") == "abierta":
         return _render_open(sheet)
@@ -64,11 +83,10 @@ def render_sheet(sheet):
     for x, y, w, h in marker_boxes().values():
         draw.rectangle((x, y, x + w - 1, y + h - 1), fill="black")
 
-    kind = "Hoja de refuerzo" if sheet["kind"] == "refuerzo" else "Diagnóstico"
-    draw.text((72, 58), kind, fill=ACCENT, font=title_font)
+    draw.text((72, 58), _heading(sheet, "Diagnóstico"), fill=ACCENT, font=title_font)
     draw.text((72, 112), sheet.get("materia_label") or "Matemática y lectura  ·  4° a 6°", fill=INK, font=meta_font)
     draw.text((72, 154), f"Alumno: {sheet['student_name']}", fill=INK, font=meta_font)
-    draw.text((72, 188), f"Grupo: {sheet['group']}", fill=INK, font=meta_font)
+    draw.text((72, 188), _group_line(sheet), fill=INK, font=meta_font)
     draw.text(
         (72, 232),
         "Rellena por completo una burbuja por pregunta. No marques fuera del círculo.",
@@ -115,10 +133,11 @@ def _render_open(sheet):
     small_font = load_font(16)
     for x, y, w, h in marker_boxes().values():
         draw.rectangle((x, y, x + w - 1, y + h - 1), fill="black")
-    draw.text((72, 58), "Interpretación", fill=ACCENT, font=title_font)
-    draw.text((72, 112), sheet.get("materia_label") or "Varias materias", fill=INK, font=meta_font)
+    draw.text((72, 58), _heading(sheet, "Interpretación"), fill=ACCENT, font=title_font)
+    subject = sheet.get("materia_label") or "Varias materias"
+    draw.text((72, 112), f"Interpretación · {subject}" if sheet.get("titulo") else subject, fill=INK, font=meta_font)
     draw.text((72, 154), f"Alumno: {sheet['student_name']}", fill=INK, font=meta_font)
-    draw.text((72, 188), f"Grupo: {sheet['group']}", fill=INK, font=meta_font)
+    draw.text((72, 188), _group_line(sheet), fill=INK, font=meta_font)
     draw.text(
         (72, 232),
         "Responde con tus palabras. Se lee la idea, no la ortografía.",

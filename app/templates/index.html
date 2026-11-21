@@ -4,85 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="/static/logo.png">
-  <title>Hojas en papel</title>
-  <style>
-    :root {
-      --paper: #f3efe4;
-      --card: #fffdf8;
-      --ink: #1c2420;
-      --muted: #5c675f;
-      --line: #ddd4c4;
-      --green: #145c43;
-      --green-soft: #e5f2eb;
-      --rust: #8c3a2f;
-      --rust-soft: #f8ebe6;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      color: var(--ink);
-      background: var(--paper);
-    }
-    header, main { width: min(1080px, calc(100% - 32px)); margin: 0 auto; }
-    header { padding: 28px 0 8px; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand img { width: 56px; height: 56px; border-radius: 14px; }
-    h2 { font-size: 1.25rem; margin: 0 0 12px; }
-    p { line-height: 1.45; }
-    .lede { color: var(--muted); max-width: 62ch; margin-top: 0; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-bottom: 40px; }
-    .span { grid-column: 1 / -1; }
-    section {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 18px;
-    }
-    label { display: block; font-size: 0.92rem; margin: 10px 0 4px; }
-    input, textarea {
-      width: 100%;
-      font: inherit;
-      color: inherit;
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px 12px;
-    }
-    textarea { min-height: 140px; resize: vertical; }
-    .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    button, .file-btn {
-      font-family: "Segoe UI", sans-serif;
-      background: var(--green);
-      color: white;
-      border: 0;
-      border-radius: 999px;
-      padding: 10px 16px;
-      cursor: pointer;
-    }
-    button.secondary { background: transparent; color: var(--green); border: 1px solid var(--green); }
-    button:disabled { opacity: 0.6; cursor: wait; }
-    video, canvas { width: 100%; border-radius: 12px; background: #111; margin-top: 10px; }
-    canvas { display: none; }
-    ul { padding-left: 18px; }
-    li { margin: 6px 0; }
-    a { color: var(--green); }
-    .pattern {
-      background: var(--rust-soft);
-      color: var(--rust);
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin: 8px 0;
-    }
-    .ok { background: var(--green-soft); color: var(--green); border-radius: 12px; padding: 10px 12px; }
-    .error { color: var(--rust); min-height: 1.2em; font-family: "Segoe UI", sans-serif; }
-    .score { font-family: "Segoe UI", sans-serif; font-size: 1.4rem; margin: 8px 0; }
-    nav { display: flex; gap: 16px; margin: 0 0 12px; font-family: "Segoe UI", sans-serif; }
-    nav a { color: var(--green); text-decoration: none; }
-    .checks { display: flex; flex-wrap: wrap; gap: 8px 16px; font-family: "Segoe UI", sans-serif; }
-    .checks label { display: flex; gap: 6px; align-items: center; }
-    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
-  </style>
+  <link rel="stylesheet" href="/static/app.css">
+  <title>Calificar · Hojas en papel</title>
 </head>
 <body>
   <header>
@@ -90,37 +13,17 @@
       <img src="/static/logo.png" alt="">
       <h1>Hojas en papel</h1>
     </div>
-    <nav>
-      <a class="active" href="/">Calificar</a>
-      <a href="/preguntas">Preguntas</a>
-      <a href="/examenes">Exámenes</a>
-    </nav>
-    <p class="lede">Imprime el diagnóstico, pasa cada hoja frente a la cámara y revisa qué está fallando el grupo. Todo queda en esta laptop.</p>
+    <!--NAV-->
+    <p class="lede">Pasa cada hoja frente a la cámara. La nota aparece sola en el cuadro de abajo, como en una hoja de cálculo.</p>
     <label for="group">Grupo</label>
-    <input id="group" value="6A" maxlength="40">
+    <select id="group"></select>
   </header>
-  <main class="grid">
-    <section>
-      <h2>1. Imprimir diagnóstico</h2>
-      <p id="question-source" class="lede"></p>
-      <div id="materias" class="checks"></div>
-      <label for="names">Un alumno por línea</label>
-      <textarea id="names">Ana
-Luis
-María
-Pedro
-Sofía</textarea>
-      <div class="row">
-        <button id="preview-exam" type="button" class="secondary">Ver cómo queda</button>
-        <button id="make" type="button">Generar hojas</button>
-      </div>
-      <div id="preview-box"></div>
-      <div id="sheets"></div>
-    </section>
+  <main>
+    <p id="no-exams" class="warn" hidden>Todavía no hay exámenes. Primero créalos en <a href="/examenes">2. Exámenes</a>.</p>
 
     <section>
-      <h2>2. Calificar con la cámara</h2>
-      <p>La cámara en vivo funciona en esta laptop. Desde un celular en la red puedes subir la foto. El QR tiene que verse grande, quieto y sin flash.</p>
+      <h2>Cámara</h2>
+      <p class="lede">La cámara en vivo funciona en esta laptop. Desde un celular en la red puedes subir la foto. El QR tiene que verse grande, quieto y sin flash.</p>
       <div class="row">
         <button id="cam" type="button" class="secondary">Encender cámara</button>
         <button id="shoot" type="button" disabled>Capturar hoja</button>
@@ -132,30 +35,55 @@ Sofía</textarea>
       <div id="grade"></div>
     </section>
 
-    <section class="span">
-      <h2>3. Patrón del grupo</h2>
-      <p class="lede">La nota real es el porcentaje de aciertos. La relativa compara con el mejor del mismo grupo: si el mejor sacó 80, esa nota relativa es 100.</p>
-      <div class="row">
-        <button id="refresh" type="button" class="secondary">Actualizar</button>
-        <button id="simulate" type="button" class="secondary">Simular una clase</button>
+    <section>
+      <h2>Cuadro de notas</h2>
+      <div class="row" style="justify-content: space-between;">
+        <div class="chips" id="bimestres"></div>
+        <div class="row" style="margin: 0;">
+          <select id="modo" style="width:auto;">
+            <option value="real">Nota real</option>
+            <option value="relativa">Nota relativa</option>
+          </select>
+          <a id="csv" class="button secondary" href="#">Descargar para Excel</a>
+        </div>
       </div>
-      <p id="class-error" class="error"></p>
+      <p class="lede" id="explica"></p>
+      <div id="grid"></div>
+      <p id="grid-error" class="error"></p>
+    </section>
+
+    <section>
+      <h2>Qué falló el grupo</h2>
+      <p class="lede">Elige el examen. Si más de la mitad repite el mismo error, aparece aquí.</p>
+      <select id="patron-examen" style="max-width: 420px;"></select>
       <div id="patterns"></div>
-      <div id="roster"></div>
+    </section>
+
+    <section>
+      <details>
+        <summary>Probar con una clase de ejemplo</summary>
+        <p class="lede">Crea un diagnóstico de ejemplo con 10 alumnos y lo califica como si lo hubieran contestado. Se puede borrar después en Exámenes.</p>
+        <button id="simulate" type="button" class="secondary">Simular una clase</button>
+        <p id="sim-error" class="error"></p>
+      </details>
     </section>
   </main>
   <script>
-    const groupInput = document.querySelector("#group");
+    const groupSelect = document.querySelector("#group");
     const gradeBox = document.querySelector("#grade");
     const gradeError = document.querySelector("#grade-error");
-    const patternsBox = document.querySelector("#patterns");
-    const rosterBox = document.querySelector("#roster");
     const video = document.querySelector("#video");
     const frame = document.querySelector("#frame");
     let stream;
+    let bimestre = "";
+    let bimestresDisponibles = [];
 
-    function group() {
-      return groupInput.value.trim() || "6A";
+    const fmt = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
+    const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+    const group = () => groupSelect.value;
+    function shortDate(value) {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("es-GT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
     }
 
     async function readError(response) {
@@ -168,6 +96,15 @@ Sofía</textarea>
       }
     }
 
+    async function loadGroups(selected) {
+      const body = await (await fetch("/api/grupos")).json();
+      const wanted = selected || localStorage.getItem("hp_group") || "";
+      groupSelect.innerHTML = body.groups.map((name) => `<option>${esc(name)}</option>`).join("");
+      if (body.groups.includes(wanted)) groupSelect.value = wanted;
+      document.querySelector("#no-exams").hidden = body.groups.length > 0;
+      return body.groups.length > 0;
+    }
+
     function renderGrade(result) {
       if (result.needs_review) {
         renderReview(result);
@@ -175,40 +112,49 @@ Sofía</textarea>
       }
       const items = result.items.map((item) => {
         const mark = item.correct ? "Bien" : (item.status === "vacia" ? "En blanco" : "Revisar");
-        return `<li>${mark}. ${item.prompt}</li>`;
+        return `<li>${mark}. ${esc(item.prompt)}</li>`;
       }).join("");
-      const patterns = (result.patterns || []).map((item) => `<div class="pattern">${item.message}</div>`).join("");
+      const patterns = (result.patterns || []).map((item) => `<div class="pattern">${esc(item.message)}</div>`).join("");
+      const exam = result.exam;
+      let nota = "";
+      if (exam) {
+        nota = exam.state === "listo"
+          ? `<p class="lede">${esc(exam.titulo)} · nota ${fmt(exam.nota_real)} de ${fmt(exam.nota_total)}</p>`
+          : `<p class="lede">${esc(exam.titulo)} · falta calificar otra hoja de este alumno para dar la nota.</p>`;
+      }
       gradeBox.innerHTML = `
-        <p class="score">${result.student_name}: ${result.score}/${result.total}</p>
+        <p class="score">${esc(result.student_name)}: ${fmt(result.score)}/${fmt(result.total)} aciertos</p>
+        ${nota}
         <ul>${items}</ul>
         ${patterns}
-        <div class="row"><button type="button" id="reinforce">Hoja de refuerzo para ${result.student_name}</button></div>
+        <div class="row"><button type="button" id="reinforce">Hoja de refuerzo para ${esc(result.student_name)}</button></div>
         <div id="reinforce-out"></div>`;
-      document.querySelector("#reinforce").onclick = async () => {
-        const response = await fetch("/api/refuerzo", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ group: result.group, student_name: result.student_name }),
-        });
-        const out = document.querySelector("#reinforce-out");
-        if (!response.ok) {
-          out.innerHTML = `<p class="error">${await readError(response)}</p>`;
-          return;
-        }
-        const sheet = await response.json();
-        out.innerHTML = `<p><a href="${sheet.pdf}" target="_blank">Descargar refuerzo de ${sheet.student_name}</a></p>`;
-      };
+      document.querySelector("#reinforce").onclick = () => reinforce(result.group, result.student_name, document.querySelector("#reinforce-out"));
+    }
+
+    async function reinforce(groupName, student, out) {
+      const response = await fetch("/api/refuerzo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ group: groupName, student_name: student }),
+      });
+      if (!response.ok) {
+        out.innerHTML = `<p class="error">${esc(await readError(response))}</p>`;
+        return;
+      }
+      const sheet = await response.json();
+      out.innerHTML = `<p><a href="${sheet.pdf}" target="_blank">Descargar refuerzo de ${esc(sheet.student_name)}</a></p>`;
     }
 
     function renderReview(result) {
       const marks = new Array(result.items.length);
       gradeBox.innerHTML = `
-        <p class="score">${result.student_name}</p>
+        <p class="score">${esc(result.student_name)}</p>
         <p>La cámara reconoció la hoja. Lee lo que escribió y marca si logró la idea.</p>
         ${result.items.map((item, index) => `
           <div class="card">
-            <p>${item.prompt}</p>
-            <p class="lede">Se espera: ${item.criterion}</p>
+            <p>${esc(item.prompt)}</p>
+            <p class="lede">Se espera: ${esc(item.criterion)}</p>
             <div class="row">
               <button type="button" data-i="${index}" data-mark="logrado">Logrado</button>
               <button type="button" class="secondary" data-i="${index}" data-mark="parcial">Parcial</button>
@@ -236,7 +182,7 @@ Sofía</textarea>
           return;
         }
         renderGrade(await response.json());
-        refreshClass();
+        refreshAll();
       };
     }
 
@@ -251,110 +197,126 @@ Sofía</textarea>
       }
       const result = await response.json();
       renderGrade(result);
-      if (!result.needs_review) refreshClass();
+      if (result.group && result.group !== group()) {
+        await loadGroups(result.group);
+      }
+      if (!result.needs_review) refreshAll();
     }
 
-    function renderClass(report) {
+    function chips() {
+      const box = document.querySelector("#bimestres");
+      const options = [["", "Todos"], ["1", "Bimestre 1"], ["2", "Bimestre 2"], ["3", "Bimestre 3"], ["4", "Bimestre 4"]];
+      if (bimestresDisponibles.includes(0)) options.push(["0", "Sin bimestre"]);
+      box.innerHTML = options.map(([value, label]) =>
+        `<button type="button" data-b="${value}" class="${value === bimestre ? "on" : ""}">${label}</button>`).join("");
+      box.querySelectorAll("button").forEach((button) => {
+        button.onclick = () => { bimestre = button.dataset.b; loadGrid(); };
+      });
+    }
+
+    function renderGrid(data) {
+      const modo = document.querySelector("#modo").value;
+      const key = modo === "relativa" ? "nota_relativa" : "nota_real";
+      const totalKey = modo === "relativa" ? "total_relativa" : "total_real";
+      const avgKey = modo === "relativa" ? "promedio_relativa" : "promedio_real";
+      document.querySelector("#explica").textContent = modo === "relativa"
+        ? "Nota relativa: el mejor del examen se lleva la nota completa y los demás se comparan con él."
+        : "Nota real: los puntos que sacó el alumno sobre la nota total del examen.";
+      const box = document.querySelector("#grid");
+      if (!data.exams.length) {
+        box.innerHTML = `<div class="empty">${group() ? "No hay exámenes en esta selección." : "Todavía no hay exámenes."} Créalos en <a href="/examenes">Exámenes</a>.</div>`;
+        return;
+      }
+      const head = data.exams.map((exam) =>
+        `<th title="${esc(exam.materias.join(", "))}">${esc(exam.titulo)}<small>B${exam.bimestre || "–"} · de ${fmt(exam.nota_total)}</small></th>`).join("");
+      const rows = data.students.map((student) => {
+        const cells = data.exams.map((exam) => {
+          const cell = student.cells[exam.id];
+          if (!cell || cell.state === "pendiente") return `<td class="pend">—</td>`;
+          if (cell.state === "parcial") return `<td class="pend" title="Falta calificar otra hoja de este alumno">…</td>`;
+          const value = cell[key];
+          const low = value < exam.nota_total * 0.6 ? " low" : "";
+          return `<td class="${low}" title="${fmt(cell.score)} de ${fmt(cell.total)} aciertos">${fmt(value)}</td>`;
+        }).join("");
+        const refuerzo = student.calificado
+          ? `<td><button type="button" class="secondary" data-student="${esc(student.student_name)}">Refuerzo</button></td>`
+          : `<td class="pend">—</td>`;
+        const total = student[totalKey];
+        return `<tr><td>${esc(student.student_name)}</td>${cells}<td class="total">${fmt(total)}${student.faltan ? " *" : ""}</td>${refuerzo}</tr>`;
+      }).join("");
+      const foot = data.exams.map((exam) => `<td>${fmt(exam[avgKey])}</td>`).join("");
+      box.innerHTML = `
+        <div class="sheet-wrap"><table class="xl">
+          <thead><tr><th>Alumno</th>${head}<th class="total">Total<small>de ${fmt(data.max_total)}</small></th><th>Refuerzo</th></tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr><td>Promedio</td>${foot}<td></td><td></td></tr></tfoot>
+        </table></div>
+        <p class="lede">— sin calificar. … falta una hoja del alumno. * al total le faltan exámenes por calificar. El total suma parciales, actividades y examen final (el diagnóstico no suma). En rojo, menos del 60% de la nota del examen.</p>
+        <div id="reinforce-grid"></div>`;
+      box.querySelectorAll("button[data-student]").forEach((button) => {
+        button.onclick = () => reinforce(group(), button.dataset.student, document.querySelector("#reinforce-grid"));
+      });
+    }
+
+    function updateCsv() {
+      const q = new URLSearchParams({ group: group(), modo: document.querySelector("#modo").value });
+      if (bimestre) q.set("bimestre", bimestre);
+      document.querySelector("#csv").href = `/api/notas.csv?${q}`;
+    }
+
+    async function loadGrid() {
+      document.querySelector("#grid-error").textContent = "";
+      if (!group()) {
+        renderGrid({ exams: [], students: [] });
+        return;
+      }
+      const q = new URLSearchParams({ group: group() });
+      if (bimestre) q.set("bimestre", bimestre);
+      const response = await fetch(`/api/notas?${q}`);
+      if (!response.ok) {
+        document.querySelector("#grid-error").textContent = await readError(response);
+        return;
+      }
+      const data = await response.json();
+      bimestresDisponibles = data.bimestres;
+      chips();
+      updateCsv();
+      renderGrid(data);
+    }
+
+    async function loadPatterns() {
+      const select = document.querySelector("#patron-examen");
+      const box = document.querySelector("#patterns");
+      if (!group()) {
+        select.innerHTML = "";
+        box.innerHTML = "";
+        return;
+      }
+      const exams = (await (await fetch("/api/examenes")).json()).exams.filter((exam) => exam.group === group());
+      const current = select.value;
+      const report = await (await fetch(`/api/clase?group=${encodeURIComponent(group())}${current ? `&form_id=${current}` : ""}`)).json();
+      select.innerHTML = exams.map((exam) =>
+        `<option value="${exam.id}">${esc(exam.titulo_completo)} · ${shortDate(exam.created)} (${exam.calificados} de ${exam.students.length} calificados)</option>`).join("");
+      if (report.form_id) select.value = report.form_id;
       const patterns = report.patterns || [];
-      patternsBox.innerHTML = patterns.length
-        ? patterns.map((item) => `<div class="pattern">${item.message}</div>`).join("")
-        : `<p class="ok">${report.students < 3 ? "Califica al menos 3 hojas para ver un patrón de grupo." : "Ningún error se repite en la mitad de la clase o más."}</p>`;
-      const rows = (report.results || []).map((item) =>
-        `<li>${item.student_name}: ${item.score}/${item.total} · real ${item.nota_real} · relativa ${item.nota_relativa} <button type="button" data-student="${item.student_name}" class="secondary">Refuerzo</button></li>`
-      ).join("");
-      rosterBox.innerHTML = rows ? `<ul>${rows}</ul>` : "";
-      rosterBox.querySelectorAll("button").forEach((button) => {
-        button.onclick = async () => {
-          const response = await fetch("/api/refuerzo", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ group: group(), student_name: button.dataset.student }),
-          });
-          if (!response.ok) {
-            document.querySelector("#class-error").textContent = await readError(response);
-            return;
-          }
-          const sheet = await response.json();
-          button.insertAdjacentHTML("afterend", ` <a href="${sheet.pdf}" target="_blank">PDF</a>`);
-        };
-      });
+      box.innerHTML = patterns.length
+        ? patterns.map((item) => `<div class="pattern">${esc(item.message)}</div>`).join("")
+        : `<p class="ok">${report.students < 3 ? "Califica al menos 3 hojas de este examen para ver un patrón del grupo." : "Ningún error se repite en la mitad de la clase o más."}</p>`;
     }
 
-    async function refreshClass() {
-      document.querySelector("#class-error").textContent = "";
-      const response = await fetch(`/api/clase?group=${encodeURIComponent(group())}`);
-      if (!response.ok) return;
-      renderClass(await response.json());
+    function refreshAll() {
+      loadGrid();
+      loadPatterns();
     }
 
-    document.querySelector("#make").onclick = async () => {
-      const button = document.querySelector("#make");
-      button.disabled = true;
-      const names = document.querySelector("#names").value.split("\n");
-      const materias = [...document.querySelectorAll("#materias input:checked")].map((input) => input.value);
-      const response = await fetch("/api/diagnostico", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ group: group(), names, materias }),
-      });
-      button.disabled = false;
-      if (!response.ok) {
-        document.querySelector("#sheets").innerHTML = `<p class="error">${await readError(response)}</p>`;
-        return;
-      }
-      const body = await response.json();
-      const warning = body.warning ? `<p class="error">${body.warning}</p>` : "";
-      const together = body.pdf ? `<p><a href="${body.pdf}" target="_blank">Imprimir todas las hojas en un solo PDF</a></p>` : "";
-      document.querySelector("#sheets").innerHTML = `${warning}${together}<ul>${body.sheets.map((sheet) =>
-        `<li><a href="${sheet.pdf}" target="_blank">${sheet.label || sheet.student_name}</a></li>`
-      ).join("")}</ul>`;
+    groupSelect.onchange = () => {
+      localStorage.setItem("hp_group", group());
+      bimestre = "";
+      document.querySelector("#patron-examen").value = "";
+      refreshAll();
     };
-
-    document.querySelector("#preview-exam").onclick = async () => {
-      const box = document.querySelector("#preview-box");
-      box.innerHTML = "<p class=\"lede\">Armando la vista previa…</p>";
-      const names = document.querySelector("#names").value.split("\n");
-      const materias = [...document.querySelectorAll("#materias input:checked")].map((input) => input.value);
-      const response = await fetch("/api/vista-examen", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ group: group(), names, materias }),
-      });
-      if (!response.ok) {
-        box.innerHTML = `<p class="error">${await readError(response)}</p>`;
-        return;
-      }
-      const body = await response.json();
-      box.innerHTML = `<p class="lede">Así vería la hoja ${body.student_name}.</p><img src="${body.png}" alt="Vista previa del examen" style="width:100%; border-radius:12px; border:1px solid var(--line);">`;
-    };
-
-    async function loadQuestionSource() {
-      const response = await fetch("/api/preguntas");
-      if (!response.ok) return;
-      const body = await response.json();
-      const count = body.questions.length;
-      const box = document.querySelector("#materias");
-      box.replaceChildren();
-      if (!count) {
-        document.querySelector("#question-source").innerHTML = `Sin preguntas propias se imprime el diagnóstico de ejemplo. <a href="/preguntas">Escribir preguntas</a>`;
-        return;
-      }
-      body.materias.forEach((name) => {
-        const amount = body.questions.filter((question) => question.materia === name).length;
-        const label = document.createElement("label");
-        const input = document.createElement("input");
-        input.type = "checkbox";
-        input.value = name;
-        input.checked = amount > 0;
-        input.disabled = amount === 0;
-        label.append(input, document.createTextNode(` ${name} (${amount})`));
-        box.append(label);
-      });
-      const text = count === 1
-        ? "Hay 1 pregunta tuya. Marca las materias que entran en la hoja."
-        : `Hay ${count} preguntas tuyas. Marca las materias que entran en la hoja.`;
-      document.querySelector("#question-source").innerHTML = `${text} <a href="/preguntas">Editar</a>`;
-    }
+    document.querySelector("#patron-examen").onchange = loadPatterns;
+    document.querySelector("#modo").onchange = loadGrid;
 
     document.querySelector("#cam").onclick = async () => {
       gradeError.textContent = "";
@@ -384,27 +346,17 @@ Sofía</textarea>
       if (file) gradeFile(file);
     };
 
-    document.querySelector("#refresh").onclick = refreshClass;
     document.querySelector("#simulate").onclick = async () => {
       const button = document.querySelector("#simulate");
+      const error = document.querySelector("#sim-error");
       button.disabled = true;
-      document.querySelector("#class-error").textContent = "Generando y calificando 10 hojas…";
+      error.textContent = "Generando y calificando 10 hojas…";
+      const name = group() || "Ejemplo";
       const response = await fetch("/api/simular", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ group: group() }),
+        body: JSON.stringify({ group: name }),
       });
       button.disabled = false;
       if (!response.ok) {
-        document.querySelector("#class-error").textContent = await readError(response);
-        return;
-      }
-      document.querySelector("#class-error").textContent = "";
-      refreshClass();
-    };
-
-    loadQuestionSource();
-    refreshClass();
-  </script>
-</body>
-</html>
+        error.textContent = await re

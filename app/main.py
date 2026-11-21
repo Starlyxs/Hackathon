@@ -6,26 +6,30 @@ from pathlib import Path
 import cv2
 import numpy as np
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from app.demo import simulate_class
 from app.grade import GradeError
+from app.notas import csv_grid, csv_yearly, grid, yearly
 from app.service import (
     add_materia,
     add_question,
     class_report,
     create_diagnostic,
     create_reinforcement,
+    delete_exam,
     delete_question,
+    exam_summary,
     grade_photo,
+    groups_and_students,
     list_exams,
     list_questions,
     preview_diagnostic,
     save_interpretation,
 )
-from app.store import SHEETS, ensure_dirs
+from app.store import SHEETS, ensure_dirs, load
 from app.variants import preview_variants
 
 ensure_dirs()
@@ -35,15 +39,42 @@ app = FastAPI(title="Hojas en papel")
 app.mount("/archivos", StaticFiles(directory=str(SHEETS)), name="archivos")
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
-def html_page(name):
+PASOS = (
+    ("preguntas", "/preguntas", "1. Preguntas"),
+    ("examenes", "/examenes", "2. Exámenes"),
+    ("calificar", "/", "3. Calificar"),
+    ("notas", "/notas", "4. Notas del año"),
+)
+
+
+def html_page(name, active=""):
     path = Path(__file__).parent / "templates" / name
-    return HTMLResponse(path.read_text(encoding="utf-8"))
+    links = ""
+    for key, href, label in PASOS:
+        mark = ' class="active"' if key == active else ""
+        links += f'<a href="{href}"{mark}>{label}</a>'
+    html = path.read_text(encoding="utf-8").replace("<!--NAV-->", f"<nav>{links}</nav>")
+    return HTMLResponse(html)
 
 
 class DiagnosticIn(BaseModel):
     group: str = Field(min_length=1, max_length=40)
     names: list[str]
     materias: list[str] = []
+    bimestre: int = 1
+    tipo: str = "parcial"
+    numero: int = 1
+    nombre: str = ""
+    nota_total: float = 20
+
+    def meta(self):
+        return {
+            "bimestre": self.bimestre,
+            "tipo": self.tipo,
+            "numero": self.numero,
+            "nombre": self.nombre,
+            "nota_total": self.nota_total,
+        }
 
 
 class QuestionIn(BaseModel):
@@ -73,19 +104,33 @@ class SimulateIn(BaseModel):
     group: str = Field(default="6A", min_length=1, max_length=40)
 
 
+def with_context(result):
+    """Añade a la respuesta de una hoja calificada el examen al que pertenece y el patrón de ese examen."""
+    exam = exam_summary(result["sheet_id"])
+    result["exam"] = exam
+    report = class_report(result["group"], exam["form_id"] if exam else None)
+    result["patterns"] = report["patterns"]
+    return result
+
+
 @app.get("/")
 def home():
-    return html_page("index.html")
+    return html_page("index.html", "calificar")
 
 
 @app.get("/preguntas")
 def questions_page():
-    return html_page("preguntas.html")
+    return html_page("preguntas.html", "preguntas")
 
 
 @app.get("/examenes")
 def exams_page():
-    return html_page("examenes.html")
+    return html_page("examenes.html", "examenes")
+
+
+@app.get("/notas")
+def notes_page():
+    return html_page("notas.html", "notas")
 
 
 @app.get("/api/examenes")
@@ -99,7 +144,7 @@ def post_exam_preview(body: DiagnosticIn):
     if not names:
         raise HTTPException(400, "Escribe al menos un nombre para la vista previa.")
     try:
-        return preview_diagnostic(body.group.strip(), names, random.Random(), materias=body.materias)
+        return preview_diagnostic(body.group.strip(), names, random.Random(), materias=body.materias, meta=body.meta())
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
 
@@ -148,7 +193,9 @@ def post_diagnostic(body: DiagnosticIn):
     if not names or len(names) > 40:
         raise HTTPException(400, "Escribe entre 1 y 40 nombres.")
     try:
-        return create_diagnostic(body.group.strip(), names, random.Random(), materias=body.materias)
+        return create_diagnostic(
+            body.group.strip(), names, random.Random(), materias=body.materias, meta=body.meta()
+        )
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
 
@@ -165,9 +212,7 @@ async def post_grade(file: UploadFile = File(...)):
         result = grade_photo(image)
     except GradeError as exc:
         raise HTTPException(400, str(exc)) from exc
-    report = class_report(result["group"])
-    result["patterns"] = report["patterns"]
-    return result
+    return with_context(result)
 
 
 @app.post("/api/interpretar")
@@ -176,14 +221,64 @@ def post_interpretation(body: InterpretIn):
         result = save_interpretation(body.sheet_id, body.marks)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
-    report = class_report(result["group"])
-    result["patterns"] = report["patterns"]
-    return result
+    return with_context(result)
 
 
 @app.get("/api/clase")
-def get_class(group: str):
-    return class_report(group.strip())
+def get_class(group: str, form_id: str = ""):
+    return class_report(group.strip(), form_id or None)
+
+
+@app.get("/api/grupos")
+def get_groups(group: str = ""):
+    return groups_and_students(group.strip() or None)
+
+
+def _bimestre(value):
+    value = (value or "").strip()
+    if not value:
+        return None
+    try:
+        return int(value)
+    except ValueError as exc:
+        raise HTTPException(400, "El bimestre debe ser un número del 1 al 4.") from exc
+
+
+@app.get("/api/notas")
+def get_grid(group: str, bimestre: str = ""):
+    return grid(load(), group.strip(), _bimestre(bimestre))
+
+
+@app.get("/api/notas-anuales")
+def get_yearly(group: str):
+    return yearly(load(), group.strip())
+
+
+@app.get("/api/notas.csv")
+def get_csv(group: str, vista: str = "cuadro", bimestre: str = "", modo: str = "real"):
+    group = group.strip()
+    modo = "relativa" if modo == "relativa" else "real"
+    if vista == "anual":
+        body = csv_yearly(yearly(load(), group), modo)
+        name = f"notas-{group}-anual.csv"
+    else:
+        number = _bimestre(bimestre)
+        body = csv_grid(grid(load(), group, number), modo)
+        name = f"notas-{group}-{'bimestre-' + str(number) if number else 'todo'}.csv"
+    safe = "".join(ch if ch.isalnum() or ch in "-_." else "_" for ch in name)
+    return Response(
+        body.encode("utf-8"),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{safe}"'},
+    )
+
+
+@app.delete("/api/examenes/{form_id}")
+def remove_exam(form_id: str):
+    try:
+        return delete_exam(form_id)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
 
 
 @app.post("/api/refuerzo")

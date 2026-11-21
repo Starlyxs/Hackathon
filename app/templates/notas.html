@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/logo.png">
+  <link rel="stylesheet" href="/static/app.css">
+  <title>Notas del año · Hojas en papel</title>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="/static/logo.png" alt="">
+      <h1>Hojas en papel</h1>
+    </div>
+    <!--NAV-->
+    <p class="lede">Las notas de los cuatro bimestres juntas: la zona (parciales y actividades), el examen final y el total de cada bimestre.</p>
+  </header>
+  <main>
+    <section>
+      <div class="fields">
+        <div>
+          <label for="group">Grupo</label>
+          <select id="group"></select>
+        </div>
+        <div>
+          <label for="modo">Mostrar</label>
+          <select id="modo">
+            <option value="real">Nota real</option>
+            <option value="relativa">Nota relativa</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <a id="csv" class="button secondary" href="#">Descargar para Excel</a>
+      </div>
+      <p class="lede" id="explica"></p>
+      <div id="table"></div>
+      <p class="lede">* a ese bimestre le faltan exámenes por calificar y todavía no suman. El promedio anual usa solo los bimestres que ya tienen exámenes.</p>
+    </section>
+  </main>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+    const fmt = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
+
+    function cell(value, max, extra = "") {
+      if (value === null || value === undefined) return `<td class="pend ${extra}">—</td>`;
+      const low = max && value < max * 0.6 ? " low" : "";
+      return `<td class="${extra}${low}">${fmt(value)}</td>`;
+    }
+
+    function render(data) {
+      const modo = $("#modo").value;
+      $("#explica").textContent = modo === "relativa"
+        ? "Nota relativa: en cada examen el mejor se lleva la nota completa y los demás se comparan con él."
+        : "Nota real: los puntos que sacó cada alumno sobre la nota total de cada examen.";
+      if (!data.students.length) {
+        $("#table").innerHTML = `<div class="empty">Todavía no hay exámenes con bimestre en este grupo. Créalos en <a href="/examenes">Exámenes</a>.</div>`;
+        return;
+      }
+      const top = data.bimestres.map((block) =>
+        `<th colspan="3" class="group">Bimestre ${block.n}<small>${block.max_total ? `de ${fmt(block.max_total)}` : "sin exámenes"}</small></th>`).join("");
+      const sub = data.bimestres.map((block) => `
+        <th>Zona<small>${block.max_zona ? `de ${fmt(block.max_zona)}` : ""}</small></th>
+        <th>Final<small>${block.max_final ? `de ${fmt(block.max_final)}` : ""}</small></th>
+        <th class="total">Total<small>${block.max_total ? `de ${fmt(block.max_total)}` : ""}</small></th>`).join("");
+      const rows = data.students.map((student) => {
+        const cells = student.bimestres.map((entry, index) => {
+          const block = data.bimestres[index];
+          if (!entry.hay) return `<td class="pend">—</td><td class="pend">—</td><td class="pend total">—</td>`;
+          const total = cell(entry[`total_${modo}`], block.max_total, "total");
+          return cell(entry[`zona_${modo}`], block.max_zona) + cell(entry[`final_${modo}`], block.max_final)
+            + (entry.faltan ? total.replace("</td>", " *</td>") : total);
+        }).join("");
+        return `<tr><td>${esc(student.student_name)}</td>${cells}<td class="total">${fmt(student[`promedio_${modo}`])}</td></tr>`;
+      }).join("");
+      $("#table").innerHTML = `<div class="sheet-wrap"><table class="xl">
+        <thead><tr><th rowspan="2">Alumno</th>${top}<th rowspan="2" class="total">Promedio anual</th></tr><tr>${sub}</tr></thead>
+        <tbody>${rows}</tbody></table></div>`;
+    }
+
+    function updateCsv() {
+      const q = new URLSearchParams({ group: $("#group").value, vista: "anual", modo: $("#modo").value });
+      $("#csv").href = `/api/notas.csv?${q}`;
+    }
+
+    async function load() {
+      updateCsv();
+      if (!$("#group").value) {
+        render({ students: [], bimestres: [] });
+        return;
+      }
+      const response = await fetch(`/api/notas-anuales?group=${encodeURIComponent($("#group").value)}`);
+      render(await response.json());
+    }
+
+    async function start() {
+      const body = await (await fetch("/api/grupos")).json();
+      const wanted = localStorage.getItem("hp_group") || "";
+      $("#group").innerHTML = body.groups.map((name) => `<option>${esc(name)}</option>`).join("");
+      if (body.groups.includes(wanted)) $("#group").value = wanted;
+      load();
+    }
+
+    $("#group").onchange = () => { localStorage.setItem("hp_group", $("#group").value); load(); };
+    $("#modo").onchange = load;
+    start();
+  </script>
+</body>
+</html>

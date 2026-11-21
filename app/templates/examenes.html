@@ -4,39 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="/static/logo.png">
-  <title>Exámenes</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <title>Exámenes · Hojas en papel</title>
   <style>
-    :root {
-      --paper: #f3efe4; --card: #fffdf8; --ink: #1c2420; --muted: #5c675f;
-      --line: #ddd4c4; --green: #145c43; --green-soft: #e5f2eb;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: var(--ink); background: var(--paper); }
-    header, main { width: min(1080px, calc(100% - 32px)); margin: 0 auto; }
-    header { padding: 28px 0 8px; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand img { width: 56px; height: 56px; border-radius: 14px; }
-    h1 { font-size: 2rem; margin: 0; }
-    h2 { font-size: 1.25rem; margin: 0 0 8px; }
-    p { line-height: 1.45; }
-    .lede { color: var(--muted); max-width: 68ch; }
-    nav { display: flex; gap: 16px; margin: 12px 0; font-family: "Segoe UI", sans-serif; }
-    nav a { color: var(--green); text-decoration: none; }
-    nav a.active { border-bottom: 2px solid var(--green); }
-    article {
-      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
-      padding: 18px; margin-bottom: 16px;
-      display: grid; grid-template-columns: 180px 1fr; gap: 16px;
-    }
-    img.thumb { width: 180px; border-radius: 8px; border: 1px solid var(--line); background: white; }
-    table { width: 100%; border-collapse: collapse; font-family: "Segoe UI", sans-serif; }
-    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
-    a { color: var(--green); }
-    a.button {
-      font-family: "Segoe UI", sans-serif; background: var(--green); color: white;
-      border-radius: 999px; padding: 8px 14px; text-decoration: none; display: inline-block;
-    }
-    @media (max-width: 700px) { article { grid-template-columns: 1fr; } img.thumb { width: 100%; } }
+    .exam { display: grid; grid-template-columns: 150px 1fr; gap: 16px; border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 12px 0; background: #fff; }
+    img.thumb { width: 150px; border-radius: 8px; border: 1px solid var(--line); background: white; }
+    .bim h2 { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+    .bim h2 small { font-family: "Segoe UI", sans-serif; font-size: 0.85rem; color: var(--muted); font-weight: 400; }
+    details summary { cursor: pointer; font-family: "Segoe UI", sans-serif; color: var(--green); margin-top: 10px; }
+    table.mini { width: 100%; border-collapse: collapse; font-family: "Segoe UI", sans-serif; margin-top: 8px; }
+    table.mini th, table.mini td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+    @media (max-width: 700px) { .exam { grid-template-columns: 1fr; } img.thumb { width: 100%; } }
   </style>
 </head>
 <body>
@@ -45,47 +23,307 @@
       <img src="/static/logo.png" alt="">
       <h1>Hojas en papel</h1>
     </div>
-    <nav>
-      <a href="/">Calificar</a>
-      <a href="/preguntas">Preguntas</a>
-      <a class="active" href="/examenes">Exámenes</a>
-    </nav>
-    <p class="lede">Los exámenes y las notas se quedan en esta computadora. Otra persona que instale el programa en su laptop empieza con su propia lista.</p>
-    <p class="lede">La nota real es el porcentaje de aciertos. La relativa compara con el mejor resultado de ese examen: el más alto vale 100.</p>
+    <!--NAV-->
+    <p class="lede">Aquí se crean los exámenes del año y se guardan ordenados por bimestre. Todo queda en esta computadora: otra persona que instale el programa empieza con su propia lista.</p>
   </header>
-  <main id="list"><p class="lede">Cargando exámenes…</p></main>
+  <main>
+    <section>
+      <h2>Crear un examen</h2>
+      <div class="fields">
+        <div>
+          <label for="group">Grupo</label>
+          <input id="group" list="groups" maxlength="40" placeholder="Por ejemplo 6A">
+          <datalist id="groups"></datalist>
+        </div>
+        <div>
+          <label for="bimestre">Bimestre</label>
+          <select id="bimestre">
+            <option value="1">Bimestre 1</option>
+            <option value="2">Bimestre 2</option>
+            <option value="3">Bimestre 3</option>
+            <option value="4">Bimestre 4</option>
+          </select>
+        </div>
+        <div>
+          <label for="tipo">¿Qué es?</label>
+          <select id="tipo">
+            <option value="parcial">Parcial</option>
+            <option value="final">Examen final</option>
+            <option value="otro">Otra actividad (tarea, laboratorio…)</option>
+            <option value="diagnostico">Diagnóstico (no suma nota)</option>
+          </select>
+        </div>
+        <div id="numero-box">
+          <label for="numero">Número de parcial</label>
+          <select id="numero">
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          </select>
+        </div>
+        <div id="nombre-box" hidden>
+          <label for="nombre">Nombre</label>
+          <input id="nombre" maxlength="40" placeholder="Por ejemplo Tarea 2">
+        </div>
+        <div id="total-box">
+          <label for="nota-total">Nota total (puntos que vale)</label>
+          <input id="nota-total" type="number" min="1" max="100" step="1" value="20">
+        </div>
+      </div>
+      <p id="resumen" class="ok"></p>
+
+      <h3 style="margin-top:14px;">Materias que entran</h3>
+      <p id="question-source" class="lede"></p>
+      <div id="materias" class="checks"></div>
+
+      <label for="names">Alumnos (uno por línea)</label>
+      <textarea id="names" placeholder="Ana&#10;Luis&#10;María"></textarea>
+      <p class="lede" id="names-hint"></p>
+
+      <div class="row">
+        <button id="preview-exam" type="button" class="secondary">Ver cómo queda</button>
+        <button id="make" type="button">Crear examen</button>
+      </div>
+      <p id="make-error" class="error"></p>
+      <div id="preview-box"></div>
+      <div id="made"></div>
+    </section>
+
+    <section>
+      <h2>Mis exámenes</h2>
+      <div class="row" style="margin-top:0;">
+        <div style="min-width:200px;">
+          <label for="f-group" style="margin-top:0;">Grupo</label>
+          <select id="f-group"></select>
+        </div>
+        <div>
+          <label style="margin-top:0;">Bimestre</label>
+          <div class="chips" id="f-bimestre"></div>
+        </div>
+      </div>
+      <div id="list"><p class="lede">Cargando exámenes…</p></div>
+    </section>
+  </main>
   <script>
-    function when(value) {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return value;
-      return date.toLocaleString("es-GT", { dateStyle: "medium", timeStyle: "short" });
+    const $ = (selector) => document.querySelector(selector);
+    const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+    const fmt = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
+    let exams = [];
+    let filterBimestre = "";
+    let autofilled = "";
+
+    async function readError(response) {
+      try {
+        const body = await response.json();
+        if (Array.isArray(body.detail)) return "Revisa los datos e inténtalo de nuevo.";
+        return body.detail || "No se pudo completar.";
+      } catch {
+        return "No se pudo completar.";
+      }
     }
 
-    function table(grades) {
-      if (!grades.length) return "<p class=\"lede\">Todavía no hay hojas calificadas de este examen.</p>";
-      const rows = grades.map((grade) =>
-        `<tr><td>${grade.student_name}</td><td>${grade.score}/${grade.total}</td><td>${grade.nota_real}</td><td>${grade.nota_relativa}</td></tr>`
-      ).join("");
-      return `<table><thead><tr><th>Alumno</th><th>Aciertos</th><th>Nota real</th><th>Nota relativa</th></tr></thead><tbody>${rows}</tbody></table>`;
+    function payload() {
+      return {
+        group: $("#group").value.trim(),
+        names: $("#names").value.split("\n"),
+        materias: [...document.querySelectorAll("#materias input:checked")].map((input) => input.value),
+        bimestre: Number($("#bimestre").value),
+        tipo: $("#tipo").value,
+        numero: Number($("#numero").value),
+        nombre: $("#nombre").value,
+        nota_total: Number($("#nota-total").value),
+      };
     }
 
-    async function load() {
-      const response = await fetch("/api/examenes");
-      const body = await response.json();
-      const main = document.querySelector("#list");
-      if (!body.exams.length) {
-        main.innerHTML = "<p class=\"lede\">Aún no hay exámenes. Genéralos en Calificar.</p>";
+    function titleOf(p) {
+      if (p.tipo === "parcial") return `Parcial ${p.numero}`;
+      if (p.tipo === "final") return "Examen final";
+      if (p.tipo === "otro") return p.nombre.trim() || "Actividad";
+      return p.nombre.trim() || "Diagnóstico";
+    }
+
+    function updateForm() {
+      const tipo = $("#tipo").value;
+      $("#numero-box").hidden = tipo !== "parcial";
+      $("#nombre-box").hidden = !(tipo === "otro" || tipo === "diagnostico");
+      $("#nombre").placeholder = tipo === "otro" ? "Por ejemplo Tarea 2" : "Opcional";
+      const p = payload();
+      const where = tipo === "diagnostico" ? "No suma a la nota del bimestre." : `Bimestre ${p.bimestre}.`;
+      $("#resumen").textContent = `Se creará: ${titleOf(p)} · vale ${p.nota_total || "?"} puntos · grupo ${p.group || "(escribe el grupo)"}. ${where}`;
+    }
+
+    async function loadQuestionSource() {
+      const body = await (await fetch("/api/preguntas")).json();
+      const count = body.questions.length;
+      const box = $("#materias");
+      box.replaceChildren();
+      if (!count) {
+        $("#question-source").innerHTML = `Todavía no escribiste preguntas, así que se usará un diagnóstico de ejemplo. <a href="/preguntas">Escribir mis preguntas</a>`;
         return;
       }
-      main.innerHTML = body.exams.map((exam) => {
-        const names = [...new Set(exam.students)];
-        const thumb = exam.preview ? `<img class="thumb" src="${exam.preview}" alt="Primera hoja">` : "<div></div>";
-        const pdf = exam.pdf ? `<p><a class="button" href="${exam.pdf}" target="_blank">Imprimir todo en un PDF</a></p>` : "";
-        return `<article>${thumb}<div><h2>Grupo ${exam.group}</h2><p class="lede">${when(exam.created)} · ${names.length} alumnos</p>${pdf}${table(exam.grades)}</div></article>`;
-      }).join("");
+      body.materias.forEach((name) => {
+        const amount = body.questions.filter((question) => question.materia === name).length;
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = name;
+        input.checked = amount > 0;
+        input.disabled = amount === 0;
+        input.onchange = updateForm;
+        label.append(input, document.createTextNode(` ${name} (${amount})`));
+        box.append(label);
+      });
+      $("#question-source").innerHTML = `Hay ${count} ${count === 1 ? "pregunta tuya" : "preguntas tuyas"}. Marca las materias de este examen. <a href="/preguntas">Editar preguntas</a>`;
     }
 
-    load();
+    async function loadRoster() {
+      const name = $("#group").value.trim();
+      if (!name) return;
+      const body = await (await fetch(`/api/grupos?group=${encodeURIComponent(name)}`)).json();
+      const textarea = $("#names");
+      if (body.students.length && (!textarea.value.trim() || textarea.value.trim() === autofilled)) {
+        autofilled = body.students.join("\n");
+        textarea.value = autofilled;
+        $("#names-hint").textContent = `Puse los ${body.students.length} alumnos que ya tiene el grupo ${name}. Puedes cambiarlos.`;
+      } else {
+        $("#names-hint").textContent = "";
+      }
+    }
+
+    $("#preview-exam").onclick = async () => {
+      const box = $("#preview-box");
+      $("#make-error").textContent = "";
+      box.innerHTML = "<p class=\"lede\">Armando la vista previa…</p>";
+      const response = await fetch("/api/vista-examen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload()),
+      });
+      if (!response.ok) {
+        box.innerHTML = `<p class="error">${esc(await readError(response))}</p>`;
+        return;
+      }
+      const body = await response.json();
+      box.innerHTML = `<p class="lede">Así vería la hoja ${esc(body.student_name)}.</p><img src="${body.png}" alt="Vista previa del examen" style="width:100%; max-width:720px; border-radius:12px; border:1px solid var(--line);">`;
+    };
+
+    $("#make").onclick = async () => {
+      const button = $("#make");
+      $("#make-error").textContent = "";
+      $("#made").innerHTML = "";
+      button.disabled = true;
+      const response = await fetch("/api/diagnostico", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload()),
+      });
+      button.disabled = false;
+      if (!response.ok) {
+        $("#make-error").textContent = await readError(response);
+        return;
+      }
+      const body = await response.json();
+      localStorage.setItem("hp_group", payload().group);
+      const warning = body.warning ? `<p class="error">${esc(body.warning)}</p>` : "";
+      $("#made").innerHTML = `${warning}<div class="ok"><strong>Listo: ${esc(body.titulo)}.</strong> ${body.sheets.length} hojas.
+        ${body.pdf ? `<a class="button" style="margin-left:8px;" href="${body.pdf}" target="_blank">Imprimir todo en un PDF</a>` : ""}
+        <a href="/" style="margin-left:8px;">Ir a calificar</a></div>`;
+      await loadList();
+    };
+
+    function chips() {
+      const options = [["", "Todos"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["0", "Sin bimestre"]];
+      $("#f-bimestre").innerHTML = options.map(([value, label]) =>
+        `<button type="button" data-b="${value}" class="${value === filterBimestre ? "on" : ""}">${label}</button>`).join("");
+      $("#f-bimestre").querySelectorAll("button").forEach((button) => {
+        button.onclick = () => { filterBimestre = button.dataset.b; chips(); renderList(); };
+      });
+    }
+
+    function gradesTable(exam) {
+      if (!exam.grades.length) return "";
+      const rows = exam.grades.map((row) => {
+        const done = row.state === "listo";
+        const state = done ? "" : (row.state === "parcial" ? "falta una hoja" : "sin calificar");
+        return `<tr><td>${esc(row.student_name)}</td><td>${done ? `${fmt(row.score)}/${fmt(row.total)}` : state}</td><td>${done ? fmt(row.nota_real) : "—"}</td><td>${done ? fmt(row.nota_relativa) : "—"}</td></tr>`;
+      }).join("");
+      return `<details><summary>Ver notas (${exam.calificados} de ${exam.grades.length} calificados)</summary>
+        <table class="mini"><thead><tr><th>Alumno</th><th>Aciertos</th><th>Nota real (de ${fmt(exam.nota_total)})</th><th>Nota relativa</th></tr></thead><tbody>${rows}</tbody></table></details>`;
+    }
+
+    function when(value) {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("es-GT", { dateStyle: "medium" });
+    }
+
+    function card(exam) {
+      const thumb = exam.preview ? `<img class="thumb" src="${exam.preview}" alt="Primera hoja">` : "<div></div>";
+      const pdf = exam.pdf ? `<a class="button" href="${exam.pdf}" target="_blank">Imprimir todo en un PDF</a>` : "";
+      const tag = exam.tipo === "final" ? "tag final" : (exam.tipo === "diagnostico" ? "tag muted" : "tag");
+      const materias = exam.materias.length ? ` · ${esc(exam.materias.join(", "))}` : "";
+      return `<div class="exam">${thumb}<div>
+        <h3>${esc(exam.titulo)} <span class="${tag}">vale ${fmt(exam.nota_total)}</span>${exam.suma ? "" : `<span class="tag muted">no suma</span>`}</h3>
+        <p class="lede">Grupo ${esc(exam.group)}${materias} · ${when(exam.created)} · ${exam.students.length} alumnos</p>
+        <div class="row" style="margin-top:6px;">${pdf}
+          <button type="button" class="danger" data-del="${exam.id}" data-name="${esc(exam.titulo_completo)} de ${esc(exam.group)}">Eliminar</button></div>
+        ${gradesTable(exam)}
+      </div></div>`;
+    }
+
+    function renderList() {
+      const group = $("#f-group").value;
+      const shown = exams.filter((exam) =>
+        (!group || exam.group === group) && (filterBimestre === "" || String(exam.bimestre) === filterBimestre));
+      const box = $("#list");
+      if (!exams.length) {
+        box.innerHTML = `<p class="lede">Aún no hay exámenes. Crea el primero arriba.</p>`;
+        return;
+      }
+      if (!shown.length) {
+        box.innerHTML = `<p class="lede">No hay exámenes con ese filtro.</p>`;
+        return;
+      }
+      const blocks = [1, 2, 3, 4, 0].map((number) => {
+        const items = shown.filter((exam) => exam.bimestre === number);
+        if (!items.length) return "";
+        const sum = items.filter((exam) => exam.suma).reduce((acc, exam) => acc + exam.nota_total, 0);
+        const totalNote = group && sum ? `<small>Suman ${fmt(sum)} puntos${sum === 100 ? " ✓" : " de 100"}</small>` : "";
+        return `<div class="bim"><h2>${number ? `Bimestre ${number}` : "Sin bimestre"} ${totalNote}</h2>${items.map(card).join("")}</div>`;
+      }).join("");
+      box.innerHTML = blocks;
+      box.querySelectorAll("button[data-del]").forEach((button) => {
+        button.onclick = async () => {
+          if (!confirm(`¿Eliminar ${button.dataset.name}? Se borran sus hojas y sus notas. No se puede deshacer.`)) return;
+          const response = await fetch(`/api/examenes/${button.dataset.del}`, { method: "DELETE" });
+          if (!response.ok) {
+            alert(await readError(response));
+            return;
+          }
+          await loadList();
+        };
+      });
+    }
+
+    async function loadList() {
+      const body = await (await fetch("/api/examenes")).json();
+      exams = body.exams;
+      const wanted = $("#f-group").value || localStorage.getItem("hp_group") || "";
+      $("#f-group").innerHTML = `<option value="">Todos los grupos</option>` + body.groups.map((name) => `<option>${esc(name)}</option>`).join("");
+      $("#f-group").value = body.groups.includes(wanted) ? wanted : "";
+      $("#groups").innerHTML = body.groups.map((name) => `<option value="${esc(name)}">`).join("");
+      if (!$("#group").value) $("#group").value = body.groups.includes(wanted) ? wanted : (body.groups[0] || "");
+      chips();
+      renderList();
+      updateForm();
+      loadRoster();
+    }
+
+    ["group", "bimestre", "tipo", "numero", "nombre", "nota-total"].forEach((id) => {
+      $(`#${id}`).addEventListener("input", updateForm);
+    });
+    $("#group").addEventListener("change", loadRoster);
+    $("#f-group").onchange = renderList;
+
+    loadQuestionSource();
+    loadList();
   </script>
 </body>
 </html>

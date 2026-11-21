@@ -29,3 +29,12 @@ En Mac o Linux el comando es `.venv/bin/python -m app.selfcheck`.
 - La cámara lee las burbujas, califica y señala si el mismo error se repite en la mitad del grupo o más.
 - En las preguntas abiertas, el alumno escribe con lápiz. La cámara identifica la hoja y el maestro marca si logró la idea.
 - Genera una hoja de refuerzo para quien falló.
+
+## Cómo se usa, paso a paso
+
+1. **Preguntas.** Escribe las preguntas por materia.
+2. **Exámenes.** Aquí se crean. Eliges grupo, bimestre (1 a 4), si es parcial, examen final, actividad o diagnóstico, y la nota total (los puntos que vale). Un mismo examen no se puede crear dos veces: por ejemplo, el Parcial 1 del Bimestre 2 de un grupo y una materia. Si hubo un error, se elimina en «Mis exámenes» y se crea otra vez. Todas las hojas salen en un solo PDF.
+3. **Calificar.** Pasa cada hoja frente a la cámara. Las notas caen en un cuadro tipo Excel, con una columna por examen. Se puede filtrar por bimestre y descargar para Excel.
+4. **Notas del año.** Los cuatro bimestres juntos: zona (parciales y actividades), examen final y total de cada bimestre, más el promedio anual.
+
+La nota real son los puntos sobre la nota total del examen. La nota relativa usa la misma escala, pero el mejor del examen se lleva la nota completa. El diagnóstico no suma a los bimestres.

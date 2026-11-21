@@ -10,6 +10,15 @@ from PIL import Image
 from app.bank import BANK, SKILLS, build_questions
 from app.grade import GradeError, read_bubbles, read_photo
 from app.materias import ensure_materias
+from app.notas import (
+    clean_meta,
+    exam_rows,
+    form_meta,
+    latest_by_sheet,
+    list_groups,
+    list_students,
+    sort_key,
+)
 from app.render import render_sheet, save_pdf
 from app.store import SHEETS, ensure_dirs, load, update
 from app.variants import vary_question
@@ -26,11 +35,38 @@ def _new_id(existing):
             return value
 
 
-def create_diagnostic(group, names, rng, source="auto", materias=None):
+def _check_duplicate(db, group, info, materias_used):
+    """Un mismo examen (por ejemplo Parcial 1 del bimestre 2) se crea una sola vez."""
+    if info["tipo"] == "diagnostico":
+        return
+    wanted = group.strip().lower()
+    candidate = form_meta({"id": "nuevo", "group": group, **info})
+    for other in db["forms"].values():
+        if (other.get("group") or "").strip().lower() != wanted:
+            continue
+        found = form_meta(other)
+        if found["tipo"] != candidate["tipo"] or found["bimestre"] != candidate["bimestre"]:
+            continue
+        if candidate["tipo"] == "parcial" and found["numero"] != candidate["numero"]:
+            continue
+        if candidate["tipo"] == "otro" and found["titulo"].lower() != candidate["titulo"].lower():
+            continue
+        if sorted(other.get("materias") or []) != materias_used:
+            continue
+        where = f" de {', '.join(materias_used)}" if materias_used else ""
+        raise ValueError(
+            f"Ya existe {candidate['titulo']}{where} del Bimestre {candidate['bimestre']} para {group}. "
+            "Búscalo en «Mis exámenes». Si hubo un error, elimínalo ahí y créalo otra vez."
+        )
+
+
+def create_diagnostic(group, names, rng, source="auto", materias=None, meta=None):
     names = [name.strip() for name in names if name and name.strip()]
     if not names:
         raise ValueError("Escribe al menos un nombre.")
     chosen = [item.strip() for item in (materias or []) if item and item.strip()]
+    info = clean_meta(meta)
+    exam = form_meta({"id": "nuevo", "group": group, **info})
 
     def mutate(db):
         db.setdefault("authored", [])
@@ -58,6 +94,8 @@ def create_diagnostic(group, names, rng, source="auto", materias=None):
                 raise ValueError("No hay preguntas en las materias elegidas.")
         else:
             shared = build_questions(rng)
+        materias_used = sorted({row["materia"] for row in (closed + opened) if row.get("materia")})
+        _check_duplicate(db, group, info, materias_used)
         form_id = _new_id(db["forms"])
         db["forms"][form_id] = {
             "id": form_id,
@@ -65,13 +103,20 @@ def create_diagnostic(group, names, rng, source="auto", materias=None):
             "kind": "diagnostico",
             "created": _now(),
             "questions": [item["prompt"] for item in (shared or closed or opened)],
+            "materias": materias_used,
+            **info,
+        }
+        extra = {
+            "titulo": exam["titulo"],
+            "bimestre": info["bimestre"],
+            "nota_total": info["nota_total"],
         }
         created = []
         used = {}
         sheet_ids = []
         for name in names:
             if shared is not None:
-                sheet = _new_sheet(db, group, name, "diagnostico", shared, form_id)
+                sheet = _new_sheet(db, group, name, "diagnostico", shared, form_id, extra=extra)
                 created.append(_publish(sheet))
                 sheet_ids.append(sheet["id"])
                 continue
@@ -86,6 +131,7 @@ def create_diagnostic(group, names, rng, source="auto", materias=None):
                     form_id,
                     materia_label=_join_materias(closed),
                     label=f"{name} · opciones",
+                    extra=extra,
                 )
                 created.append(_publish(sheet))
                 sheet_ids.append(sheet["id"])
@@ -101,6 +147,7 @@ def create_diagnostic(group, names, rng, source="auto", materias=None):
                     sheet_format="abierta",
                     materia_label=_join_materias(opened),
                     label=f"{name} · interpretación",
+                    extra=extra,
                 )
                 created.append(_publish(sheet))
                 sheet_ids.append(sheet["id"])
@@ -110,6 +157,8 @@ def create_diagnostic(group, names, rng, source="auto", materias=None):
             "form_id": form_id,
             "sheets": created,
             "pdf": pdf,
+            "titulo": exam["titulo_completo"],
+            "nota_total": info["nota_total"],
             "source": "authored" if use_authored else "bank",
             "warning": " ".join(warnings) or None,
         }
@@ -359,27 +408,44 @@ def save_interpretation(sheet_id, marks):
     return update(mutate)
 
 
-def attach_grades(results):
-    """Nota real: porcentaje de aciertos. Nota relativa: esa nota frente al mejor del grupo."""
-    rows = []
-    for result in results:
-        total = result["total"] or 1
-        real = round(100 * float(result["score"]) / total, 1)
-        rows.append(
-            {
-                "student_name": result["student_name"],
-                "group": result.get("group"),
-                "score": result["score"],
-                "total": result["total"],
-                "sheet_id": result.get("sheet_id"),
-                "nota_real": real,
-            }
-        )
-    best = max((row["nota_real"] for row in rows), default=0)
-    for row in rows:
-        row["nota_relativa"] = 0.0 if best == 0 else round(100 * row["nota_real"] / best, 1)
-    rows.sort(key=lambda row: (-row["nota_real"], row["student_name"]))
-    return rows
+def exam_summary(sheet_id):
+    """Qué examen es esta hoja y cuánto lleva el alumno en él."""
+    db = load()
+    sheet = db["sheets"].get(sheet_id)
+    form = db["forms"].get(sheet.get("form_id")) if sheet else None
+    if form is None:
+        return None
+    meta, rows = exam_rows(db, form)
+    mine = next((row for row in rows if row["student_name"] == sheet["student_name"]), None)
+    return {
+        "form_id": form["id"],
+        "titulo": meta["titulo_completo"],
+        "nota_total": meta["nota_total"],
+        "nota_real": mine["nota_real"] if mine else None,
+        "nota_relativa": mine["nota_relativa"] if mine else None,
+        "state": mine["state"] if mine else "pendiente",
+    }
+
+
+def delete_exam(form_id):
+    def mutate(db):
+        form = db["forms"].pop(form_id, None)
+        if form is None:
+            raise ValueError("Ese examen ya no existe.")
+        ids = {sid for sid, sheet in db["sheets"].items() if sheet.get("form_id") == form_id}
+        for sid in ids:
+            db["sheets"].pop(sid, None)
+        db["results"] = [row for row in db["results"] if row.get("sheet_id") not in ids]
+        files = [SHEETS / f"{sid}.{ext}" for sid in ids for ext in ("png", "pdf")]
+        files.append(SHEETS / f"{form_id}-grupo.pdf")
+        for path in files:
+            try:
+                path.unlink(missing_ok=True)
+            except OSError:
+                pass
+        return {"ok": True}
+
+    return update(mutate)
 
 
 def _write_group_pdf(form_id, sheet_ids):
@@ -399,6 +465,7 @@ def _write_group_pdf(form_id, sheet_ids):
 
 def list_exams():
     def read(db):
+        latest = latest_by_sheet(db)
         exams = []
         for form in db.get("forms", {}).values():
             sheets = [sheet for sheet in db["sheets"].values() if sheet.get("form_id") == form["id"]]
@@ -408,33 +475,35 @@ def list_exams():
             if not pdf and sheet_ids:
                 pdf = _write_group_pdf(form["id"], sheet_ids)
                 form["pdf"] = pdf
-            linked = {sheet["id"] for sheet in sheets}
-            graded = [result for result in db["results"] if result.get("sheet_id") in linked]
-            latest = {}
-            for result in graded:
-                latest[result["student_name"]] = result
+            meta, rows = exam_rows(db, form, latest)
             exams.append(
                 {
-                    "id": form["id"],
-                    "group": form.get("group") or "",
-                    "created": form.get("created") or "",
-                    "students": [sheet["student_name"] for sheet in sheets],
+                    **meta,
+                    "students": sorted({sheet["student_name"] for sheet in sheets}),
                     "pdf": pdf,
                     "preview": f"/archivos/{sheets[0]['id']}.png" if sheets else None,
-                    "grades": attach_grades(list(latest.values())),
+                    "grades": rows,
+                    "calificados": sum(1 for row in rows if row["state"] == "listo"),
                 }
             )
-        exams.sort(key=lambda exam: exam["created"], reverse=True)
-        return {"exams": exams}
+        exams.sort(key=lambda exam: (exam["group"].lower(),) + sort_key(exam))
+        return {"exams": exams, "groups": list_groups(db)}
 
     return update(read)
 
 
-def preview_diagnostic(group, names, rng, materias=None):
+def groups_and_students(group=None):
+    db = load()
+    return {"groups": list_groups(db), "students": list_students(db, group) if group else []}
+
+
+def preview_diagnostic(group, names, rng, materias=None, meta=None):
     names = [name.strip() for name in names if name and name.strip()]
     if not names:
         raise ValueError("Escribe al menos un nombre.")
     chosen = [item.strip() for item in (materias or []) if item and item.strip()]
+    info = clean_meta(meta)
+    exam = form_meta({"id": "vista", "group": group, **info})
     db = load()
     ensure_materias(db)
     name = names[0]
@@ -466,6 +535,9 @@ def preview_diagnostic(group, names, rng, materias=None):
         "format": sheet_format,
         "materia_label": label,
         "questions": questions,
+        "titulo": exam["titulo"],
+        "bimestre": info["bimestre"],
+        "nota_total": info["nota_total"],
     }
     image = render_sheet(sheet)
     ensure_dirs()
@@ -473,16 +545,36 @@ def preview_diagnostic(group, names, rng, materias=None):
     return {"png": f"/archivos/vista-previa.png?v={int(time.time())}", "student_name": name}
 
 
-def class_report(group):
-    def read(db):
-        latest = {}
-        for result in db["results"]:
-            if result["group"] == group:
-                latest[result["student_name"]] = result
-        rows = attach_grades(list(latest.values()))
-        return {"students": len(rows), "results": rows, "patterns": patterns_from(list(latest.values()))}
-
-    return update(lambda db: read(db))
+def class_report(group, form_id=None):
+    """Patrón de errores de un examen. Sin form_id, el último examen del grupo con hojas calificadas."""
+    db = load()
+    latest = latest_by_sheet(db)
+    wanted = group.strip().lower()
+    forms = [form for form in db["forms"].values() if (form.get("group") or "").strip().lower() == wanted]
+    graded_forms = [
+        form
+        for form in forms
+        if any(sid in latest and sheet.get("form_id") == form["id"] for sid, sheet in db["sheets"].items())
+    ]
+    if form_id:
+        form = next((item for item in forms if item["id"] == form_id), None)
+    else:
+        form = max(graded_forms, key=lambda item: item.get("created") or "", default=None)
+    if form is None:
+        return {"students": 0, "results": [], "patterns": [], "form_id": None, "titulo": ""}
+    meta, rows = exam_rows(db, form, latest)
+    per_student = {}
+    for sid, sheet in db["sheets"].items():
+        if sheet.get("form_id") == form["id"] and sid in latest:
+            bucket = per_student.setdefault(sheet["student_name"], {"items": []})
+            bucket["items"].extend(latest[sid]["items"])
+    return {
+        "students": len(per_student),
+        "results": rows,
+        "patterns": patterns_from(list(per_student.values())),
+        "form_id": form["id"],
+        "titulo": meta["titulo_completo"],
+    }
 
 
 def patterns_from(results):
@@ -582,6 +674,7 @@ def _new_sheet(
     sheet_format="cerrada",
     materia_label="",
     label="",
+    extra=None,
 ):
     sheet_id = _new_id(db["sheets"])
     sheet = {
@@ -595,6 +688,7 @@ def _new_sheet(
         "label": label or student_name,
         "questions": questions,
         "created": _now(),
+        **(extra or {}),
     }
     db["sheets"][sheet_id] = sheet
     return sheet

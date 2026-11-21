@@ -39,7 +39,13 @@ def choices_for(sheet, student_index):
 
 
 def simulate_class(group="6A", seed=21):
-    created = create_diagnostic(group, DEMO_NAMES, random.Random(seed), source="bank")
+    created = create_diagnostic(
+        group,
+        DEMO_NAMES,
+        random.Random(seed),
+        source="bank",
+        meta={"tipo": "diagnostico", "nombre": "Clase de ejemplo", "nota_total": 100},
+    )
     db = load()
     graded = []
     for index, info in enumerate(created["sheets"]):
@@ -47,5 +53,5 @@ def simulate_class(group="6A", seed=21):
         page = mark_bubbles(pil_to_bgr(render_sheet(sheet)), choices_for(sheet, index))
         photo = simulate_photo(page, seed=100 + index)
         graded.append(grade_photo(photo))
-    report = class_report(group)
+    report = class_report(group, created["form_id"])
     return {"sheets": created["sheets"], "graded": graded, "patterns": report["patterns"]}

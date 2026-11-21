@@ -28,9 +28,9 @@
     h2 { font-size: 1.25rem; margin: 0 0 12px; }
     p { line-height: 1.45; }
     .lede { color: var(--muted); max-width: 68ch; }
-    nav { display: flex; gap: 16px; margin: 0 0 12px; font-family: "Segoe UI", sans-serif; }
-    nav a { color: var(--green); text-decoration: none; }
-    nav a.active { border-bottom: 2px solid var(--green); }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 6px; font-family: "Segoe UI", sans-serif; }
+    nav a { color: var(--green); text-decoration: none; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); }
+    nav a.active { background: var(--green); border-color: var(--green); color: #fff; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-bottom: 40px; }
     .span { grid-column: 1 / -1; }
     section {
@@ -76,11 +76,7 @@
 <body>
   <header>
     <h1>Hojas en papel</h1>
-    <nav>
-      <a href="/">Calificar</a>
-      <a class="active" href="/preguntas">Preguntas</a>
-      <a href="/examenes">Exámenes</a>
-    </nav>
+    <!--NAV-->
     <p class="lede">En una escuela pequeña el mismo maestro lleva varias materias. Escribe la pregunta en la materia que corresponde. En las cerradas, el programa inventa A, B, C y D y cambia los números. En las abiertas, el alumno escribe y tú marcas si logró la idea.</p>
   </header>
   <main class="grid">

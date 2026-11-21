@@ -93,12 +93,72 @@ def check_authored_variants():
     print(f"Variantes por alumno: {areas[0]} | {areas[1]}")
 
 
+def check_notas_y_bimestres():
+    import random
+
+    from app.notas import grid, yearly
+    from app.service import create_diagnostic, delete_exam
+
+    group = f"notas-{random.randrange(10**6)}"
+    parcial = {"tipo": "parcial", "bimestre": 2, "numero": 1, "nota_total": 20}
+    first = create_diagnostic(group, ["Camila", "Raúl"], random.Random(1), source="bank", meta=parcial)
+    try:
+        create_diagnostic(group, ["Camila"], random.Random(2), source="bank", meta=parcial)
+    except ValueError as exc:
+        if "Ya existe Parcial 1" not in str(exc):
+            raise SystemExit(f"Mensaje de duplicado inesperado: {exc}") from exc
+    else:
+        raise SystemExit("Se pudo crear dos veces el Parcial 1 del bimestre 2.")
+    create_diagnostic(group, ["Camila", "Raúl"], random.Random(3), source="bank", meta={**parcial, "numero": 2, "nota_total": 20})
+    create_diagnostic(
+        group,
+        ["Camila", "Raúl"],
+        random.Random(4),
+        source="bank",
+        meta={"tipo": "final", "bimestre": 2, "nota_total": 40},
+    )
+    db = load()
+    for index, info in enumerate(first["sheets"]):
+        sheet = db["sheets"][info["id"]]
+        answers = [q["answer"] for q in sheet["questions"]]
+        if index == 1:
+            answers = [None] * len(answers)
+            answers[0] = sheet["questions"][0]["answer"]
+        photo = simulate_photo(mark_bubbles(pil_to_bgr(render_sheet(sheet)), answers), seed=40 + index)
+        result = grade_photo(photo)
+        if index == 0 and result["score"] != result["total"]:
+            raise SystemExit("La hoja perfecta del parcial no sacó todo.")
+    data = grid(load(), group, 2)
+    camila = next(row for row in data["students"] if row["student_name"] == "Camila")
+    raul = next(row for row in data["students"] if row["student_name"] == "Raúl")
+    parcial_id = first["form_id"]
+    if camila["cells"][parcial_id]["nota_real"] != 20:
+        raise SystemExit(f"Nota real esperada 20, salió {camila['cells'][parcial_id]['nota_real']}")
+    expected = round(20 / 8, 1)
+    if raul["cells"][parcial_id]["nota_real"] != expected:
+        raise SystemExit(f"Nota real esperada {expected}, salió {raul['cells'][parcial_id]['nota_real']}")
+    if raul["cells"][parcial_id]["nota_relativa"] != round(20 * expected / 20, 1):
+        raise SystemExit("La nota relativa no escaló contra el mejor.")
+    if camila["total_real"] != 20:
+        raise SystemExit("El total del bimestre sumó mal.")
+    year = yearly(load(), group)
+    block = year["bimestres"][1]
+    if block["max_zona"] != 40 or block["max_final"] != 40 or block["max_total"] != 80:
+        raise SystemExit(f"Los máximos del bimestre salieron mal: {block}")
+    if year["bimestres"][0]["max_total"] is not None:
+        raise SystemExit("El bimestre 1 no tiene exámenes y debía quedar vacío.")
+    delete_exam(parcial_id)
+    create_diagnostic(group, ["Camila"], random.Random(5), source="bank", meta=parcial)
+    print("Notas: nota total, relativa, duplicados bloqueados y resumen por bimestre.")
+
+
 def main():
     ensure_dirs()
     try:
         check_perfect_sheet()
         check_class_pattern()
         check_authored_variants()
+        check_notas_y_bimestres()
     except GradeError as exc:
         print(f"Falló la visión: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc

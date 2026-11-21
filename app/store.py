@@ -55,6 +55,7 @@ def save(db):
 
 
 def update(mutator):
+    # Cargar, cambiar y guardar van juntos. Si no, dos peticiones a la vez se pisan y se pierden datos.
     with _lock:
         db = load()
         result = mutator(db)
