@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -973,7 +973,7 @@
         <p class="lede">${when(exam.created)} · ${exam.students.length} alumnos</p>
         ${exam.series && exam.series.length ? `<p class="lede" style="margin-top:0;">${exam.series.map((item, index) => `${esc(item.nombre || `Serie ${ROMAN[index] || index + 1}`)}: ${item.tipo === "opciones" ? "opciones" : "escrita"}, ${num(item.puntos)} pts`).join(" · ")}</p>` : ""}
         <div class="row" style="margin-top:6px;">${pdf}
-          <button type="button" class="secondary" data-off="${exam.id}" data-to="${exam.apagado ? "0" : "1"}" title="Un examen apagado ya no recibe hojas en la cámara, pero conserva sus notas.">${exam.apagado ? "Encender examen" : "Apagar examen"}</button>
+          <button type="button" class="secondary" data-off="${exam.id}" data-to="${exam.apagado ? "0" : "1"}" title="Un examen apagado ya no recibe hojas, pero conserva sus notas.">${exam.apagado ? "Encender examen" : "Apagar examen"}</button>
           <button type="button" class="danger" data-del="${exam.id}">Eliminar</button></div>
         ${gradesTable(exam)}
       </div></div>`;

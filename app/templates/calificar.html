@@ -14,8 +14,29 @@
       <h1>Hojas en papel</h1>
     </div>
     <!--NAV-->
-    <p class="lede">Elige el examen, enciende la cámara y ve pasando las hojas. El programa las lee solo y suena un aviso con cada una.</p>
+    <p class="lede">Escanea las hojas con el celular, junta todo en un PDF y súbelo aquí. Cada hoja trae su QR: el programa sabe de quién es, avisa si falta alguna y califica solo.</p>
   </header>
+  <style>
+    .drop { border: 2px dashed var(--green); border-radius: 16px; padding: 26px 16px; text-align: center; background: var(--green-soft); cursor: pointer; margin-top: 14px; font-family: "Segoe UI", sans-serif; }
+    .drop.over { background: #d4ebdd; border-style: solid; }
+    .drop strong { display: block; font-size: 1.3rem; color: var(--green); }
+    .drop span { color: var(--muted); }
+    .bar { height: 14px; border-radius: 8px; background: #e7e0d0; overflow: hidden; margin-top: 8px; }
+    .bar > i { display: block; height: 100%; width: 0; background: var(--green); transition: width .25s; }
+    .tally { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; font-family: "Segoe UI", sans-serif; }
+    .tally div { flex: 1 1 120px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; background: var(--card); }
+    .tally b { display: block; font-size: 1.7rem; }
+    .tally .warn-n b { color: var(--rust); }
+    .review { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .review img { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+    .review .shot { position: sticky; top: 8px; }
+    .opts label { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+    .opts input { width: 22px; height: 22px; min-height: 0; margin: 0; padding: 0; }
+    .guide { font-family: "Segoe UI", sans-serif; padding-left: 20px; }
+    .guide li { margin: 6px 0; }
+    .pages td, .pages th { font-size: .9rem; padding: 4px 8px; text-align: left; border-bottom: 1px solid var(--line); }
+    @media (max-width: 760px) { .review { grid-template-columns: 1fr; } .review .shot { position: static; } }
+  </style>
   <main>
     <p id="no-exams" class="warn" hidden>No hay exámenes encendidos en este grupo. Créalos o enciéndelos en <a href="/examenes">Exámenes</a>.</p>
 
@@ -35,18 +56,50 @@
         </div>
       </div>
 
-      <div class="row">
-        <button id="cam" type="button">Encender cámara</button>
-        <button id="shoot" type="button" class="secondary" disabled>Capturar ahora</button>
-        <label class="file-btn secondary" style="background:transparent;color:var(--green);border:1px solid var(--green);">Subir foto<input id="file" type="file" accept="image/*" hidden></label>
+      <label class="drop" id="drop" for="archivos">
+        <strong>Subir el PDF escaneado</strong>
+        <span>Toca aquí para elegir el archivo, o arrástralo. También sirven varias fotos planas.</span>
+        <input id="archivos" type="file" accept=".pdf,application/pdf,image/*" multiple hidden>
+      </label>
+      <div class="row opts" style="font-family:'Segoe UI',sans-serif; gap:18px;">
+        <label><input type="checkbox" id="reemplazar"> Volver a calificar las hojas que ya tienen nota</label>
+        <label><input type="checkbox" id="mezcla"> El PDF trae hojas de varios exámenes</label>
       </div>
-      <div id="banner" class="banner">Enciende la cámara para empezar.</div>
-      <video id="video" autoplay playsinline muted hidden></video>
-      <canvas id="frame"></canvas>
-      <p id="grade-error" class="error"></p>
-      <div id="grade"></div>
-      <p class="lede">El QR tiene que verse grande, quieto y sin flash. Desde un celular en la red puedes subir la foto.</p>
+      <div id="avance" hidden>
+        <div class="banner look" id="avance-texto"></div>
+        <div class="bar"><i id="avance-barra"></i></div>
+      </div>
+      <p id="upload-error" class="error"></p>
+      <div id="resultado"></div>
+      <div id="estado"></div>
+
+      <details style="margin-top:14px;">
+        <summary><strong>¿Cómo escaneo bien las hojas?</strong></summary>
+        <ol class="guide">
+          <li>Abre una app de escaneo en el celular: <strong>Google Drive</strong> (botón + → Escanear), <strong>Notas</strong> en iPhone (Escanear documentos) o CamScanner.</li>
+          <li>Escanea todas las hojas del grupo en un solo documento. Pueden ir en cualquier orden y mezcladas.</li>
+          <li>Que se vean las <strong>cuatro esquinas negras</strong> y el QR de cada hoja. No recortes por dentro de los cuadros negros.</li>
+          <li>Elige color o «Original» (el blanco y negro también sirve). Lo marcado debe estar bien oscuro, con lápiz o lapicero firme.</li>
+          <li>Guarda como <strong>PDF</strong> y pásalo a esta computadora (cable USB, WhatsApp Web, correo o Drive). Luego súbelo aquí.</li>
+        </ol>
+      </details>
+
+      <details id="camara-box" style="margin-top:10px;">
+        <summary><strong>Usar la cámara en vivo (opcional)</strong></summary>
+        <div class="row">
+          <button id="cam" type="button">Encender cámara</button>
+          <button id="shoot" type="button" class="secondary" disabled>Capturar ahora</button>
+        </div>
+        <div id="banner" class="banner">Enciende la cámara para empezar.</div>
+        <video id="video" autoplay playsinline muted hidden></video>
+        <canvas id="frame"></canvas>
+        <p id="grade-error" class="error"></p>
+        <div id="grade"></div>
+        <p class="lede">El QR tiene que verse grande, quieto y sin flash.</p>
+      </details>
     </section>
+
+    <section id="revision" hidden></section>
 
     <section>
       <h2>Cuadro de notas</h2>
@@ -376,11 +429,229 @@
       frame.toBlob((blob) => gradeFile(blob), "image/jpeg", 0.92);
     };
 
-    $("#file").onchange = () => {
-      const file = $("#file").files[0];
-      if (file) gradeFile(file);
-      $("#file").value = "";
+    /* ---------- PDF o fotos escaneadas ---------- */
+    let queue = [];
+    let working = false;
+
+    function sendFiles(files, onUpload) {
+      return new Promise((resolve, reject) => {
+        const data = new FormData();
+        files.forEach((file) => data.append("files", file, file.name));
+        data.append("form_id", $("#mezcla").checked ? "" : examId());
+        data.append("reemplazar", $("#reemplazar").checked ? "true" : "false");
+        const request = new XMLHttpRequest();
+        request.open("POST", "/api/escaneos");
+        request.upload.onprogress = (event) => { if (event.lengthComputable) onUpload(event.loaded / event.total); };
+        request.onload = () => {
+          let body = {};
+          try { body = JSON.parse(request.responseText); } catch { /* sin cuerpo */ }
+          if (request.status >= 200 && request.status < 300) resolve(body);
+          else reject(new Error(typeof body.detail === "string" ? body.detail : "No se pudo subir el archivo."));
+        };
+        request.onerror = () => reject(new Error("Se perdió la conexión con el programa."));
+        request.send(data);
+      });
+    }
+
+    function setProgress(text, fraction, kind = "look") {
+      $("#avance").hidden = false;
+      $("#avance-texto").className = `banner ${kind}`;
+      $("#avance-texto").innerHTML = text;
+      $("#avance-barra").style.width = `${Math.round(Math.max(0, Math.min(1, fraction)) * 100)}%`;
+    }
+
+    async function uploadScans(list) {
+      const files = [...list];
+      $("#upload-error").textContent = "";
+      if (!files.length || working) return;
+      if (!$("#mezcla").checked && !examId()) {
+        $("#upload-error").textContent = "Primero elige el examen que vas a calificar.";
+        return;
+      }
+      working = true;
+      try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); } catch { /* sin sonido */ }
+      $("#resultado").innerHTML = "";
+      try {
+        setProgress("<strong>Subiendo el archivo…</strong>", 0);
+        const { job } = await sendFiles(files, (fraction) => setProgress(`<strong>Subiendo el archivo… ${Math.round(fraction * 100)}%</strong>`, fraction * 0.2));
+        for (;;) {
+          const response = await fetch(`/api/escaneos/${job}`);
+          if (!response.ok) throw new Error(await readError(response));
+          const data = await response.json();
+          if (data.estado === "corriendo") {
+            setProgress(`<strong>Leyendo la página ${Math.min(data.hechas + 1, data.total)} de ${data.total}…</strong>Puedes esperar aquí; no cierres esta ventana.`, 0.2 + 0.8 * data.hechas / Math.max(1, data.total));
+            await new Promise((resolve) => setTimeout(resolve, 700));
+            continue;
+          }
+          if (data.estado === "error") throw new Error(data.mensaje || "No se pudo leer el archivo.");
+          await finishJob(data);
+          break;
+        }
+      } catch (error) {
+        $("#avance").hidden = true;
+        $("#upload-error").textContent = error.message;
+        beep(false);
+      } finally {
+        working = false;
+      }
+    }
+
+    const STATE_TEXT = { calificada: "Calificada", revisar: "Falta revisar lo escrito", repetida: "Ya tenía nota", blanca: "En blanco", error: "No se pudo leer" };
+
+    function completenessCard(info) {
+      const lines = [];
+      if (info.incompletos.length) {
+        lines.push(`<p class="warn"><strong>Faltan hojas:</strong></p><ul>${info.incompletos.map((row) =>
+          `<li>${esc(row.alumno)}: falta ${esc(row.faltan.join(" y "))}</li>`).join("")}</ul>`);
+      }
+      if (info.sin_entregar.length) {
+        lines.push(`<p class="warn"><strong>Todavía no hay ninguna hoja de:</strong> ${info.sin_entregar.map(esc).join(", ")}</p>`);
+      }
+      if (info.por_revisar.length) {
+        lines.push(`<p class="warn"><strong>Falta revisar lo escrito de:</strong> ${info.por_revisar.map((row) => esc(row.alumno)).join(", ")}</p>`);
+      }
+      if (!lines.length) lines.push(`<p class="ok">Todos los alumnos tienen todas sus hojas calificadas ✓</p>`);
+      return `<div class="card"><strong>${esc(info.titulo)}</strong>
+        <p class="lede">${info.completos} de ${info.alumnos} alumnos con todas sus hojas.</p>${lines.join("")}</div>`;
+    }
+
+    async function loadStatus() {
+      const box = $("#estado");
+      if (!examId() || $("#mezcla").checked) {
+        box.innerHTML = "";
+        return;
+      }
+      const response = await fetch(`/api/faltantes?form_id=${encodeURIComponent(examId())}`);
+      box.innerHTML = response.ok ? completenessCard(await response.json()) : "";
+    }
+
+    async function finishJob(data) {
+      const summary = data.resumen;
+      const bad = data.paginas.filter((page) => page.estado === "error");
+      const kind = bad.length ? "bad" : (summary.revisar ? "look" : "ok");
+      const headline = bad.length
+        ? `Se leyeron ${summary.calificadas + summary.revisar} hojas y ${bad.length} no se pudieron leer`
+        : (summary.calificadas + summary.revisar ? `Listo: ${summary.calificadas + summary.revisar} hojas leídas` : "No había hojas nuevas");
+      setProgress(`<strong>${headline}</strong>`, 1, kind);
+      beep(!bad.length);
+      const tally = [
+        ["Calificadas", summary.calificadas, ""],
+        ["Por revisar", summary.revisar, summary.revisar ? "warn-n" : ""],
+        ["Ya tenían nota", summary.repetidas, ""],
+        ["En blanco", summary.blancas, ""],
+        ["No se leyeron", summary.errores, summary.errores ? "warn-n" : ""],
+      ].map(([label, value, extra]) => `<div class="${extra}"><b>${value}</b>${label}</div>`).join("");
+      const problems = bad.length
+        ? `<div class="warn"><strong>No se pudieron leer:</strong><ul>${bad.map((page) =>
+            `<li>${esc(page.pagina)}${page.alumno ? ` (${esc(page.alumno)})` : ""}: ${esc(page.mensaje)}</li>`).join("")}</ul>
+           Escanea de nuevo esas hojas y súbelas otra vez; las demás no se vuelven a calificar.</div>`
+        : "";
+      const rows = data.paginas.map((page) => `<tr><td>${esc(page.pagina)}</td><td>${esc(page.alumno || "—")}</td><td>${esc(page.hoja ? "hoja " + page.hoja : "")}</td><td>${STATE_TEXT[page.estado] || ""}${page.puntos ? " · " + esc(page.puntos) : ""}</td></tr>`).join("");
+      $("#resultado").innerHTML = `
+        <div class="tally">${tally}</div>
+        ${problems}
+        <details><summary>Ver qué pasó con cada página</summary>
+          <div class="sheet-wrap"><table class="pages"><thead><tr><th>Página</th><th>Alumno</th><th>Hoja</th><th>Resultado</th></tr></thead><tbody>${rows}</tbody></table></div>
+        </details>`;
+      $("#estado").innerHTML = data.examenes.map(completenessCard).join("");
+      const fresh = data.paginas.filter((page) => page.revisar).map((page) => page.revisar);
+      await loadQueue(fresh);
+      await loadGrid();
+      await loadExams();
+      if (queue.length) $("#revision").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    /* ---------- hojas con preguntas escritas ---------- */
+    async function loadQueue(extra = []) {
+      let saved = [];
+      try {
+        const response = await fetch("/api/pendientes");
+        if (response.ok) saved = (await response.json()).hojas;
+      } catch { /* sin conexión: se usan solo las nuevas */ }
+      const seen = new Set();
+      queue = [...saved, ...extra].filter((sheet) => {
+        if (seen.has(sheet.sheet_id) || (group() && sheet.group !== group())) return false;
+        seen.add(sheet.sheet_id);
+        return true;
+      });
+      renderQueue();
+    }
+
+    function renderQueue() {
+      const box = $("#revision");
+      if (!queue.length) {
+        box.hidden = true;
+        box.innerHTML = "";
+        return;
+      }
+      const sheet = queue[0];
+      const marks = new Array(sheet.items.length);
+      box.hidden = false;
+      const label = sheet.hoja ? ` (hoja ${esc(sheet.hoja)})` : "";
+      box.innerHTML = `
+        <h2>Revisar lo escrito · ${queue.length} ${queue.length === 1 ? "hoja" : "hojas"}</h2>
+        <p class="lede">Lee lo que escribió <strong>${esc(sheet.student_name)}</strong>${label} en la imagen y marca cada respuesta.</p>
+        <div class="review">
+          <div class="shot">${sheet.imagen
+            ? `<a href="${sheet.imagen}" target="_blank" title="Abrir en grande"><img src="${sheet.imagen}" alt="Hoja escaneada de ${esc(sheet.student_name)}"></a>`
+            : `<p class="warn">No hay imagen de esta hoja. Mira el papel original.</p>`}</div>
+          <div>
+            ${sheet.opciones && sheet.opciones.total ? `<p class="ok">Las burbujas ya se leyeron: ${sheet.opciones.bien} de ${sheet.opciones.total} bien (${fmt(sheet.opciones.puntos)} puntos).</p>` : ""}
+            ${sheet.items.map((item, index) => `
+              <div class="card">
+                ${item.puntos ? `<p class="lede" style="margin:0;">${esc(item.serie || "")}${item.serie ? " · " : ""}vale ${fmt(item.puntos)} ${item.puntos === 1 ? "punto" : "puntos"}</p>` : ""}
+                <p>${esc(item.prompt)}</p>
+                <p class="lede">Se espera: ${esc(item.criterion)}</p>
+                <div class="row">
+                  <button type="button" class="secondary" data-i="${index}" data-mark="logrado">Logrado</button>
+                  <button type="button" class="secondary" data-i="${index}" data-mark="parcial">Parcial</button>
+                  <button type="button" class="secondary" data-i="${index}" data-mark="aun_no">Aún no</button>
+                </div>
+              </div>`).join("")}
+            <p id="review-error" class="error"></p>
+            <div class="row">
+              <button type="button" id="review-save" disabled>Guardar y seguir</button>
+              ${queue.length > 1 ? `<button type="button" class="secondary" id="review-skip">Dejar para después</button>` : ""}
+            </div>
+          </div>
+        </div>`;
+      box.querySelectorAll("button[data-mark]").forEach((button) => {
+        button.onclick = () => {
+          marks[Number(button.dataset.i)] = button.dataset.mark;
+          button.parentElement.querySelectorAll("button").forEach((peer) => peer.classList.toggle("secondary", peer !== button));
+          $("#review-save").disabled = marks.some((mark) => !mark);
+        };
+      });
+      const skip = $("#review-skip");
+      if (skip) skip.onclick = () => { queue.push(queue.shift()); renderQueue(); };
+      $("#review-save").onclick = async () => {
+        const response = await fetch("/api/interpretar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sheet_id: sheet.sheet_id, marks }),
+        });
+        if (!response.ok) {
+          $("#review-error").textContent = await readError(response);
+          return;
+        }
+        queue.shift();
+        beep(true);
+        renderQueue();
+        await loadGrid();
+        await loadExams();
+        await loadStatus();
+      };
+    }
+
+    const drop = $("#drop");
+    $("#archivos").onchange = () => {
+      uploadScans($("#archivos").files);
+      $("#archivos").value = "";
     };
+    ["dragenter", "dragover"].forEach((name) => drop.addEventListener(name, (event) => { event.preventDefault(); drop.classList.add("over"); }));
+    ["dragleave", "drop"].forEach((name) => drop.addEventListener(name, (event) => { event.preventDefault(); drop.classList.remove("over"); }));
+    drop.addEventListener("drop", (event) => uploadScans(event.dataTransfer.files));
+    $("#mezcla").onchange = () => { loadStatus(); };
 
     /* ---------- cuadro de notas ---------- */
     function chips() {
@@ -463,6 +734,7 @@
       const keep = examSelect.value;
       await loadExams();
       if ([...examSelect.options].some((option) => option.value === keep)) examSelect.value = keep;
+      loadStatus();
     }
 
     groupSelect.onchange = async () => {
@@ -472,15 +744,19 @@
       materiaSelect.value = "";
       await loadExams();
       loadGrid();
+      loadStatus();
+      loadQueue();
     };
     materiaSelect.onchange = async () => {
       localStorage.setItem("hp_materia", materia());
       examSelect.value = "";
       await loadExams();
       loadGrid();
+      loadStatus();
     };
     examSelect.onchange = () => {
       localStorage.setItem("hp_exam", examId());
+      loadStatus();
       lastGraded = "";
       streak = 0;
     };
@@ -490,6 +766,8 @@
       await loadGroups();
       await loadExams();
       loadGrid();
+      loadStatus();
+      loadQueue();
     })();
   </script>
 </body>

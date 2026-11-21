@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from app import escaneo
 from app.demo import simulate_class
 from app.grade import GradeError, quick_sheet_id
 from app.notas import csv_grid, csv_yearly, grid, yearly
@@ -349,6 +350,56 @@ async def post_grade(file: UploadFile = File(...), form_id: str = Form("")):
     except GradeError as exc:
         raise HTTPException(400, str(exc)) from exc
     return with_context(result)
+
+
+MAX_UPLOAD = 200 * 1024 * 1024
+
+
+@app.post("/api/escaneos")
+async def post_scans(
+    files: list[UploadFile] = File(...),
+    form_id: str = Form(""),
+    reemplazar: bool = Form(False),
+):
+    """PDF escaneado (o varias fotos planas). Se califica en segundo plano y se pregunta el avance."""
+    loaded = []
+    size = 0
+    for item in files:
+        raw = await item.read()
+        size += len(raw)
+        if size > MAX_UPLOAD:
+            raise HTTPException(413, "Los archivos pesan demasiado. Sube menos hojas a la vez.")
+        if raw:
+            loaded.append((item.filename or "escaneo", raw))
+    if not loaded:
+        raise HTTPException(400, "El archivo llegó vacío.")
+    try:
+        job = escaneo.start(loaded, form_id, reemplazar)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    return {"job": job}
+
+
+@app.get("/api/escaneos/{job_id}")
+def get_scan_job(job_id: str):
+    data = escaneo.progress(job_id)
+    if data is None:
+        raise HTTPException(404, "Ese trabajo ya no existe. Vuelve a subir el archivo.")
+    return data
+
+
+@app.get("/api/pendientes")
+def get_pending(form_id: str = ""):
+    """Hojas leídas que esperan que la maestra marque lo escrito."""
+    return {"hojas": escaneo.pending_reviews(form_id)}
+
+
+@app.get("/api/faltantes")
+def get_missing(form_id: str):
+    data = escaneo.completeness(load(), form_id)
+    if data is None:
+        raise HTTPException(404, "Ese examen ya no existe.")
+    return data
 
 
 @app.post("/api/interpretar")

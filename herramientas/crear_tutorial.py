@@ -2,7 +2,8 @@
 
 Uso:  python herramientas/crear_tutorial.py CARPETA_CON_CAPTURAS
 
-La carpeta debe tener 01-inicio.png ... 10-general.png (1280x720). El video lleva los textos
+La carpeta debe tener 01-inicio.png ... 12-general.png (1280x720).
+capturar_tutorial.py las toma solas y las deja en CARPETA/capturas. El video lleva los textos
 escritos encima, sin voz, para que se entienda aunque no haya sonido. Si prefieres grabar tu propio
 video, solo reemplaza app/static/tutorial.webm (o agrega tutorial.mp4 en la misma carpeta).
 """
@@ -29,12 +30,13 @@ SCENES = [
     ("03-pasos", 2, "Paso 2. En Exámenes elige el grupo, la materia y cuál parcial es. Los que ya hiciste salen en verde.", 7.5),
     ("04-series", 2, "Arma el examen con series. Cada serie vale unos puntos y el programa los reparte entre sus preguntas.", 8),
     ("05-vista", 2, "Mira cómo queda la hoja antes de crearla. Cada alumno recibe la suya, con su código QR.", 7),
-    ("06-calificar", 3, "Paso 3. En Calificar enciende la cámara y pasa las hojas. También puedes subir una foto.", 7),
-    ("07-notas", 4, "Paso 4. Las notas de los cuatro bimestres se juntan solas. Descárgalas para Excel.", 6.5),
-    ("08-analisis", "+", "Análisis: elige un parcial, una materia o todo el grupo y mira cómo le fue.", 7),
-    ("09-alumno", "+", "Cada alumno tiene su texto: qué le falta y qué hacer. Crea su hoja de refuerzo con un botón.", 8),
-    ("10-general", "+", "En General ves todas las materias juntas y quién necesita más apoyo.", 6.5),
-]
+    ("06-subir", 3, "Paso 3. Escanea las hojas con el celular (Google Drive, Notas o CamScanner), junta todo en un PDF y súbelo aquí.", 9),
+    ("07-resultado", 3, "El programa lee el QR de cada página y califica solo. Te avisa a quién le falta una hoja y quién no entregó.", 9),
+    ("08-revision", 3, "Si hay preguntas escritas, ves la hoja escaneada y marcas Logrado, Parcial o Aún no.", 8),
+    ("09-notas", 4, "Paso 4. Las notas de los cuatro bimestres se juntan solas. Descárgalas para Excel.", 6.5),
+    ("10-analisis", "+", "Análisis: elige un parcial, una materia o todo el grupo y mira cómo le fue.", 7),
+    ("11-alumno", "+", "Cada alumno tiene su texto: qué le falta y qué hacer. Crea su hoja de refuerzo con un botón.", 8),
+    ("12-general", "+", "En General ves todas las materias juntas y quién necesita más apoyo.", 6.5),]
 
 
 def card(title, subtitle):

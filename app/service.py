@@ -529,6 +529,11 @@ def sheet_status(sheet_id, form_id=None):
 
 def grade_photo(image_bgr, form_id=None):
     aligned, sheet_id = read_photo(image_bgr)
+    return grade_aligned(aligned, sheet_id, form_id)
+
+
+def grade_aligned(aligned, sheet_id, form_id=None):
+    """Califica una hoja que ya se leyó y se enderezó (de la cámara, de una foto o de un PDF)."""
     db = load()
     preview = db.get("sheets", {}).get(sheet_id)
     if preview is None:
@@ -600,6 +605,34 @@ def grade_photo(image_bgr, form_id=None):
     return update(mutate)
 
 
+def review_payload(sheet, pending):
+    """Lo que la maestra debe revisar de una hoja con preguntas escritas."""
+    written = [question for question in sheet["questions"] if question.get("format") == "abierta"]
+    closed = pending["items"]
+    return {
+        "needs_review": True,
+        "sheet_id": sheet["id"],
+        "student_name": sheet["student_name"],
+        "group": sheet["group"],
+        "hoja": sheet.get("hoja") or "",
+        "items": [
+            {
+                "prompt": question["prompt"],
+                "criterion": question.get("criterion") or "",
+                "materia": question.get("materia") or "",
+                "puntos": question["puntos"],
+                "serie": question.get("serie") or "",
+            }
+            for question in written
+        ],
+        "opciones": {
+            "bien": sum(1 for item in closed if item.get("correct")),
+            "total": len(closed),
+            "puntos": round(float(pending["score"]), 4),
+        },
+    }
+
+
 def _grade_series_page(db, sheet_id, aligned):
     """Lee las burbujas de una hoja por series. Si trae preguntas escritas, deja las burbujas
     pendientes y pide a la maestra que marque lo escrito."""
@@ -635,24 +668,9 @@ def _grade_series_page(db, sheet_id, aligned):
             }
         )
     if written:
-        db.setdefault("pending", {})[sheet_id] = {"items": items, "score": round(score, 4), "created": _now()}
-        return {
-            "needs_review": True,
-            "sheet_id": sheet_id,
-            "student_name": sheet["student_name"],
-            "group": sheet["group"],
-            "items": [
-                {
-                    "prompt": question["prompt"],
-                    "criterion": question.get("criterion") or "",
-                    "materia": question.get("materia") or "",
-                    "puntos": question["puntos"],
-                    "serie": question.get("serie") or "",
-                }
-                for question in written
-            ],
-            "opciones": {"bien": right, "total": len(closed), "puntos": round(score, 4)},
-        }
+        pending = {"items": items, "score": round(score, 4), "created": _now()}
+        db.setdefault("pending", {})[sheet_id] = pending
+        return review_payload(sheet, pending)
     result = {
         "sheet_id": sheet_id,
         "student_name": sheet["student_name"],
@@ -822,7 +840,7 @@ def restore_exam(form_id):
 
 
 def set_exam_off(form_id, off):
-    """Un examen apagado ya no recibe hojas en la cámara, pero conserva sus notas."""
+    """Un examen apagado ya no recibe hojas, pero conserva sus notas."""
 
     def mutate(db):
         form = _form_or_fail(db, form_id)
@@ -842,7 +860,10 @@ def purge_exam(form_id):
         for sid in ids:
             db["sheets"].pop(sid, None)
         db["results"] = [row for row in db["results"] if row.get("sheet_id") not in ids]
+        for sid in ids:
+            (db.get("pending") or {}).pop(sid, None)
         files = [SHEETS / f"{sid}.{ext}" for sid in ids for ext in ("png", "pdf")]
+        files += [SHEETS / "escaneos" / f"{sid}.jpg" for sid in ids]
         files.append(SHEETS / f"{form_id}-grupo.pdf")
         for path in files:
             try:
@@ -943,7 +964,7 @@ def overview():
             step = {"paso": "examenes", "texto": "Crea tu primer examen: elige el bimestre, si es parcial o final, la nota total y escribe sus preguntas.", "enlace": "/examenes", "boton": "Crear un examen"}
         elif pending:
             where = ", ".join(pending_titles[:2]) + ("…" if len(pending_titles) > 2 else "")
-            step = {"paso": "calificar", "texto": f"Quedan {pending} alumnos por calificar en {where}.", "enlace": "/calificar", "boton": "Calificar con la cámara"}
+            step = {"paso": "calificar", "texto": f"Quedan {pending} alumnos por calificar en {where}.", "enlace": "/calificar", "boton": "Subir hojas escaneadas"}
         else:
             step = {"paso": "notas", "texto": "Todo está calificado. Revisa las notas del año.", "enlace": "/notas", "boton": "Ver notas del año"}
         return {

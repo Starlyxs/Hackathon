@@ -3,7 +3,7 @@
 import cv2
 import numpy as np
 
-from app.layout import BUBBLE_R, H, QR_SIZE, QR_XY, W, marker_centers, question_slots
+from app.layout import BUBBLE_R, H, MARKER, QR_SIZE, QR_XY, W, marker_centers, question_slots
 
 MARK_THRESHOLD = 165
 
@@ -274,8 +274,38 @@ def _four_extremes(found):
     return np.float32(picks)
 
 
-def _marker_corners(bgr):
+def _outline_squares(bgr, qr_pts=None):
+    """Cuadros que quedaron huecos (solo el borde), como pasa con algunos filtros de blanco y negro.
+    Se descarta lo que cae sobre el QR, cuyos cuadros de esquina se parecen a estas marcas."""
+    gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (3, 3), 0)
+    _, binary = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    image_area = bgr.shape[0] * bgr.shape[1]
+    avoid = None
+    if qr_pts is not None:
+        pts = np.array(qr_pts, dtype=np.float32).reshape(4, 2)
+        center = pts.mean(axis=0)
+        avoid = (center, float(np.linalg.norm(pts - center, axis=1).max()) * 1.4)
+    found = []
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area < image_area * 0.00025 or area > image_area * 0.02:
+            continue
+        x, y, w, h = cv2.boundingRect(contour)
+        if h == 0 or not 0.75 <= w / float(h) <= 1.35 or area / float(w * h) < 0.85:
+            continue
+        cx, cy = x + w / 2.0, y + h / 2.0
+        if avoid is not None and np.hypot(cx - avoid[0][0], cy - avoid[0][1]) < avoid[1]:
+            continue
+        found.append((cx, cy, area))
+    return found
+
+
+def _marker_corners(bgr, qr_pts=None):
     found = _solid_squares(bgr)
+    if len(found) < 4:
+        found = _outline_squares(bgr, qr_pts)
     if len(found) < 4:
         return None
     biggest = max(area for _, _, area in found)
@@ -311,6 +341,24 @@ def _warp(bgr, corners, destination):
     return cv2.warpPerspective(bgr, matrix, (W, H), flags=cv2.INTER_CUBIC)
 
 
+def _dark_outline(gray, x, y):
+    """¿Hay un cuadrado de borde oscuro, aunque por dentro esté claro, centrado en la marca?"""
+    half = MARKER // 2
+    pad = 8
+    top, left = max(0, y - half - pad), max(0, x - half - pad)
+    crop = gray[top : y + half + pad + 1, left : x + half + pad + 1]
+    if crop.shape[0] < MARKER + pad or crop.shape[1] < MARKER + pad:
+        return False
+    cx, cy = x - left, y - top
+    box = np.zeros(crop.shape, np.uint8)
+    cv2.rectangle(box, (cx - half, cy - half), (cx + half, cy + half), 255, -1)
+    inner = box.copy()
+    cv2.rectangle(inner, (cx - half + 10, cy - half + 10), (cx + half - 10, cy + half - 10), 0, -1)
+    outside = cv2.bitwise_not(cv2.dilate(box, np.ones((7, 7), np.uint8)))
+    band = float(cv2.mean(crop, mask=inner)[0])
+    around = float(cv2.mean(crop, mask=outside)[0])
+    return band < 110 and around > 150
+
 def _alignment_score(aligned):
     gray = cv2.cvtColor(aligned, cv2.COLOR_BGR2GRAY)
     score = 0.0
@@ -318,6 +366,8 @@ def _alignment_score(aligned):
         xi, yi = int(x), int(y)
         patch = gray[max(0, yi - 14) : yi + 14, max(0, xi - 14) : xi + 14]
         if patch.size and float(np.mean(patch)) < 95:
+            score += 2.0
+        elif _dark_outline(gray, xi, yi):
             score += 2.0
     x, y = QR_XY
     crop = gray[y + 16 : y + QR_SIZE - 16, x + 16 : x + QR_SIZE - 16]
@@ -329,7 +379,7 @@ def _alignment_score(aligned):
 def align_sheet(bgr, qr_pts=None):
     page_dest = np.float32([[0, 0], [W - 1, 0], [W - 1, H - 1], [0, H - 1]])
     jobs = [(quad, page_dest) for quad in _page_candidates(bgr)]
-    markers = _marker_corners(bgr)
+    markers = _marker_corners(bgr, qr_pts)
     if markers is not None:
         order = ("tl", "tr", "br", "bl")
         jobs.append((markers, np.float32([marker_centers()[name] for name in order])))
@@ -372,6 +422,48 @@ def read_photo(bgr):
     if not sheet_id:
         sheet_id = read_sheet_id(aligned)
     return aligned, sheet_id
+
+
+def is_blank_page(bgr):
+    """Página casi toda blanca: el reverso de una hoja o una hoja sin imprimir."""
+    gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    small = cv2.resize(gray, None, fx=0.25, fy=0.25, interpolation=cv2.INTER_AREA)
+    background = cv2.medianBlur(small, 21)
+    ink = cv2.subtract(background, small) > 60
+    return float(ink.mean()) < 0.002
+
+
+def _id_in_place(aligned):
+    """Lee el QR justo donde debe estar. Si la hoja quedó girada, aquí no aparece."""
+    x, y = QR_XY
+    pad = 90
+    crop = aligned[max(0, y - pad) : y + QR_SIZE + pad, max(0, x - pad) : x + QR_SIZE + pad]
+    sheet_id, _ = find_qr(crop)
+    return sheet_id
+
+
+def read_scan(bgr):
+    """Página de un escaneo (PDF o foto plana). Se prueba derecha y girada, y solo se acepta
+    la lectura en la que el QR queda en su sitio, así no se califica una hoja al revés."""
+    first_error = None
+    for turn in (None, cv2.ROTATE_180, cv2.ROTATE_90_CLOCKWISE, cv2.ROTATE_90_COUNTERCLOCKWISE):
+        image = bgr if turn is None else cv2.rotate(bgr, turn)
+        sheet_id, qr_pts = find_qr(image)
+        if sheet_id is None and turn is not None:
+            break  # sin QR a la vista, girar no ayuda
+        try:
+            aligned = align_sheet(image, qr_pts)
+        except GradeError as exc:
+            first_error = first_error or exc
+            continue
+        placed = _id_in_place(aligned)
+        if placed and (sheet_id is None or placed == sheet_id):
+            return aligned, placed
+        if sheet_id is None:
+            break
+    if first_error is not None:
+        raise first_error
+    raise GradeError("No encontré el código QR de la hoja en esta página.")
 
 
 def _darkness(gray, x, y):

@@ -422,7 +422,148 @@ def check_series_exam():
     print("Series: puntos repartidos, imagen, hojas sin espacios vacíos y nota por hoja.")
 
 
+def _scan_like(bgr, angle=0.0, bw=False, turn=None):
+    """Una página como la deja un escáner de celular: casi derecha, fondo blanco, a veces en blanco y negro."""
+    import cv2
+
+    height, width = bgr.shape[:2]
+    matrix = cv2.getRotationMatrix2D((width / 2, height / 2), angle, 1.0)
+    out = cv2.warpAffine(bgr, matrix, (width, height), borderValue=(255, 255, 255))
+    if bw:
+        gray = cv2.cvtColor(out, cv2.COLOR_BGR2GRAY)
+        out = cv2.cvtColor(cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 35, 15), cv2.COLOR_GRAY2BGR)
+    if turn is not None:
+        out = cv2.rotate(out, turn)
+    return out
+
+
+def _pdf_of(pages):
+    import io
+
+    import cv2
+    from PIL import Image
+
+    images = [Image.fromarray(cv2.cvtColor(page, cv2.COLOR_BGR2RGB)) for page in pages]
+    buffer = io.BytesIO()
+    images[0].save(buffer, "PDF", save_all=True, append_images=images[1:], resolution=150)
+    return buffer.getvalue()
+
+
+def _wait_job(job):
+    import time
+
+    from app import escaneo
+
+    for _ in range(900):
+        data = escaneo.progress(job)
+        if data["estado"] != "corriendo":
+            return data
+        time.sleep(0.2)
+    raise SystemExit("La lectura del PDF no terminó a tiempo.")
+
+
+def check_scan_pdf():
+    import random
+
+    import cv2
+    import numpy as np
+
+    from app import escaneo
+    from app.notas import grid
+    from app.series import bubble_slots
+    from app.service import add_question, create_series_exam, save_group, save_interpretation
+
+    def serie(tipo, ids, puntos):
+        return {"tipo": tipo, "question_ids": ids, "puntos": puntos}
+
+    meta = {"tipo": "parcial", "bimestre": 3, "numero": 1, "nota_total": 20}
+    ids = [add_question(f"Escaneo: ¿cuánto es {n} + {n + 1}?", str(n + n + 1), "general", "Matemática")["id"] for n in range(2, 14)]
+    group = f"escaneo-{random.randrange(10**6)}"
+    save_group(group, ["Ana", "Beto", "Carla", "Dani"])
+    made = create_series_exam(group, [], random.Random(5), [serie("opciones", ids[:6], 10), serie("opciones", ids[6:], 10)], materias=["Matemática"], meta=meta)
+    db = load()
+    by_student = {}
+    for info in made["sheets"]:
+        sheet = db["sheets"][info["id"]]
+        by_student.setdefault(sheet["student_name"], []).append(sheet)
+    for pages in by_student.values():
+        pages.sort(key=lambda item: item["pagina"])
+    if len(by_student["Ana"]) != 2:
+        raise SystemExit("El examen de prueba debía tener dos hojas por alumno.")
+
+    def page_image(sheet, right=True, **kwargs):
+        answers = [q["answer"] for q in sheet["questions"]] if right else [None] * len(sheet["questions"])
+        return _scan_like(mark_bubbles(pil_to_bgr(render_sheet(sheet)), answers, bubble_slots(sheet)), **kwargs)
+
+    blank = np.full((1754, 1240, 3), 255, np.uint8)
+    ana, beto, carla = by_student["Ana"], by_student["Beto"], by_student["Carla"]
+    stack = [
+        page_image(carla[1], angle=-0.7, turn=cv2.ROTATE_180),  # llega al revés y fuera de orden
+        page_image(ana[0], angle=0.6),
+        blank,
+        page_image(beto[0], angle=-0.5, bw=True),  # filtro blanco y negro; a Beto le falta la hoja 2
+        page_image(ana[1]),
+        page_image(carla[0], angle=0.4, bw=True),
+        page_image(ana[0], angle=0.2),  # Ana repetida
+    ]
+    data = _wait_job(escaneo.start([("curso.pdf", _pdf_of(stack))], made["form_id"]))
+    summary = data["resumen"]
+    if data["estado"] != "listo" or summary != {"calificadas": 5, "revisar": 0, "repetidas": 1, "blancas": 1, "errores": 0}:
+        raise SystemExit(f"El PDF escaneado se leyó mal: {data['estado']} {summary} {[p['mensaje'] for p in data['paginas'] if p['mensaje']]}")
+    status = data["examenes"][0]
+    if status["completos"] != 2 or status["sin_entregar"] != ["Dani"]:
+        raise SystemExit(f"El resumen de hojas completas salió mal: {status}")
+    if [(row["alumno"], row["faltan"]) for row in status["incompletos"]] != [("Beto", ["hoja 2 de 2"])]:
+        raise SystemExit(f"No avisó la hoja que falta: {status['incompletos']}")
+    notas = {row["student_name"]: row["cells"][made["form_id"]] for row in grid(load(), group, 3)["students"]}
+    if notas["Ana"]["nota_real"] != 20 or notas["Carla"]["nota_real"] != 20 or notas["Beto"]["state"] != "parcial":
+        raise SystemExit(f"Las notas del PDF salieron mal: {notas}")
+    if not escaneo.scan_url(carla[1]["id"]):
+        raise SystemExit("No guardó la imagen del escaneo.")
+    # La hoja que faltaba llega en otro archivo, como foto suelta: se completa.
+    ok, encoded = cv2.imencode(".jpg", page_image(beto[1], angle=0.3), [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+    again = _wait_job(escaneo.start([("beto-2.jpg", encoded.tobytes())], made["form_id"]))
+    if again["resumen"]["calificadas"] != 1 or again["examenes"][0]["completos"] != 3:
+        raise SystemExit(f"La hoja que faltaba no completó a Beto: {again['resumen']} {again['examenes']}")
+    other = _wait_job(escaneo.start([("curso.pdf", _pdf_of(stack[:2]))], "no-es-este"))
+    if other["resumen"]["errores"] != 2:
+        raise SystemExit(f"Una hoja de otro examen no debía calificarse: {other['resumen']}")
+    for bad_name, raw in (("roto.pdf", b"%PDF-1.4 esto no es un pdf"), ("texto.jpg", b"hola")):
+        bad = _wait_job(escaneo.start([(bad_name, raw)], made["form_id"]))
+        if bad["resumen"]["errores"] != 1 or bad["resumen"]["calificadas"]:
+            raise SystemExit(f"Un archivo dañado debía avisar el error: {bad}")
+
+    # Una hoja con preguntas escritas queda pendiente de revisión, con su imagen.
+    opened = [
+        add_question(f"Escaneo escrito {n}: explica con tus palabras qué viste.", materia="Matemática", kind="abierta", criterion="Describe lo principal.")["id"]
+        for n in (1, 2)
+    ]
+    mixed_group = f"mixto-{random.randrange(10**6)}"
+    save_group(mixed_group, ["Eva"])
+    mixed = create_series_exam(
+        mixed_group, [], random.Random(6),
+        [serie("opciones", ids[:3], 12), serie("escrita", opened, 8)],
+        materias=["Matemática"], meta={**meta, "bimestre": 2},
+    )
+    sheet = load()["sheets"][mixed["sheets"][0]["id"]]
+    right = [q["answer"] for q in sheet["questions"] if q.get("format") != "abierta"]
+    photo = mark_bubbles(pil_to_bgr(render_sheet(sheet)), right, bubble_slots(sheet))
+    review = _wait_job(escaneo.start([("eva.pdf", _pdf_of([_scan_like(photo, angle=0.5)]))], mixed["form_id"]))
+    waiting = escaneo.pending_reviews(mixed["form_id"])
+    if review["resumen"]["revisar"] != 1 or len(waiting) != 1 or not waiting[0]["imagen"] or review["examenes"][0]["por_revisar"][0]["alumno"] != "Eva":
+        raise SystemExit(f"La hoja con preguntas escritas no quedó por revisar: {review['resumen']} {waiting}")
+    saved = save_interpretation(sheet["id"], ["logrado", "logrado"])
+    if saved["score"] != 20 or escaneo.pending_reviews(mixed["form_id"]) or escaneo.completeness(load(), mixed["form_id"])["completos"] != 1:
+        raise SystemExit("Revisar lo escrito no completó la hoja escaneada.")
+    print("PDF escaneado: QR por página, hojas faltantes, repetidas, en blanco, al revés y revisión de lo escrito.")
+
+
 def main():
+    import shutil
+
+    # Siempre se parte de una base vacía: es solo la de las pruebas, nunca la del maestro.
+    Path(os.environ["EDU_STORE"]).unlink(missing_ok=True)
+    shutil.rmtree(os.environ["EDU_SHEETS"], ignore_errors=True)
     ensure_dirs()
     try:
         check_perfect_sheet()
@@ -431,10 +572,11 @@ def main():
         check_notas_y_bimestres()
         check_grupos_apagar_papelera()
         check_series_exam()
+        check_scan_pdf()
     except GradeError as exc:
         print(f"Falló la visión: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
-    print("Listo: la cámara simulada lee el QR, las burbujas y el patrón del grupo.")
+    print("Listo: la cámara y el PDF simulados leen el QR, las burbujas y el patrón del grupo.")
 
 
 if __name__ == "__main__":
