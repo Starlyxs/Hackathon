@@ -1,6 +1,10 @@
 """Servidor local. Se abre en el navegador de la misma laptop."""
 
+import io
+import json
 import random
+import zipfile
+from datetime import date
 from pathlib import Path
 
 import cv2
@@ -10,8 +14,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from app import escaneo
-from app.demo import simulate_class
+from app import boletin, correccion, escaneo
+from app.demo import remove_school, school_status, simulate_class, simulate_school
 from app.grade import GradeError, quick_sheet_id
 from app.notas import csv_grid, csv_yearly, grid, yearly
 from app.service import (
@@ -42,7 +46,7 @@ from app.service import (
     trash_exam,
 )
 from app.series import save_image as save_series_image
-from app.store import SHEETS, ensure_dirs, load
+from app.store import SHEETS, STORE, ensure_dirs, load
 from app.variants import preview_variants
 
 ensure_dirs()
@@ -178,9 +182,90 @@ def analysis_page():
     return html_page("analisis.html", "analisis")
 
 
+@app.get("/boletin")
+def report_card_page():
+    return html_page("boletin.html", "notas")
+
+
+@app.get("/ayuda")
+def help_page():
+    return html_page("ayuda.html", "inicio")
+
+
 @app.get("/api/estado")
 def get_overview():
-    return overview()
+    data = overview()
+    data["en_onedrive"] = "onedrive" in str(STORE).lower()
+    return data
+
+
+@app.get("/api/respaldo")
+def get_backup(escaneos: bool = False):
+    """Copia de todo lo importante en un solo archivo, para guardarla en un USB."""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("store.json", json.dumps(load(), ensure_ascii=False, indent=2))
+        if escaneos:
+            folder = SHEETS / "escaneos"
+            for path in sorted(folder.glob("*.jpg")) if folder.exists() else []:
+                archive.write(path, f"escaneos/{path.name}")
+    name = f"respaldo-hojas-en-papel-{date.today().isoformat()}.zip"
+    return Response(buffer.getvalue(), media_type="application/zip", headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
+@app.get("/api/demo")
+def get_demo():
+    return school_status()
+
+
+@app.post("/api/demo")
+def post_demo():
+    """Prueba simulada: un grupo con exámenes calificados y dos PDF escaneados de ejemplo."""
+    return simulate_school()
+
+
+@app.delete("/api/demo")
+def delete_demo():
+    return remove_school()
+
+
+@app.get("/api/hojas")
+def get_sheets(form_id: str):
+    return {"hojas": correccion.list_sheets(form_id), "imagenes": escaneo.count_scans(form_id)}
+
+
+@app.get("/api/hojas/{sheet_id}")
+def get_sheet(sheet_id: str):
+    try:
+        return correccion.detail(sheet_id)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+class FixIn(BaseModel):
+    choices: list[int | None]
+
+
+@app.post("/api/hojas/{sheet_id}/corregir")
+def post_fix(sheet_id: str, body: FixIn):
+    try:
+        correccion.fix(sheet_id, body.choices)
+        return correccion.detail(sheet_id)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.delete("/api/escaneos-imagenes")
+def delete_scan_images(form_id: str):
+    return escaneo.delete_scans(form_id)
+
+
+@app.get("/api/boletin")
+def get_report_cards(group: str, student: str = ""):
+    try:
+        return boletin.build(group.strip(), student.strip() or None)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
 
 
 @app.get("/api/mis-grupos")

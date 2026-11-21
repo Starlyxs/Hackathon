@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/logo.png">
+  <link rel="stylesheet" href="/static/app.css">
+  <title>Boletines · Hojas en papel</title>
+  <style>
+    .card-sheet { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 22px 26px; margin: 16px 0; font-family: "Segoe UI", sans-serif; }
+    .card-sheet h2 { margin: 0; font-size: 1.5rem; }
+    .card-sheet .meta { color: var(--muted); margin: 2px 0 14px; }
+    .card-sheet table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; }
+    .card-sheet th, .card-sheet td { border: 1px solid var(--line); padding: 7px 10px; text-align: center; }
+    .card-sheet th:first-child, .card-sheet td:first-child { text-align: left; }
+    .card-sheet td.low { color: var(--rust); font-weight: 700; }
+    .card-sheet .text { background: var(--green-soft); border-radius: 12px; padding: 12px 14px; line-height: 1.5; }
+    .card-sheet .sign { display: flex; gap: 40px; margin-top: 46px; }
+    .card-sheet .sign div { flex: 1; border-top: 1px solid var(--ink); padding-top: 4px; text-align: center; color: var(--muted); font-size: .85rem; }
+    @media print {
+      header, .controls, .no-print { display: none !important; }
+      body { background: #fff; }
+      main { padding: 0; }
+      .card-sheet { border: 0; border-radius: 0; margin: 0; padding: 0 6mm; page-break-after: always; break-after: page; }
+      .card-sheet:last-child { page-break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="/static/logo.png" alt="">
+      <h1>Hojas en papel</h1>
+    </div>
+    <!--NAV-->
+    <p class="lede">Una hoja por alumno con sus notas del año y un texto de cómo va y qué reforzar. Lista para imprimir o guardar como PDF.</p>
+  </header>
+  <main>
+    <section class="controls">
+      <div class="fields">
+        <div>
+          <label for="group">Grupo</label>
+          <select id="group"></select>
+        </div>
+        <div>
+          <label for="student">Alumno</label>
+          <select id="student"></select>
+        </div>
+      </div>
+      <div class="row">
+        <button id="print" type="button">Imprimir</button>
+        <a class="button secondary" href="/notas">Volver a notas</a>
+      </div>
+      <p id="error" class="error"></p>
+    </section>
+    <div id="cards"></div>
+  </main>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+    const fmt = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
+    const group = () => $("#group").value;
+    const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+    function dateText(iso) {
+      const [year, month, day] = iso.split("-").map(Number);
+      return `${day} de ${months[month - 1]} de ${year}`;
+    }
+
+    function card(data, person) {
+      const rows = person.materias.map((row) => {
+        const cells = row.bimestres.map((entry) => {
+          if (entry.nota === null || entry.max === null) return `<td>—</td>`;
+          const low = entry.max && entry.nota < entry.max * 0.6 ? ' class="low"' : "";
+          return `<td${low}>${fmt(entry.nota)} / ${fmt(entry.max)}${entry.faltan ? " *" : ""}</td>`;
+        }).join("");
+        return `<tr><td>${esc(row.materia)}</td>${cells}<td><strong>${row.total === null ? "—" : `${fmt(row.total)} / ${fmt(row.max)} · ${row.pct} %`}</strong></td></tr>`;
+      }).join("");
+      const table = rows
+        ? `<table><thead><tr><th>Materia</th><th>Bimestre 1</th><th>Bimestre 2</th><th>Bimestre 3</th><th>Bimestre 4</th><th>Total del año</th></tr></thead><tbody>${rows}</tbody></table>
+           <p class="lede" style="font-size:.85rem;">En rojo, menos del 60 % de los puntos. * al bimestre le faltan exámenes por calificar.</p>`
+        : `<p class="warn">Todavía no hay notas para este alumno.</p>`;
+      const reinforce = person.reforzar.length ? `<p><strong>Conviene reforzar:</strong> ${person.reforzar.map(esc).join(", ")}.</p>` : "";
+      return `<article class="card-sheet">
+        <h2>${esc(person.alumno)}</h2>
+        <p class="meta">Grupo ${esc(data.group)} · ${dateText(data.fecha)}</p>
+        ${table}
+        <div class="text">${esc(person.texto)}</div>
+        ${reinforce}
+        <div class="sign"><div>Maestro o maestra</div><div>Padre, madre o encargado</div></div>
+      </article>`;
+    }
+
+    async function load() {
+      $("#error").textContent = "";
+      if (!group()) { $("#cards").innerHTML = `<p class="empty">Primero crea un grupo en <a href="/grupos">Grupos</a>.</p>`; return; }
+      const q = new URLSearchParams({ group: group() });
+      if ($("#student").value) q.set("student", $("#student").value);
+      const response = await fetch(`/api/boletin?${q}`);
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        $("#error").textContent = body.detail || "No se pudo preparar el boletín.";
+        $("#cards").innerHTML = "";
+        return;
+      }
+      const data = await response.json();
+      $("#cards").innerHTML = data.alumnos.map((person) => card(data, person)).join("");
+    }
+
+    async function loadStudents() {
+      const body = await (await fetch(`/api/grupos?group=${encodeURIComponent(group())}`)).json();
+      const list = (body.students || body.alumnos || []).map((item) => (typeof item === "string" ? item : item.student_name || item.nombre));
+      $("#student").innerHTML = `<option value="">Todos los alumnos</option>` + list.map((name) => `<option>${esc(name)}</option>`).join("");
+    }
+
+    $("#group").onchange = async () => { localStorage.setItem("hp_group", group()); await loadStudents(); load(); };
+    $("#student").onchange = load;
+    $("#print").onclick = () => window.print();
+
+    (async () => {
+      const body = await (await fetch("/api/grupos")).json();
+      const wanted = localStorage.getItem("hp_group") || "";
+      $("#group").innerHTML = body.groups.map((name) => `<option>${esc(name)}</option>`).join("");
+      if (body.groups.includes(wanted)) $("#group").value = wanted;
+      await loadStudents();
+      load();
+    })();
+  </script>
+</body>
+</html>

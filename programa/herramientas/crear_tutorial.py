@@ -2,7 +2,7 @@
 
 Uso:  python herramientas/crear_tutorial.py CARPETA_CON_CAPTURAS
 
-La carpeta debe tener 01-inicio.png ... 12-general.png (1280x720).
+La carpeta debe tener 01-inicio.png ... 14-general.png (1280x720).
 capturar_tutorial.py las toma solas y las deja en CARPETA/capturas. El video lleva los textos
 escritos encima, sin voz, para que se entienda aunque no haya sonido. Si prefieres grabar tu propio
 video, solo reemplaza app/static/tutorial.webm (o agrega tutorial.mp4 en la misma carpeta).
@@ -33,10 +33,12 @@ SCENES = [
     ("06-subir", 3, "Paso 3. Escanea las hojas con el celular (Google Drive, Notas o CamScanner), junta todo en un PDF y súbelo aquí.", 9),
     ("07-resultado", 3, "El programa lee el QR de cada página y califica solo. Te avisa a quién le falta una hoja y quién no entregó.", 9),
     ("08-revision", 3, "Si hay preguntas escritas, ves la hoja escaneada y marcas Logrado, Parcial o Aún no.", 8),
-    ("09-notas", 4, "Paso 4. Las notas de los cuatro bimestres se juntan solas. Descárgalas para Excel.", 6.5),
-    ("10-analisis", "+", "Análisis: elige un parcial, una materia o todo el grupo y mira cómo le fue.", 7),
-    ("11-alumno", "+", "Cada alumno tiene su texto: qué le falta y qué hacer. Crea su hoja de refuerzo con un botón.", 8),
-    ("12-general", "+", "En General ves todas las materias juntas y quién necesita más apoyo.", 6.5),]
+    ("09-corregir", 3, "Si una burbuja se leyó mal, la corriges viendo la hoja escaneada y la nota se recalcula sola.", 8),
+    ("10-notas", 4, "Paso 4. Las notas de los cuatro bimestres se juntan solas. Descárgalas para Excel.", 6.5),
+    ("11-boletin", "+", "Boletines: una hoja por alumno con sus notas del año y qué reforzar, lista para imprimir.", 7),
+    ("12-analisis", "+", "Análisis: elige un parcial, una materia o todo el grupo y mira cómo le fue.", 7),
+    ("13-alumno", "+", "Cada alumno tiene su texto: qué le falta y qué hacer. Crea su hoja de refuerzo con un botón.", 8),
+    ("14-general", "+", "En General ves todas las materias juntas y quién necesita más apoyo.", 6.5),]
 
 
 def card(title, subtitle):

@@ -557,6 +557,68 @@ def check_scan_pdf():
         raise SystemExit("Revisar lo escrito no completó la hoja escaneada.")
     print("PDF escaneado: QR por página, hojas faltantes, repetidas, en blanco, al revés y revisión de lo escrito.")
 
+    # Corregir una burbuja mal leída recalcula la nota y conserva lo escrito.
+    from app import correccion
+
+    info = correccion.detail(sheet["id"])
+    if len(info["preguntas"]) != 3 or len(info["escritas"]) != 2 or info["score"] != 20 or not info["imagen"]:
+        raise SystemExit(f"El detalle de la hoja salió mal: {info}")
+    fixed = [question["choice"] for question in info["preguntas"]]
+    fixed[0] = None
+    correccion.fix(sheet["id"], fixed)
+    after = correccion.detail(sheet["id"])
+    if after["score"] != 16 or after["preguntas"][0]["status"] != "corregida" or len(after["escritas"]) != 2:
+        raise SystemExit(f"La corrección no recalculó la nota: {after}")
+    listed = correccion.list_sheets(mixed["form_id"])
+    if len(listed) != 1 or listed[0]["estado"] != "calificada":
+        raise SystemExit(f"La lista de hojas salió mal: {listed}")
+    for bad in ([0, 1], [0, 1, 7]):
+        try:
+            correccion.fix(sheet["id"], bad)
+        except ValueError:
+            continue
+        raise SystemExit("Se aceptó una corrección inválida.")
+    if escaneo.count_scans(mixed["form_id"]) != 1 or escaneo.delete_scans(mixed["form_id"])["borradas"] != 1 or escaneo.count_scans(mixed["form_id"]):
+        raise SystemExit("No borró las imágenes escaneadas del examen.")
+    print("Corrección: una burbuja cambiada recalcula la nota y la hoja conserva lo escrito.")
+
+
+def check_demo_and_report_cards():
+    from app import boletin
+    from app.demo import SCHOOL_GROUP, remove_school, school_status, simulate_school
+    from app.notas import grid
+    from app.service import class_analysis
+
+    status = simulate_school()
+    if not status["existe"] or status["grupo"] != SCHOOL_GROUP or not (Path(os.environ["EDU_SHEETS"]) / "demo" / "entrega-demo.pdf").exists():
+        raise SystemExit(f"La prueba simulada no quedó lista: {status}")
+    data = grid(load(), SCHOOL_GROUP, 1)
+    if len(data["students"]) != 8 or not all(row["calificado"] for row in data["students"]):
+        raise SystemExit("La prueba simulada debía tener 8 alumnos calificados.")
+    if not class_analysis(SCHOOL_GROUP, modo="general")["hay_datos"]:
+        raise SystemExit("La prueba simulada no tiene análisis.")
+    cards = boletin.build(SCHOOL_GROUP)["alumnos"]
+    if len(cards) != 8 or {row["materia"] for row in cards[0]["materias"]} != {"Lenguaje", "Matemática"} or not cards[0]["texto"]:
+        raise SystemExit(f"El boletín salió mal: {cards[0]}")
+    if len(boletin.build(SCHOOL_GROUP, "ana lópez")["alumnos"]) != 1:
+        raise SystemExit("El boletín de un solo alumno salió mal.")
+    # La misma subida del PDF de ejemplo avisa lo que falta, como en la demostración.
+    from app import escaneo
+
+    raw = (Path(os.environ["EDU_SHEETS"]) / "demo" / "entrega-demo.pdf").read_bytes()
+    result = _wait_job(escaneo.start([("entrega-demo.pdf", raw)], status["examen_largo"]["id"]))
+    exam = result["examenes"][0]
+    if exam["completos"] != 6 or exam["sin_entregar"] != ["Daniel Soto"] or exam["incompletos"][0]["alumno"] != "Beto Pérez":
+        raise SystemExit(f"El PDF de ejemplo no mostró lo que debía: {exam}")
+    before = len(load()["authored"])
+    remove_school()
+    db = load()
+    if school_status()["existe"] or any(f.get("group") == SCHOOL_GROUP and not f.get("papelera") for f in db["forms"].values()) or len(db["authored"]) >= before:
+        raise SystemExit("Borrar la demostración dejó datos.")
+    if SCHOOL_GROUP in db["groups"] or (Path(os.environ["EDU_SHEETS"]) / "demo").exists():
+        raise SystemExit("Borrar la demostración dejó el grupo o los PDF.")
+    print("Demostración: escuela de ejemplo, boletines, PDF de ejemplo y borrado completo.")
+
 
 def main():
     import shutil
@@ -573,6 +635,7 @@ def main():
         check_grupos_apagar_papelera()
         check_series_exam()
         check_scan_pdf()
+        check_demo_and_report_cards()
     except GradeError as exc:
         print(f"Falló la visión: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc

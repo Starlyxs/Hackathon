@@ -1,34 +1,47 @@
 #!/usr/bin/env bash
-set -euo pipefail
-cd "$(dirname "$0")"
+# Abre Hojas en papel en Mac o Linux. Uso: bash iniciar.sh
+set -u
+cd "$(dirname "$0")/programa" || { echo "No encuentro la carpeta 'programa'."; exit 1; }
 
-if command -v python3 >/dev/null 2>&1; then
-  BOOT=python3
-elif command -v python >/dev/null 2>&1; then
-  BOOT=python
-else
-  echo "Necesitas Python 3.11 o mas nuevo: https://www.python.org/downloads/"
+BOOT=""
+for candidato in python3.11 python3.12 python3.13 python3 python; do
+  if command -v "$candidato" >/dev/null 2>&1 &&
+     "$candidato" -c "import sys; raise SystemExit(0 if (3,11)<=sys.version_info[:2]<=(3,13) else 1)" >/dev/null 2>&1; then
+    BOOT="$candidato"
+    break
+  fi
+done
+
+if [[ -z "$BOOT" ]]; then
+  echo "Necesitas Python 3.11, 3.12 o 3.13 y no lo encuentro."
+  echo
+  case "$(uname -s)" in
+    Darwin) echo "Mac: instalalo desde https://www.python.org/downloads/ o con 'brew install python@3.12'." ;;
+    *)      echo "Ubuntu/Debian: sudo apt install python3 python3-venv python3-pip"
+            echo "Fedora: sudo dnf install python3"
+            echo "O desde https://www.python.org/downloads/" ;;
+  esac
+  echo "Despues vuelve a ejecutar: bash iniciar.sh"
   exit 1
 fi
 
-"$BOOT" -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)"
+VENV="$HOME/.hojas-en-papel/venv"
+VPY="$VENV/bin/python"
 
-if [[ ! -x .venv/bin/python ]]; then
-  echo "Creando el entorno local..."
-  "$BOOT" -m venv .venv
+# Si copiaron la carpeta desde otra computadora o cambio Python, el entorno se rehace solo.
+if [[ -e "$VPY" ]] && ! "$VPY" -c "import sys" >/dev/null 2>&1; then
+  rm -rf "$VENV"
+fi
+if [[ ! -x "$VPY" ]]; then
+  echo "Preparando el programa por primera vez..."
+  mkdir -p "$(dirname "$VENV")"
+  if ! "$BOOT" -m venv "$VENV"; then
+    echo
+    echo "No se pudo crear el entorno. En Ubuntu/Debian prueba: sudo apt install python3-venv python3-pip"
+    exit 1
+  fi
 fi
 
-echo "Instalando librerias. La primera vez usa internet. Despues ya no hace falta."
-.venv/bin/python -m pip install -r requirements.txt
+"$VPY" preparar.py || { echo; echo "No se pudo preparar el programa. Mira 'Si algo falla' en el README."; exit 1; }
 
-echo
-echo "Abre http://127.0.0.1:8000"
-echo "Para cerrar el programa, pulsa Ctrl+C."
-echo
-( sleep 3
-  if command -v open >/dev/null 2>&1; then open "http://127.0.0.1:8000"
-  elif command -v xdg-open >/dev/null 2>&1; then xdg-open "http://127.0.0.1:8000"
-  fi
-) >/dev/null 2>&1 &
-
-exec .venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+exec "$VPY" run.py

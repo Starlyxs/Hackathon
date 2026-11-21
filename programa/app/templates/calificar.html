@@ -34,6 +34,7 @@
     .opts input { width: 22px; height: 22px; min-height: 0; margin: 0; padding: 0; }
     .guide { font-family: "Segoe UI", sans-serif; padding-left: 20px; }
     .guide li { margin: 6px 0; }
+    .pages { width: 100%; border-collapse: collapse; }
     .pages td, .pages th { font-size: .9rem; padding: 4px 8px; text-align: left; border-bottom: 1px solid var(--line); }
     @media (max-width: 760px) { .review { grid-template-columns: 1fr; } .review .shot { position: static; } }
   </style>
@@ -100,6 +101,16 @@
     </section>
 
     <section id="revision" hidden></section>
+
+    <section id="corregir-box" hidden>
+      <details id="corregir">
+        <summary><strong id="corregir-titulo">Revisar y corregir hojas</strong></summary>
+        <p class="lede">Aquí ves lo que leyó el programa en cada hoja. Si una burbuja se leyó mal, la cambias y la nota se recalcula. Primero salen las hojas con respuestas sin marca o con dos marcas.</p>
+        <div id="hojas"></div>
+        <div id="editor"></div>
+        <div id="imagenes" class="row" style="font-family:'Segoe UI',sans-serif;"></div>
+      </details>
+    </section>
 
     <section>
       <h2>Cuadro de notas</h2>
@@ -515,7 +526,99 @@
         <p class="lede">${info.completos} de ${info.alumnos} alumnos con todas sus hojas.</p>${lines.join("")}</div>`;
     }
 
+    /* ---------- revisar y corregir burbujas ---------- */
+    const STATE_NAME = { calificada: "Calificada", pendiente: "Falta revisar lo escrito" };
+    const LETTERS = ["A", "B", "C", "D"];
+
+    async function loadSheets(openIfDoubts = false) {
+      const box = $("#corregir-box");
+      if (!examId() || $("#mezcla").checked) {
+        box.hidden = true;
+        return;
+      }
+      const response = await fetch(`/api/hojas?form_id=${encodeURIComponent(examId())}`);
+      if (!response.ok) { box.hidden = true; return; }
+      const data = await response.json();
+      const rows = data.hojas.filter((sheet) => sheet.estado !== "sin_calificar");
+      box.hidden = rows.length === 0;
+      if (!rows.length) return;
+      const doubts = rows.filter((sheet) => sheet.dudosas > 0).length;
+      $("#corregir-titulo").textContent = `Revisar y corregir hojas${doubts ? ` · ${doubts} con dudas` : ""}`;
+      if (openIfDoubts && doubts) $("#corregir").open = true;
+      $("#hojas").innerHTML = `<div class="sheet-wrap"><table class="pages"><thead><tr><th>Alumno</th><th>Hoja</th><th>Estado</th><th>Dudas</th><th></th></tr></thead><tbody>${rows.map((sheet) => `
+        <tr><td>${esc(sheet.alumno)}</td><td>${esc(sheet.hoja ? "hoja " + sheet.hoja : "única")}</td><td>${STATE_NAME[sheet.estado] || ""}</td>
+        <td>${sheet.dudosas ? `<strong style="color:var(--rust)">${sheet.dudosas} sin marca o con dos marcas</strong>` : "—"}</td>
+        <td>${sheet.editable ? `<button type="button" class="secondary" data-sheet="${sheet.sheet_id}">Revisar</button>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
+      $("#hojas").querySelectorAll("button[data-sheet]").forEach((button) => { button.onclick = () => openSheet(button.dataset.sheet); });
+      $("#imagenes").innerHTML = data.imagenes
+        ? `<span>Hay ${data.imagenes} ${data.imagenes === 1 ? "imagen escaneada guardada" : "imágenes escaneadas guardadas"} de este examen (con nombres y letra de los alumnos).</span>
+           <button type="button" class="secondary" id="borrar-imagenes">Borrar imágenes escaneadas</button>`
+        : "";
+      const wipe = $("#borrar-imagenes");
+      if (wipe) {
+        wipe.onclick = async () => {
+          if (!confirm("Se borran las imágenes escaneadas de este examen. Las notas se quedan, pero ya no podrás ver las hojas. ¿Seguir?")) return;
+          await fetch(`/api/escaneos-imagenes?form_id=${encodeURIComponent(examId())}`, { method: "DELETE" });
+          $("#editor").innerHTML = "";
+          loadSheets();
+        };
+      }
+    }
+
+    async function openSheet(sheetId) {
+      const response = await fetch(`/api/hojas/${sheetId}`);
+      if (!response.ok) { $("#editor").innerHTML = `<p class="error">${esc(await readError(response))}</p>`; return; }
+      const info = await response.json();
+      const choices = info.preguntas.map((question) => question.choice);
+      const notice = info.score === null || info.score === undefined ? "" : `<p class="ok">Nota actual: ${fmt(info.score)} de ${fmt(info.total)}.</p>`;
+      $("#editor").innerHTML = `
+        <h3>${esc(info.alumno)}${info.hoja ? ` · hoja ${esc(info.hoja)}` : ""}</h3>
+        <div class="review">
+          <div class="shot">${info.imagen
+            ? `<a href="${info.imagen}" target="_blank" title="Abrir en grande"><img src="${info.imagen}" alt="Hoja escaneada"></a>`
+            : `<p class="warn">No hay imagen de esta hoja (se subió por cámara o se borró). Compara con el papel.</p>`}</div>
+          <div>
+            ${notice}
+            ${info.preguntas.map((question, index) => `
+              <div class="card" data-q="${index}">
+                <p style="margin:0 0 6px;"><strong>${question.numero}.</strong> ${esc(question.prompt)}
+                  ${question.aviso ? `<span class="tag" style="background:var(--amber);padding:2px 8px;border-radius:8px;font-size:.8rem;margin-left:6px;">${esc(question.aviso)}</span>` : ""}</p>
+                <div class="row" style="margin-top:4px;">
+                  ${question.options.map((option, position) => `<button type="button" data-pos="${position}" class="${question.choice === position ? "" : "secondary"}">${LETTERS[position]} · ${esc(option)}</button>`).join("")}
+                  <button type="button" data-pos="blank" class="${question.choice === null ? "" : "secondary"}">En blanco</button>
+                </div>
+              </div>`).join("")}
+            ${info.escritas.length ? `<p class="lede">Las ${info.escritas.length} respuestas escritas conservan su marca.</p>` : ""}
+            <p id="fix-msg" class="error"></p>
+            <div class="row"><button type="button" id="fix-save">Guardar corrección</button><button type="button" class="secondary" id="fix-close">Cerrar</button></div>
+          </div>
+        </div>`;
+      $("#editor").querySelectorAll(".card[data-q]").forEach((card) => {
+        card.querySelectorAll("button[data-pos]").forEach((button) => {
+          button.onclick = () => {
+            choices[Number(card.dataset.q)] = button.dataset.pos === "blank" ? null : Number(button.dataset.pos);
+            card.querySelectorAll("button[data-pos]").forEach((peer) => peer.classList.toggle("secondary", peer !== button));
+          };
+        });
+      });
+      $("#fix-close").onclick = () => { $("#editor").innerHTML = ""; };
+      $("#fix-save").onclick = async () => {
+        const saved = await fetch(`/api/hojas/${sheetId}/corregir`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ choices }),
+        });
+        if (!saved.ok) { $("#fix-msg").textContent = await readError(saved); return; }
+        await openSheet(sheetId);
+        $("#fix-msg").className = "ok";
+        $("#fix-msg").textContent = "Guardado. La nota ya se recalculó.";
+        loadGrid();
+        loadStatus();
+      };
+    }
+
     async function loadStatus() {
+      loadSheets();
       const box = $("#estado");
       if (!examId() || $("#mezcla").checked) {
         box.innerHTML = "";
@@ -558,6 +661,7 @@
       await loadQueue(fresh);
       await loadGrid();
       await loadExams();
+      await loadSheets(true);
       if (queue.length) $("#revision").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 

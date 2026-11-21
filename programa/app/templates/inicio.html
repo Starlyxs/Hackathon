@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/logo.png">
+  <link rel="stylesheet" href="/static/app.css">
+  <title>Inicio · Hojas en papel</title>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="/static/logo.png" alt="">
+      <h1>Hojas en papel</h1>
+    </div>
+    <!--NAV-->
+  </header>
+  <main>
+    <section class="next" id="siguiente">
+      <h2>Cargando…</h2>
+    </section>
+
+    <section id="tutorial" hidden>
+      <h2>¿Primera vez? Mira el tutorial</h2>
+      <p class="lede">Dura minuto y medio y no necesita sonido: los pasos se leen en pantalla. Va desde crear el examen hasta ver qué le falta a cada alumno.</p>
+      <video id="video" controls preload="none" playsinline poster="/static/tutorial-poster.png" style="width:100%; max-width:none; aspect-ratio:16/9; border-radius:14px; background:#000;"></video>
+    </section>
+
+    <div class="steps" id="pasos"></div>
+
+    <section id="demo">
+      <h2>Prueba simulada</h2>
+      <p class="lede">Para ver cómo funciona todo sin escribir nada: crea un grupo de ejemplo con exámenes ya calificados, notas por bimestre, análisis y boletines. Se borra con un botón y no toca tus datos reales.</p>
+      <div class="row">
+        <button id="demo-load" type="button">Cargar prueba simulada</button>
+        <button id="demo-remove" type="button" class="secondary" hidden>Borrar la prueba simulada</button>
+      </div>
+      <p id="demo-msg" class="error"></p>
+      <div id="demo-ready" hidden>
+        <div class="ok"><strong>Listo.</strong> El grupo «<span id="demo-group"></span>» ya está en el programa. Esto puedes mirar:</div>
+        <ol class="demo-steps">
+          <li><a href="/notas">Notas del año</a>: el cuadro de dos materias con bimestres y total.</li>
+          <li><a href="/analisis">Análisis</a>: elige «Una materia» o «General» y mira el texto de cada alumno.</li>
+          <li><a href="/boletin">Boletines</a>: una hoja imprimible por alumno.</li>
+          <li><strong>Subir un PDF escaneado:</strong> <a id="demo-pdf1" href="#" download>descarga este PDF de ejemplo</a>, ve a <a id="demo-go" href="/calificar">Calificar</a> (ya queda elegido <em id="demo-exam"></em>) y súbelo. Verás que a Beto le falta una hoja y que Daniel no entregó.</li>
+          <li><strong>Hojas con preguntas escritas:</strong> <a id="demo-pdf2" href="#" download>descarga este otro PDF</a>, elige <em id="demo-exam2"></em> en Calificar y súbelo. Verás la hoja escaneada y marcarás «Logrado», «Parcial» o «Aún no».</li>
+        </ol>
+      </div>
+    </section>
+
+    <p class="lede" id="copia"></p>
+    <div class="row">
+      <a class="button secondary" href="/api/respaldo">Descargar copia de seguridad</a>
+      <a class="button secondary" href="/ayuda">Ayuda: si algo falla</a>
+    </div>
+    <p class="warn" id="onedrive" hidden>Tus datos están dentro de una carpeta de OneDrive. A veces OneDrive tarda o bloquea archivos que cambian seguido. Descarga una copia de seguridad de vez en cuando y guárdala en un USB.</p>
+  </main>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+    async function start() {
+      const info = await (await fetch("/api/estado")).json();
+      const next = info.siguiente;
+      $("#siguiente").innerHTML = `
+        <h2>Lo que sigue</h2>
+        <p>${next.texto}</p>
+        <a class="button" href="${next.enlace}">${next.boton}</a>`;
+      const steps = [
+        { n: 1, title: "Grupos", href: "/grupos", text: "Crea tu grupo y la lista de alumnos una sola vez.", status: `${plural(info.grupos, "grupo", "grupos")} · ${plural(info.alumnos, "alumno", "alumnos")}`, key: "grupos" },
+        { n: 2, title: "Exámenes", href: "/examenes", text: "Crea parciales y finales por bimestre, con su nota total, y escribe sus preguntas ahí mismo.", status: `${plural(info.examenes, "examen", "exámenes")}${info.apagados ? ` · ${plural(info.apagados, "apagado", "apagados")}` : ""}`, key: "examenes" },
+        { n: 3, title: "Calificar", href: "/calificar", text: "Escanea las hojas con el celular y sube el PDF. El programa avisa si falta alguna.", status: info.pendientes ? `${plural(info.pendientes, "alumno", "alumnos")} por calificar` : "Nada pendiente", key: "calificar" },
+        { n: 4, title: "Notas del año", href: "/notas", text: "Los cuatro bimestres juntos. Se descargan para Excel.", status: "Ver el cuadro", key: "notas" },
+        { n: "+", title: "Análisis", href: "/analisis", text: "Qué falló el grupo y hojas de refuerzo para quien lo necesita.", status: "Opcional", key: "analisis" },
+      ];
+      $("#pasos").innerHTML = steps.map((step) => `
+        <div class="step">
+          <h3><span class="n">${step.n}</span>${step.title}</h3>
+          <p>${step.text}</p>
+          <p class="status">${step.status}</p>
+          <a class="button ${step.key === next.paso ? "" : "secondary"}" href="${step.href}">Abrir</a>
+        </div>`).join("");
+      $("#copia").textContent = info.copia
+        ? `Copia de seguridad automática: ${info.copia}. Tus datos están solo en esta computadora.`
+        : "Tus datos están solo en esta computadora. Se hará una copia de seguridad automática cada día.";
+      $("#onedrive").hidden = !info.en_onedrive;
+    }
+
+    function showDemo(info) {
+      const on = Boolean(info && info.existe);
+      $("#demo-load").textContent = on ? "Volver a cargar la prueba" : "Cargar prueba simulada";
+      $("#demo-remove").hidden = !on;
+      $("#demo-ready").hidden = !on;
+      if (!on) return;
+      $("#demo-group").textContent = info.grupo;
+      $("#demo-exam").textContent = `${info.examen_largo.materia} · ${info.examen_largo.titulo}`;
+      $("#demo-exam2").textContent = `${info.examen_escrito.materia} · ${info.examen_escrito.titulo}`;
+      $("#demo-pdf1").href = info.examen_largo.pdf;
+      $("#demo-pdf2").href = info.examen_escrito.pdf;
+      // Calificar se abre ya en el grupo y el examen de la demostración.
+      localStorage.setItem("hp_group", info.grupo);
+      localStorage.setItem("hp_materia", info.examen_largo.materia);
+      localStorage.setItem("hp_exam", info.examen_largo.id);
+      localStorage.setItem("hp_amodo", "general");
+    }
+
+    async function loadDemo() {
+      try { showDemo(await (await fetch("/api/demo")).json()); } catch { /* sin demostración */ }
+    }
+
+    $("#demo-load").onclick = async () => {
+      const button = $("#demo-load");
+      button.disabled = true;
+      $("#demo-msg").textContent = "Preparando la prueba: se crean los exámenes y se califican las hojas. Tarda unos 30 segundos…";
+      try {
+        const response = await fetch("/api/demo", { method: "POST" });
+        if (!response.ok) throw new Error("No se pudo preparar la prueba.");
+        showDemo(await response.json());
+        $("#demo-msg").textContent = "";
+        start();
+      } catch (error) {
+        $("#demo-msg").textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    };
+
+    $("#demo-remove").onclick = async () => {
+      if (!confirm("Se borra el grupo de ejemplo con todos sus exámenes y notas. Tus datos reales no se tocan. ¿Seguir?")) return;
+      $("#demo-msg").textContent = "Borrando…";
+      await fetch("/api/demo", { method: "DELETE" });
+      $("#demo-msg").textContent = "";
+      showDemo({ existe: false });
+      start();
+    };
+    async function showTutorial() {
+      for (const [file, type] of [["/static/tutorial.webm", "video/webm"], ["/static/tutorial.mp4", "video/mp4"]]) {
+        try {
+          const head = await fetch(file, { method: "HEAD" });
+          if (head.ok && $("#video").canPlayType(type)) {
+            $("#video").src = file;
+            $("#tutorial").hidden = false;
+            return;
+          }
+        } catch { /* sin video: la sección queda oculta */ }
+      }
+    }
+
+    start();
+    showTutorial();
+    loadDemo();
+  </script>
+</body>
+</html>

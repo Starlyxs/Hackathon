@@ -86,6 +86,27 @@ def scan_url(sheet_id):
     return f"/archivos/escaneos/{sheet_id}.jpg?t={int(path.stat().st_mtime)}"
 
 
+def delete_scans(form_id):
+    """Borra las imágenes escaneadas de un examen (nombres y letra de los alumnos). Las notas se quedan."""
+    db = load()
+    removed = 0
+    for sheet in db["sheets"].values():
+        if sheet.get("form_id") == form_id:
+            path = SCANS / f"{sheet['id']}.jpg"
+            if path.exists():
+                try:
+                    path.unlink()
+                    removed += 1
+                except OSError:
+                    pass
+    return {"borradas": removed}
+
+
+def count_scans(form_id):
+    db = load()
+    return sum(1 for sheet in db["sheets"].values() if sheet.get("form_id") == form_id and (SCANS / f"{sheet['id']}.jpg").exists())
+
+
 def _hoja_label(sheet):
     return f"hoja {sheet['hoja']}" if sheet.get("hoja") else "la hoja"
 

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/logo.png">
+  <link rel="stylesheet" href="/static/app.css">
+  <title>Ayuda · Hojas en papel</title>
+  <style>
+    details.help { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin: 10px 0; background: var(--card); font-family: "Segoe UI", sans-serif; }
+    details.help summary { cursor: pointer; font-weight: 700; font-size: 1.05rem; }
+    details.help ul, details.help ol { margin: 8px 0 4px; padding-left: 22px; }
+    details.help li { margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="/static/logo.png" alt="">
+      <h1>Hojas en papel</h1>
+    </div>
+    <!--NAV-->
+    <p class="lede">Si algo no sale como esperabas, busca aquí. Cada pregunta dice qué hacer, paso a paso.</p>
+  </header>
+  <main>
+    <section>
+      <details class="help" open>
+        <summary>La página no abre o dice que no hay conexión</summary>
+        <ul>
+          <li>El programa funciona mientras la <strong>ventana negra</strong> esté abierta. Si la cerraste, ábrela otra vez con el icono «Hojas en papel» del escritorio o con el archivo «iniciar» de la carpeta.</li>
+          <li>Espera unos segundos y escribe en el navegador: <strong>127.0.0.1:8000</strong></li>
+          <li>Tus datos no se pierden al cerrar la ventana: quedan guardados en esta computadora.</li>
+        </ul>
+      </details>
+
+      <details class="help">
+        <summary>Subí el PDF y dice que no encontró la hoja o el QR</summary>
+        <ul>
+          <li>Deben verse las <strong>cuatro esquinas negras</strong> y el QR. No recortes la foto por dentro de los cuadros negros.</li>
+          <li>Escanea sobre una mesa lisa, con buena luz y sin sombra de la mano o del celular.</li>
+          <li>Si salió mal una sola página, escanéala de nuevo y súbela sola. Las demás no se vuelven a calificar.</li>
+          <li>Si dice «Ese QR no es de esta laptop», la hoja se imprimió desde otra computadora.</li>
+        </ul>
+      </details>
+
+      <details class="help">
+        <summary>Muchas respuestas salen «sin marca» o la nota parece baja</summary>
+        <ul>
+          <li>Pide a los alumnos rellenar bien la burbuja, con lápiz o lapicero firme. Una raya o un punto no cuenta.</li>
+          <li>En el escáner elige color u «Original». Los filtros que aclaran mucho borran el lápiz suave.</li>
+          <li>En <strong>Calificar → Revisar y corregir hojas</strong> ves la hoja escaneada y cambias la respuesta que se leyó mal. La nota se recalcula sola.</li>
+        </ul>
+      </details>
+
+      <details class="help">
+        <summary>Falta la segunda hoja de un alumno</summary>
+        <ul>
+          <li>Después de subir el PDF, el programa dice «falta hoja 2 de 2» junto al nombre.</li>
+          <li>Escanea esa hoja y súbela aparte. Se suma a la primera y se calcula la nota.</li>
+          <li>Mientras falte una hoja, el alumno aparece con «…» en las notas, no con una nota incompleta.</li>
+        </ul>
+      </details>
+
+      <details class="help">
+        <summary>Calificé una hoja del examen equivocado o quiero repetir una nota</summary>
+        <ul>
+          <li>En Calificar marca <strong>«Volver a calificar las hojas que ya tienen nota»</strong> y sube de nuevo el escaneo.</li>
+          <li>Si solo es una burbuja, es más rápido corregirla en <strong>Revisar y corregir hojas</strong>.</li>
+        </ul>
+      </details>
+
+      <details class="help">
+        <summary>Quiero guardar una copia o cambiar de computadora</summary>
+        <ol>
+          <li>En Inicio pulsa <strong>«Descargar copia de seguridad»</strong> y guarda el archivo en un USB.</li>
+          <li>En la otra computadora, instala el programa, ciérralo, y copia el archivo <strong>store.json</strong> de la copia dentro de la carpeta <strong>programa\data</strong> (o <strong>datos</strong>, junto al ejecutable).</li>
+          <li>Vuelve a abrir el programa: tus grupos, exámenes y notas estarán ahí.</li>
+        </ol>
+        <p class="lede">Además, el programa hace una copia automática cada día en la carpeta «copias».</p>
+      </details>
+
+      <details class="help">
+        <summary>Los escaneos tienen los nombres y la letra de mis alumnos</summary>
+        <ul>
+          <li>Las imágenes se guardan solo en esta computadora, para que puedas revisar lo escrito.</li>
+          <li>Cuando termines un examen, en <strong>Calificar → Revisar y corregir hojas</strong> puedes pulsar «Borrar imágenes escaneadas». Las notas se quedan.</li>
+        </ul>
+      </details>
+
+      <details class="help">
+        <summary>Quiero probar el programa sin usar datos reales</summary>
+        <ul>
+          <li>En Inicio pulsa <strong>«Cargar prueba simulada»</strong>. Crea un grupo de ejemplo con exámenes ya calificados, y dos PDF escaneados para practicar la subida.</li>
+          <li>Cuando termines, pulsa <strong>«Borrar la prueba simulada»</strong>. Se va todo lo de ejemplo y no toca tus datos reales.</li>
+        </ul>
+      </details>
+    </section>
+  </main>
+</body>
+</html>
