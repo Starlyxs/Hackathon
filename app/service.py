@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 
 from PIL import Image
 
+from app import series as seriesmod
 from app.bank import BANK, SKILLS, build_questions
 from app.grade import GradeError, read_bubbles, read_photo
 from app.materias import ensure_materias
@@ -217,6 +218,157 @@ def create_diagnostic(group, names, rng, source="auto", materias=None, meta=None
     return update(mutate)
 
 
+def _series_blocks(prepared, rng, used):
+    """Las preguntas de un alumno, ya con su número y lo que vale cada una."""
+    blocks = []
+    number = 0
+    for block in prepared:
+        questions = []
+        for row in block["rows"]:
+            if block["tipo"] == "opciones":
+                question = _variants_for_student([row], rng, used)[0]
+                question["format"] = "cerrada"
+                question["materia"] = row.get("materia") or ""
+            else:
+                question = _open_question(row)
+            number += 1
+            question["numero"] = number
+            question["serie"] = block["nombre"]
+            question["puntos"] = round(block["por_pregunta"], 4)
+            questions.append(question)
+        blocks.append({**{key: block[key] for key in ("nombre", "tipo", "instruccion", "imagen", "puntos", "por_pregunta")}, "preguntas": questions})
+    return blocks
+
+
+def _series_snapshot(prepared):
+    return [
+        {
+            "nombre": block["nombre"],
+            "tipo": block["tipo"],
+            "instruccion": block["instruccion"],
+            "imagen": block["imagen"],
+            "puntos": block["puntos"],
+            "question_ids": [row["id"] for row in block["rows"]],
+        }
+        for block in prepared
+    ]
+
+
+def _series_materias(prepared):
+    return sorted({row["materia"] for block in prepared for row in block["rows"] if row.get("materia")})
+
+
+def create_series_exam(group, names, rng, series, materias=None, meta=None):
+    """Examen por series: cada serie vale unos puntos que se reparten entre sus preguntas."""
+    names = [name.strip() for name in (names or []) if name and name.strip()]
+    chosen = [item.strip() for item in (materias or []) if item and item.strip()]
+    info = clean_meta(meta)
+
+    def mutate(db):
+        nonlocal group, names
+        db.setdefault("authored", [])
+        ensure_materias(db)
+        group = _canon_group(db, group)
+        if not group:
+            raise ValueError("Elige el grupo.")
+        if not names:
+            names = list_students(db, group)
+        if not names:
+            raise ValueError("Este grupo todavía no tiene alumnos. Agrégalos primero en «Grupos».")
+        if len(names) > 60:
+            raise ValueError("Un grupo admite hasta 60 alumnos.")
+        exam = form_meta({"id": "nuevo", "group": group, **info})
+        prepared = seriesmod.prepare(db["authored"], series, info["nota_total"], chosen)
+        materias_used = _series_materias(prepared)
+        _check_duplicate(db, group, info, materias_used)
+        _register_group(db, group, names)
+        form_id = _new_id(db["forms"])
+        db["forms"][form_id] = {
+            "id": form_id,
+            "group": group,
+            "kind": "diagnostico",
+            "created": _now(),
+            "questions": [row["prompt"] for block in prepared for row in block["rows"]],
+            "question_ids": [row["id"] for block in prepared for row in block["rows"]],
+            "series": _series_snapshot(prepared),
+            "materias": materias_used,
+            **info,
+        }
+        extra = {"titulo": exam["titulo"], "bimestre": info["bimestre"], "nota_total": info["nota_total"]}
+        created = []
+        used = {}
+        sheet_ids = []
+        pages_per_student = 1
+        for name in names:
+            pages = seriesmod.paginate(_series_blocks(prepared, rng, used))
+            total = len(pages)
+            pages_per_student = max(pages_per_student, total)
+            for number, page in enumerate(pages, start=1):
+                sheet = _new_sheet(
+                    db,
+                    group,
+                    name,
+                    "diagnostico",
+                    page["questions"],
+                    form_id,
+                    sheet_format="series",
+                    materia_label=_join_materias(page["questions"]),
+                    label=f"{name} · hoja {number} de {total}" if total > 1 else name,
+                    extra={**extra, "hoja": f"{number} de {total}" if total > 1 else "", "pagina": number, "layout": page["layout"]},
+                )
+                created.append(_publish(sheet))
+                sheet_ids.append(sheet["id"])
+        pdf = _write_group_pdf(form_id, sheet_ids)
+        db["forms"][form_id]["pdf"] = pdf
+        return {
+            "form_id": form_id,
+            "sheets": created,
+            "pdf": pdf,
+            "titulo": exam["titulo_completo"],
+            "nota_total": info["nota_total"],
+            "source": "series",
+            "paginas": pages_per_student,
+            "warning": None,
+        }
+
+    return update(mutate)
+
+
+def preview_series_exam(group, names, rng, series, materias=None, meta=None):
+    names = [name.strip() for name in (names or []) if name and name.strip()]
+    chosen = [item.strip() for item in (materias or []) if item and item.strip()]
+    info = clean_meta(meta)
+    db = load()
+    ensure_materias(db)
+    group = _canon_group(db, group) or "Grupo"
+    exam = form_meta({"id": "vista", "group": group, **info})
+    roster = names or list_students(db, group)
+    name = roster[0] if roster else "Nombre del alumno"
+    prepared = seriesmod.prepare(db.get("authored", []), series, info["nota_total"], chosen)
+    pages = seriesmod.paginate(_series_blocks(prepared, rng, {}))
+    ensure_dirs()
+    stamp = int(time.time())
+    urls = []
+    for number, page in enumerate(pages, start=1):
+        sheet = {
+            "id": "vista",
+            "student_name": name,
+            "group": group,
+            "kind": "diagnostico",
+            "format": "series",
+            "materia_label": _join_materias(page["questions"]),
+            "questions": page["questions"],
+            "layout": page["layout"],
+            "titulo": exam["titulo"],
+            "bimestre": info["bimestre"],
+            "nota_total": info["nota_total"],
+            "hoja": f"{number} de {len(pages)}" if len(pages) > 1 else "",
+        }
+        render_sheet(sheet).save(SHEETS / f"vista-previa-{number}.png")
+        urls.append(f"/archivos/vista-previa-{number}.png?v={stamp}")
+    return {"png": urls[0], "pngs": urls, "student_name": name}
+
+
 def list_questions():
     def read(db):
         db.setdefault("authored", [])
@@ -396,6 +548,9 @@ def grade_photo(image_bgr, form_id=None):
             ],
         }
 
+    if preview.get("format") == "series":
+        return update(lambda db: _grade_series_page(db, sheet_id, aligned))
+
     def mutate(db):
         sheet = db["sheets"].get(sheet_id)
         if sheet is None:
@@ -443,11 +598,125 @@ def grade_photo(image_bgr, form_id=None):
     return update(mutate)
 
 
+def _grade_series_page(db, sheet_id, aligned):
+    """Lee las burbujas de una hoja por series. Si trae preguntas escritas, deja las burbujas
+    pendientes y pide a la maestra que marque lo escrito."""
+    sheet = db["sheets"].get(sheet_id)
+    if sheet is None:
+        raise GradeError("Ese QR no está en esta laptop. Genera la hoja desde aquí antes de calificarla.")
+    closed = [question for question in sheet["questions"] if question.get("format") != "abierta"]
+    written = [question for question in sheet["questions"] if question.get("format") == "abierta"]
+    choices, details = read_bubbles(aligned, seriesmod.bubble_slots(sheet)) if closed else ([], [])
+    items = []
+    score = 0.0
+    right = 0
+    for question, choice, detail in zip(closed, choices, details):
+        correct = choice is not None and choice == question["answer"]
+        if correct:
+            score += question["puntos"]
+            right += 1
+        trap = question.get("trap") is not None and choice is not None and choice == question["trap"] and not correct
+        items.append(
+            {
+                "prompt": question["prompt"],
+                "skill": question["skill"],
+                "skill_name": SKILLS.get(question["skill"], question["skill"]),
+                "choice": choice,
+                "answer": question["answer"],
+                "correct": correct,
+                "status": detail["status"],
+                "format": "cerrada",
+                "puntos": question["puntos"],
+                "trap": trap,
+                "trap_label": question.get("trap_label") if trap else None,
+            }
+        )
+    if written:
+        db.setdefault("pending", {})[sheet_id] = {"items": items, "score": round(score, 4), "created": _now()}
+        return {
+            "needs_review": True,
+            "sheet_id": sheet_id,
+            "student_name": sheet["student_name"],
+            "group": sheet["group"],
+            "items": [
+                {
+                    "prompt": question["prompt"],
+                    "criterion": question.get("criterion") or "",
+                    "materia": question.get("materia") or "",
+                    "puntos": question["puntos"],
+                    "serie": question.get("serie") or "",
+                }
+                for question in written
+            ],
+            "opciones": {"bien": right, "total": len(closed), "puntos": round(score, 4)},
+        }
+    result = {
+        "sheet_id": sheet_id,
+        "student_name": sheet["student_name"],
+        "group": sheet["group"],
+        "kind": sheet["kind"],
+        "score": round(score, 4),
+        "total": round(sum(question["puntos"] for question in sheet["questions"]), 4),
+        "items": items,
+        "created": _now(),
+    }
+    db["results"].append(result)
+    return result
+
+
+def _save_series_interpretation(db, sheet, marks, points):
+    written = [question for question in sheet["questions"] if question.get("format") == "abierta"]
+    if not written:
+        raise ValueError("Esa hoja no tiene preguntas escritas.")
+    pending = (db.get("pending") or {}).get(sheet["id"])
+    if pending is None:
+        raise ValueError("Vuelve a escanear la hoja antes de guardar lo escrito.")
+    if len(marks) != len(written):
+        raise ValueError("Falta calificar una respuesta.")
+    items = list(pending["items"])
+    score = float(pending["score"])
+    for question, mark in zip(written, marks):
+        if mark not in points:
+            raise ValueError("Marca cada respuesta como logrado, parcial o aún no.")
+        score += question["puntos"] * points[mark]
+        criterion = question.get("criterion") or "la idea"
+        items.append(
+            {
+                "prompt": question["prompt"],
+                "skill": question.get("skill") or "comprension",
+                "skill_name": question.get("materia") or "interpretación",
+                "choice": None,
+                "answer": None,
+                "correct": mark == "logrado",
+                "status": mark,
+                "format": "abierta",
+                "puntos": question["puntos"],
+                "trap": mark == "aun_no",
+                "trap_label": f"no logra interpretar: {criterion[:90]}" if mark == "aun_no" else None,
+            }
+        )
+    result = {
+        "sheet_id": sheet["id"],
+        "student_name": sheet["student_name"],
+        "group": sheet["group"],
+        "kind": sheet["kind"],
+        "score": round(score, 4),
+        "total": round(sum(question["puntos"] for question in sheet["questions"]), 4),
+        "items": items,
+        "created": _now(),
+    }
+    db["pending"].pop(sheet["id"], None)
+    db["results"].append(result)
+    return result
+
+
 def save_interpretation(sheet_id, marks):
     points = {"logrado": 1, "parcial": 0.5, "aun_no": 0}
 
     def mutate(db):
         sheet = db["sheets"].get(sheet_id)
+        if sheet is not None and sheet.get("format") == "series":
+            return _save_series_interpretation(db, sheet, marks, points)
         if sheet is None or sheet.get("format") != "abierta":
             raise ValueError("Esa hoja no es de interpretación.")
         if len(marks) != len(sheet["questions"]):
@@ -713,7 +982,7 @@ def list_exams():
                 trash.append({"id": form["id"], "titulo_completo": meta["titulo_completo"], "group": meta["group"], "papelera": form["papelera"]})
                 continue
             sheets = [sheet for sheet in db["sheets"].values() if sheet.get("form_id") == form["id"]]
-            sheets.sort(key=lambda sheet: (sheet["student_name"], sheet.get("format") == "abierta"))
+            sheets.sort(key=lambda sheet: (sheet["student_name"], sheet.get("format") == "abierta", sheet.get("pagina", 0)))
             sheet_ids = [sheet["id"] for sheet in sheets]
             pdf = form.get("pdf")
             if not pdf and sheet_ids:
@@ -725,6 +994,15 @@ def list_exams():
                     **meta,
                     "students": sorted({sheet["student_name"] for sheet in sheets}),
                     "question_ids": list(form.get("question_ids") or []),
+                    "series": [
+                        {
+                            "nombre": item["nombre"],
+                            "tipo": item["tipo"],
+                            "puntos": item["puntos"],
+                            "preguntas": len(item["question_ids"]),
+                        }
+                        for item in (form.get("series") or [])
+                    ],
                     "pdf": pdf,
                     "preview": f"/archivos/{sheets[0]['id']}.png" if sheets else None,
                     "grades": rows,

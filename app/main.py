@@ -19,6 +19,7 @@ from app.service import (
     class_report,
     create_diagnostic,
     create_reinforcement,
+    create_series_exam,
     delete_group,
     delete_question,
     exam_summary,
@@ -29,6 +30,7 @@ from app.service import (
     list_questions,
     overview,
     preview_diagnostic,
+    preview_series_exam,
     purge_exam,
     restore_exam,
     save_group,
@@ -37,6 +39,7 @@ from app.service import (
     sheet_status,
     trash_exam,
 )
+from app.series import save_image as save_series_image
 from app.store import SHEETS, ensure_dirs, load
 from app.variants import preview_variants
 
@@ -67,11 +70,31 @@ def html_page(name, active=""):
     return HTMLResponse(html)
 
 
+class SerieIn(BaseModel):
+    nombre: str = Field(default="", max_length=30)
+    tipo: str = "opciones"
+    instruccion: str = Field(default="", max_length=240)
+    imagen: str = Field(default="", max_length=20)
+    puntos: float = Field(default=0, ge=0, le=1000)
+    question_ids: list[str] = []
+
+    def data(self):
+        return {
+            "nombre": self.nombre,
+            "tipo": self.tipo,
+            "instruccion": self.instruccion,
+            "imagen": self.imagen,
+            "puntos": self.puntos,
+            "question_ids": self.question_ids,
+        }
+
+
 class DiagnosticIn(BaseModel):
     group: str = Field(min_length=1, max_length=40)
     names: list[str] = []
     materias: list[str] = []
     question_ids: list[str] = []
+    series: list[SerieIn] = []
     bimestre: int = 1
     tipo: str = "parcial"
     numero: int = 1
@@ -204,6 +227,15 @@ def get_exams():
 def post_exam_preview(body: DiagnosticIn):
     names = [name.strip() for name in body.names if name.strip()]
     try:
+        if body.series:
+            return preview_series_exam(
+                body.group.strip(),
+                names,
+                random.Random(),
+                [item.data() for item in body.series],
+                materias=body.materias,
+                meta=body.meta(),
+            )
         return preview_diagnostic(
             body.group.strip(),
             names,
@@ -258,6 +290,15 @@ def remove_question(question_id: str):
 def post_diagnostic(body: DiagnosticIn):
     names = [name.strip() for name in body.names if name.strip()]
     try:
+        if body.series:
+            return create_series_exam(
+                body.group.strip(),
+                names,
+                random.Random(),
+                [item.data() for item in body.series],
+                materias=body.materias,
+                meta=body.meta(),
+            )
         return create_diagnostic(
             body.group.strip(),
             names,
@@ -266,6 +307,15 @@ def post_diagnostic(body: DiagnosticIn):
             meta=body.meta(),
             question_ids=body.question_ids,
         )
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@app.post("/api/imagenes")
+async def post_series_image(file: UploadFile = File(...)):
+    """Imagen que acompaña a una serie (un mapa, un dibujo, una lectura escaneada)."""
+    try:
+        return save_series_image(await file.read())
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
 

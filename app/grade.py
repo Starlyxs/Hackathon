@@ -16,14 +16,17 @@ def pil_to_bgr(image):
     return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
 
-def mark_bubbles(bgr, choices):
-    """choices: índice 0-3, o None si esa pregunta queda en blanco."""
+def mark_bubbles(bgr, choices, slots=None):
+    """choices: índice 0-3, o None si esa pregunta queda en blanco.
+
+    slots: posición de las burbujas por pregunta (hojas por series); si falta, la retícula fija.
+    """
     out = bgr.copy()
-    slots = question_slots(len(choices))
-    for choice, slot in zip(choices, slots):
+    grid = [slot["bubbles"] for slot in question_slots(len(choices))] if slots is None else slots
+    for choice, bubbles in zip(choices, grid):
         if choice is None:
             continue
-        x, y = slot["bubbles"][choice]
+        x, y = bubbles[choice]
         cv2.circle(out, (int(x), int(y)), BUBBLE_R - 5, (20, 24, 22), -1)
     return out
 
@@ -378,11 +381,16 @@ def _darkness(gray, x, y):
 
 
 def read_bubbles(aligned, n_questions):
+    """n_questions: cuántas preguntas (retícula fija) o la lista de burbujas por pregunta (series)."""
     gray = cv2.cvtColor(aligned, cv2.COLOR_BGR2GRAY)
     choices = []
     details = []
-    for slot in question_slots(n_questions):
-        scores = [_darkness(gray, x, y) for x, y in slot["bubbles"]]
+    if isinstance(n_questions, int):
+        grid = [slot["bubbles"] for slot in question_slots(n_questions)]
+    else:
+        grid = n_questions
+    for bubbles in grid:
+        scores = [_darkness(gray, x, y) for x, y in bubbles]
         order = sorted(range(len(scores)), key=lambda i: scores[i])
         darkest = order[0]
         filled = [i for i in order if scores[i] < MARK_THRESHOLD]

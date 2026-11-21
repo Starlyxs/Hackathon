@@ -67,6 +67,14 @@
     .added button { padding: 3px 10px; font-size: 0.8rem; min-height: 36px; }
     #q-form textarea { min-height: 80px; }
     #idlg img { width: 100%; border-radius: 10px; border: 1px solid var(--line); }
+    .pointsbar { font-family: "Segoe UI", sans-serif; padding: 10px 14px; border-radius: 12px; background: var(--green-soft); color: var(--green); margin: 10px 0; line-height: 1.4; }
+    .pointsbar.over { background: #fbe4de; color: var(--rust); }
+    .serie { border: 2px solid var(--line); border-radius: 16px; padding: 12px 16px 16px; margin: 14px 0; background: #fff; }
+    .serie-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .serie-top input { flex: 1 1 160px; font-weight: 700; }
+    .serie .each { font-family: "Segoe UI", sans-serif; color: var(--green); font-weight: 600; padding-bottom: 10px; }
+    .serie img.simg { max-width: 220px; max-height: 120px; border-radius: 8px; border: 1px solid var(--line); display: block; margin-bottom: 8px; }
+    .serie .nope { font-family: "Segoe UI", sans-serif; color: var(--muted); padding: 10px 0; }
     .fieldline { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
     .fieldline > div { flex: 1 1 160px; }
     @media (max-width: 700px) {
@@ -134,13 +142,15 @@
       </div>
 
       <div class="stepbox">
-        <h3><span class="n">5</span> ¿Qué preguntas lleva?</h3>
-        <div class="row" style="margin-top:0;">
-          <button id="open-q" type="button">+ Escribir preguntas</button>
+        <h3><span class="n">5</span> Series del examen</h3>
+        <p class="lede" id="series-help">Un examen se arma con series (Serie I, Serie II…). Cada serie vale unos puntos y el programa los reparte solo entre sus preguntas.</p>
+        <div id="pointsbar" class="pointsbar" hidden></div>
+        <div id="series"></div>
+        <div class="row">
+          <button id="add-opc" type="button">+ Serie de opciones</button>
+          <button id="add-esc" type="button" class="secondary">+ Serie de respuesta escrita</button>
+          <button id="split" type="button" class="secondary">Repartir los puntos parejo</button>
         </div>
-        <p id="picker-help" class="lede"></p>
-        <div id="picker" class="picker"></div>
-        <p id="counts" class="count"></p>
       </div>
 
       <div class="summarybar" id="bar">
@@ -183,8 +193,7 @@
       <button type="button" class="secondary" id="dlg-x">Cerrar</button>
     </div>
     <div class="dlg-body" id="q-form">
-      <label for="q-kind">Tipo de pregunta</label>
-      <select id="q-kind">
+      <select id="q-kind" hidden>
         <option value="cerrada">Opción múltiple</option>
         <option value="abierta">Abierta, de interpretación</option>
       </select>
@@ -247,8 +256,10 @@
     const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
     const fmt = (value) => (value === null || value === undefined ? "—" : String(Math.round(value * 10) / 10));
     const same = (a, b) => String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
-    const MAX_CLOSED = 8;
-    const MAX_OPEN = 4;
+    const MAX_SERIES = 8;
+    const MAX_QUESTIONS = 30;
+    const TIPO_NAME = { opciones: "Opción múltiple", escrita: "Respuesta escrita" };
+    const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
     const PARCIALES = [1, 2, 3];
     const TOTALS = [10, 15, 20, 25, 30, 40, 100];
     const DEFAULT_TOTAL = { parcial: 20, final: 40, otro: 10, diagnostico: 100 };
@@ -259,7 +270,13 @@
     let groups = [];
     let questions = [];
     let materias = [];
-    const state = { group: "", materia: "", slot: null, total: 20, totalTouched: false, nombre: "", bim: 1 };
+    const state = { group: "", materia: "", slot: null, total: 20, totalTouched: false, nombre: "", bim: 1, series: [] };
+    let serieUid = 0;
+    const round2 = (value) => Math.round(value * 100) / 100;
+    const num = (value) => String(round2(value));
+    const serieName = (item, index) => item.nombre.trim() || `Serie ${ROMAN[index] || index + 1}`;
+    const sumPoints = () => state.series.reduce((total, item) => total + (Number(item.puntos) || 0), 0);
+    const countQuestions = () => state.series.reduce((total, item) => total + item.ids.length, 0);
     let filterGroup = null;
     let filterBimestre = "";
     let toastTimer = null;
@@ -307,7 +324,7 @@
     }
 
     function pickedIds() {
-      return [...document.querySelectorAll("#picker input:checked")].map((input) => input.value);
+      return state.series.flatMap((item) => item.ids);
     }
 
     function subjectQuestions() {
@@ -320,7 +337,14 @@
         group: state.group,
         names: [],
         materias: [state.materia],
-        question_ids: pickedIds(),
+        series: state.series.map((item) => ({
+          nombre: item.nombre.trim(),
+          tipo: item.tipo,
+          instruccion: item.instruccion.trim(),
+          imagen: item.imagen,
+          puntos: Number(item.puntos) || 0,
+          question_ids: item.ids,
+        })),
         bimestre: slot ? bimOf(slot) : 1,
         tipo: slot ? slot.tipo : "parcial",
         numero: slot ? (slot.numero || 1) : 1,
@@ -335,14 +359,6 @@
         exam.tipo === slot.tipo && exam.bimestre === slot.bimestre && (slot.tipo !== "parcial" || exam.numero === slot.numero));
     }
 
-    function pickedCounts() {
-      const picked = new Set(pickedIds());
-      return {
-        closed: questions.filter((q) => picked.has(q.id) && q.kind !== "abierta").length,
-        open: questions.filter((q) => picked.has(q.id) && q.kind === "abierta").length,
-      };
-    }
-
     function missing() {
       if (!groups.length) return "crear un grupo en «Grupos»";
       if (!state.group) return "elegir el grupo (paso 1)";
@@ -351,10 +367,14 @@
       if (state.slot.tipo === "otro" && !state.nombre.trim()) return "ponerle nombre a la actividad (paso 3)";
       const total = Number(state.total);
       if (!(total >= 1 && total <= 100)) return "los puntos, de 1 a 100 (paso 4)";
-      if (!subjectQuestions().length) return `escribir preguntas de ${state.materia} (paso 5)`;
-      const counts = pickedCounts();
-      if (!counts.closed && !counts.open) return "marcar al menos una pregunta (paso 5)";
-      if (counts.closed > MAX_CLOSED || counts.open > MAX_OPEN) return `quitar preguntas: caben ${MAX_CLOSED} de opciones y ${MAX_OPEN} abiertas (paso 5)`;
+      if (!state.series.length) return "agregar al menos una serie (paso 5)";
+      for (const [index, item] of state.series.entries()) {
+        const name = serieName(item, index);
+        if (!item.ids.length) return `agregar preguntas a ${name} (paso 5)`;
+        if (!(Number(item.puntos) > 0)) return `poner cuántos puntos vale ${name} (paso 5)`;
+      }
+      if (round2(sumPoints()) > total) return `bajar los puntos de las series: suman ${num(sumPoints())} y el examen vale ${num(total)} (paso 5)`;
+      if (countQuestions() > MAX_QUESTIONS) return `quitar preguntas: caben ${MAX_QUESTIONS} en un examen (paso 5)`;
       return "";
     }
 
@@ -383,6 +403,7 @@
         `<button type="button" class="add" id="otra-open">+ Otra materia</button>`;
       $("#materia-chips").querySelectorAll("[data-m]").forEach((button) => {
         button.onclick = () => {
+          if (state.materia !== button.dataset.m) state.series = [];
           state.materia = button.dataset.m;
           state.slot = null;
           $("#slot-note").innerHTML = "";
@@ -403,6 +424,7 @@
       if (!response.ok) { $("#otra-error").textContent = await readError(response); return; }
       materias = (await response.json()).materias;
       state.materia = name.split(/\s+/).join(" ");
+      state.series = [];
       state.slot = null;
       $("#otra-name").value = "";
       $("#otra-box").hidden = true;
@@ -503,79 +525,201 @@
     });
     $("#nombre").addEventListener("input", () => { state.nombre = $("#nombre").value; renderBar(); });
 
-    /* ---------- paso 5: preguntas ---------- */
+    /* ---------- paso 5: series ---------- */
     function usedIn(question) {
       return exams.filter((exam) => same(exam.group, state.group) && exam.question_ids.includes(question.id)).map((exam) => exam.titulo_completo);
     }
 
-    function updateCounts() {
-      const subject = subjectQuestions();
-      if (!subject.length) {
-        $("#counts").textContent = "";
-        $("#dlg-counts").textContent = "";
-        return;
-      }
-      const counts = pickedCounts();
-      const html = `<span class="${counts.closed > MAX_CLOSED ? "over" : ""}">Opciones: ${counts.closed} de ${MAX_CLOSED}</span> · <span class="${counts.open > MAX_OPEN ? "over" : ""}">Abiertas: ${counts.open} de ${MAX_OPEN}</span>`;
-      $("#counts").innerHTML = html;
-      $("#dlg-counts").innerHTML = html;
+    function addSeries(tipo) {
+      if (!state.materia) { $("#make-error").textContent = "Primero elige la materia (paso 2)."; return; }
+      if (state.series.length >= MAX_SERIES) { $("#make-error").textContent = `Un examen admite hasta ${MAX_SERIES} series.`; return; }
+      $("#make-error").textContent = "";
+      const left = Math.max(0, round2(Number(state.total) - sumPoints()));
+      const taken = new Set(pickedIds());
+      const used = new Set(exams.filter((exam) => same(exam.group, state.group)).flatMap((exam) => exam.question_ids));
+      const ids = subjectQuestions()
+        .filter((q) => (tipo === "opciones") === (q.kind !== "abierta") && !taken.has(q.id) && !used.has(q.id))
+        .slice(0, 8).map((q) => q.id);
+      state.series.push({ uid: ++serieUid, tipo, nombre: "", instruccion: "", imagen: "", imagenUrl: "", puntos: left || "", ids, touched: false });
+      if (!state.series.some((item) => item.touched)) splitPoints();
+      renderSeries();
+      renderBar();
     }
 
-    function renderPicker(keep = null) {
-      const box = $("#picker");
-      $("#open-q").disabled = !state.materia;
-      if (!state.materia) {
-        $("#picker-help").textContent = "Primero elige la materia en el paso 2.";
-        box.hidden = true;
-        updateCounts();
-        return;
-      }
-      const list = subjectQuestions();
-      if (!list.length) {
-        $("#picker-help").innerHTML = `Todavía no tienes preguntas de <strong>${esc(state.materia)}</strong>. Pulsa «Escribir preguntas».`;
-        box.hidden = true;
-        updateCounts();
-        return;
-      }
-      box.hidden = false;
-      $("#picker-help").innerHTML = `Marca las preguntas de <strong>${esc(state.materia)}</strong> que entran en este examen (hasta ${MAX_CLOSED} de opciones y ${MAX_OPEN} abiertas). Las que no se han usado ya vienen marcadas.`;
-      const used = new Set(exams.filter((exam) => same(exam.group, state.group)).flatMap((exam) => exam.question_ids));
-      let closedLeft = MAX_CLOSED;
-      let openLeft = MAX_OPEN;
-      const preset = new Set(keep || []);
-      if (!keep) {
-        list.forEach((q) => {
-          if (used.has(q.id)) return;
-          if (q.kind === "abierta" && openLeft > 0) { preset.add(q.id); openLeft -= 1; }
-          if (q.kind !== "abierta" && closedLeft > 0) { preset.add(q.id); closedLeft -= 1; }
-        });
-      }
-      box.innerHTML = list.map((q) => {
+    function splitPoints() {
+      const count = state.series.length;
+      const total = Number(state.total) || 0;
+      if (!count || !(total > 0)) return;
+      const each = Math.floor((total / count) * 100) / 100;
+      state.series.forEach((item, index) => {
+        item.puntos = index === count - 1 ? round2(total - each * (count - 1)) : each;
+        item.touched = false;
+      });
+    }
+
+    function removeQuestionEverywhere(id) {
+      state.series.forEach((item) => { item.ids = item.ids.filter((value) => value !== id); });
+    }
+
+    function seriesCard(item, index) {
+      const elsewhere = new Map();
+      state.series.forEach((other, position) => {
+        if (other.uid !== item.uid) other.ids.forEach((id) => elsewhere.set(id, serieName(other, position)));
+      });
+      const list = subjectQuestions().filter((q) => (item.tipo === "opciones") === (q.kind !== "abierta"));
+      const rows = list.map((q) => {
+        const other = elsewhere.get(q.id);
         const before = usedIn(q);
-        return `<label class="q"><input type="checkbox" value="${q.id}" ${preset.has(q.id) ? "checked" : ""}>
-          <span style="flex:1;">${esc(q.prompt)}<small>${q.kind === "abierta" ? "Abierta" : "Opciones"}${before.length ? ` · ya usada en ${esc(before.join(", "))}` : ""}</small></span>
+        const note = other ? `ya está en ${esc(other)}` : (before.length ? `ya usada en ${esc(before.join(", "))}` : "");
+        return `<label class="q"><input type="checkbox" data-pick="${q.id}" ${item.ids.includes(q.id) ? "checked" : ""} ${other ? "disabled" : ""}>
+          <span style="flex:1;">${esc(q.prompt)}${note ? `<small>${note}</small>` : ""}</span>
           <button type="button" class="danger" data-drop="${q.id}" title="Borrar esta pregunta de tu banco">Borrar</button></label>`;
       }).join("");
-      box.querySelectorAll("input").forEach((input) => { input.onchange = () => { updateCounts(); renderBar(); }; });
-      box.querySelectorAll("[data-drop]").forEach((button) => {
-        button.onclick = async (event) => {
-          event.preventDefault();
-          const q = questions.find((item) => item.id === button.dataset.drop);
-          if (!confirm(`¿Borrar esta pregunta?\n\n${q.prompt}\n\nLos exámenes que ya hiciste con ella no cambian.`)) return;
-          const keepIds = pickedIds().filter((value) => value !== q.id);
-          await fetch(`/api/preguntas/${q.id}`, { method: "DELETE" });
-          await reloadBank(keepIds);
-        };
-      });
-      updateCounts();
+      const kind = item.tipo === "opciones" ? "de opciones" : "escritas";
+      const empty = `<p class="nope">Todavía no tienes preguntas ${kind} de ${esc(state.materia)}. Pulsa «Escribir pregunta».</p>`;
+      const picture = item.imagen
+        ? `<img class="simg" src="${item.imagenUrl}" alt="Imagen de la serie"><button type="button" class="secondary" data-img-rm>Quitar imagen</button>`
+        : `<button type="button" class="secondary" data-img-pick>Subir imagen</button><input type="file" accept="image/*" hidden data-img>`;
+      return `<div class="serie" data-uid="${item.uid}">
+        <div class="serie-top">
+          <span class="tag grp">${TIPO_NAME[item.tipo]}</span>
+          <input data-f="nombre" maxlength="30" value="${esc(item.nombre)}" placeholder="${esc(serieName({ nombre: "" }, index))}" aria-label="Nombre de la serie">
+          <button type="button" class="danger" data-rm-serie>Quitar serie</button>
+        </div>
+        <label>Qué debe hacer el alumno (opcional)</label>
+        <input data-f="instruccion" maxlength="240" value="${esc(item.instruccion)}" placeholder="${item.tipo === "opciones" ? "Marca la respuesta correcta." : "Lee con atención y responde."}">
+        <div class="fieldline">
+          <div>
+            <label>Puntos que vale la serie</label>
+            <input type="number" data-f="puntos" min="0" max="1000" step="0.5" inputmode="decimal" value="${item.puntos === "" ? "" : esc(item.puntos)}">
+          </div>
+          <div class="each" data-each></div>
+        </div>
+        <label>Imagen para esta serie (opcional)</label>
+        <div>${picture}</div>
+        <p class="error" data-ierr></p>
+        <label>Preguntas ${kind}</label>
+        <div class="picker">${rows || empty}</div>
+        <div class="row"><button type="button" data-write>+ Escribir pregunta</button></div>
+      </div>`;
     }
 
-    async function reloadBank(keep) {
+    function renderSeries() {
+      const box = $("#series");
+      const ready = Boolean(state.materia);
+      ["#add-opc", "#add-esc", "#split"].forEach((id) => { $(id).disabled = !ready; });
+      if (!ready) {
+        box.innerHTML = `<p class="lede">Primero elige la materia en el paso 2.</p>`;
+      } else if (!state.series.length) {
+        box.innerHTML = `<p class="lede">Todavía no hay series. Agrega la primera con uno de los botones de abajo.</p>`;
+      } else {
+        box.innerHTML = state.series.map(seriesCard).join("");
+      }
+      box.querySelectorAll(".serie").forEach((card) => {
+        const item = state.series.find((entry) => entry.uid === Number(card.dataset.uid));
+        card.querySelectorAll("[data-f]").forEach((input) => {
+          input.addEventListener("input", () => {
+            item[input.dataset.f] = input.dataset.f === "puntos" ? (input.value === "" ? "" : Number(input.value)) : input.value;
+            if (input.dataset.f === "puntos") item.touched = true;
+            renderBar();
+          });
+        });
+        card.querySelectorAll("[data-pick]").forEach((input) => {
+          input.onchange = () => {
+            item.ids = input.checked ? [...item.ids, input.dataset.pick] : item.ids.filter((id) => id !== input.dataset.pick);
+            renderSeries();
+            renderBar();
+          };
+        });
+        card.querySelector("[data-rm-serie]").onclick = () => {
+          state.series = state.series.filter((entry) => entry.uid !== item.uid);
+          renderSeries();
+          renderBar();
+        };
+        card.querySelector("[data-write]").onclick = () => openDialog(item.uid);
+        card.querySelectorAll("[data-drop]").forEach((button) => {
+          button.onclick = async (event) => {
+            event.preventDefault();
+            const q = questions.find((entry) => entry.id === button.dataset.drop);
+            if (!confirm(`¿Borrar esta pregunta?\n\n${q.prompt}\n\nLos exámenes que ya hiciste con ella no cambian.`)) return;
+            await fetch(`/api/preguntas/${q.id}`, { method: "DELETE" });
+            removeQuestionEverywhere(q.id);
+            await reloadBank();
+          };
+        });
+        const pick = card.querySelector("[data-img-pick]");
+        if (pick) {
+          const file = card.querySelector("[data-img]");
+          pick.onclick = () => file.click();
+          file.onchange = async () => {
+            if (!file.files[0]) return;
+            const error = card.querySelector("[data-ierr]");
+            error.textContent = "";
+            pick.disabled = true;
+            pick.textContent = "Subiendo…";
+            const data = new FormData();
+            data.append("file", file.files[0]);
+            const response = await fetch("/api/imagenes", { method: "POST", body: data });
+            if (!response.ok) {
+              error.textContent = await readError(response);
+              pick.disabled = false;
+              pick.textContent = "Subir imagen";
+              return;
+            }
+            const saved = await response.json();
+            item.imagen = saved.id;
+            item.imagenUrl = saved.url;
+            renderSeries();
+            renderBar();
+          };
+        }
+        const drop = card.querySelector("[data-img-rm]");
+        if (drop) drop.onclick = () => { item.imagen = ""; item.imagenUrl = ""; renderSeries(); renderBar(); };
+      });
+      updatePoints();
+    }
+
+    function updatePoints() {
+      const bar = $("#pointsbar");
+      const total = Number(state.total) || 0;
+      const sum = round2(sumPoints());
+      bar.hidden = !state.series.length;
+      if (state.series.length) {
+        const left = round2(total - sum);
+        bar.classList.toggle("over", left < 0);
+        let tail = "";
+        if (left < 0) tail = ` · te pasaste por ${num(-left)}. Baja los puntos de alguna serie.`;
+        else if (left === 0) tail = " · ✓ completo";
+        else tail = ` · faltan ${num(left)}. Si no los repartes, la nota igual se calcula sobre ${num(total)}.`;
+        bar.innerHTML = `<strong>Repartido: ${num(sum)} de ${num(total)} puntos</strong>${tail}`;
+      }
+      document.querySelectorAll("#series .serie").forEach((card) => {
+        const item = state.series.find((entry) => entry.uid === Number(card.dataset.uid));
+        const count = item.ids.length;
+        const points = Number(item.puntos) || 0;
+        card.querySelector("[data-each]").textContent = !count
+          ? "Sin preguntas todavía"
+          : (points > 0 ? `${count} ${count === 1 ? "pregunta" : "preguntas"} · cada una vale ${num(points / count)}` : `${count} ${count === 1 ? "pregunta" : "preguntas"}`);
+      });
+      updateDlgCounts();
+    }
+
+    $("#add-opc").onclick = () => addSeries("opciones");
+    $("#add-esc").onclick = () => addSeries("escrita");
+    $("#split").onclick = () => {
+      splitPoints();
+      renderSeries();
+      renderBar();
+    };
+
+    async function reloadBank() {
       const body = await (await fetch("/api/preguntas")).json();
       questions = body.questions;
       materias = body.materias;
+      const alive = new Set(questions.map((q) => q.id));
+      state.series.forEach((item) => { item.ids = item.ids.filter((id) => alive.has(id)); });
       renderMaterias();
-      renderPicker(keep);
+      renderSeries();
       renderBar();
     }
 
@@ -606,7 +750,10 @@
       });
       if (!response.ok) { $("#make-error").textContent = await readError(response); return; }
       const body = await response.json();
-      infoDialog("Así queda la hoja", `<p class="lede">Así la vería ${esc(body.student_name)}.</p><img src="${body.png}" alt="Vista previa del examen">`);
+      const pages = body.pngs || [body.png];
+      infoDialog(pages.length > 1 ? `Así queda el examen (${pages.length} hojas)` : "Así queda la hoja",
+        `<p class="lede">Así lo vería ${esc(body.student_name)}. Cada alumno recibe las preguntas con números distintos.</p>` +
+        pages.map((url, index) => `${pages.length > 1 ? `<p class="lede"><strong>Hoja ${index + 1} de ${pages.length}</strong></p>` : ""}<img src="${url}" alt="Vista previa de la hoja ${index + 1}">`).join('<div style="height:10px"></div>'));
     };
 
     $("#make").onclick = async () => {
@@ -625,12 +772,13 @@
       }
       const body = await response.json();
       state.slot = null;
+      state.series = [];
       state.totalTouched = false;
       state.nombre = "";
       $("#nombre").value = "";
       $("#slot-note").innerHTML = "";
       const warning = body.warning ? `<p class="error">${esc(body.warning)}</p>` : "";
-      infoDialog("Examen creado", `${warning}<div class="ok"><strong>${esc(body.titulo)}</strong> · ${esc(state.materia)} · grupo ${esc(state.group)}.<br>${body.sheets.length} hojas listas para imprimir.</div>
+      infoDialog("Examen creado", `${warning}<div class="ok"><strong>${esc(body.titulo)}</strong> · ${esc(state.materia)} · grupo ${esc(state.group)}.<br>${body.sheets.length} ${body.sheets.length === 1 ? "hoja lista" : "hojas listas"} para imprimir${body.paginas > 1 ? ` (cada alumno recibe ${body.paginas} hojas)` : ""}.</div>
         <div class="row">
           ${body.pdf ? `<a class="button" href="${body.pdf}" target="_blank">Imprimir todo en un PDF</a>` : ""}
           <a class="button secondary" href="/calificar">Ir a calificar</a>
@@ -643,6 +791,17 @@
     let addedNow = [];
     let previewTimer = null;
     let previewSeq = 0;
+
+    let dialogSeries = null;
+
+    function updateDlgCounts() {
+      const item = dialogSeries && state.series.find((entry) => entry.uid === dialogSeries);
+      if (!item) { $("#dlg-counts").textContent = ""; return; }
+      const index = state.series.indexOf(item);
+      const count = item.ids.length;
+      const points = Number(item.puntos) || 0;
+      $("#dlg-counts").textContent = `${serieName(item, index)}: ${count} ${count === 1 ? "pregunta" : "preguntas"}${points > 0 && count ? ` · cada una vale ${num(points / count)}` : ""}`;
+    }
 
     function questionPayload() {
       return {
@@ -707,28 +866,32 @@
           const id = button.dataset.rm;
           await fetch(`/api/preguntas/${id}`, { method: "DELETE" });
           addedNow = addedNow.filter((item) => item.id !== id);
-          await reloadBank(pickedIds().filter((value) => value !== id));
+          removeQuestionEverywhere(id);
+          await reloadBank();
           renderAdded();
         };
       });
     }
 
-    function openDialog() {
-      if (!state.materia) return;
-      $("#dlg-materia").textContent = `Preguntas de ${state.materia}`;
+    function openDialog(uid) {
+      const item = state.series.find((entry) => entry.uid === uid);
+      if (!state.materia || !item) return;
+      dialogSeries = uid;
+      $("#q-kind").value = item.tipo === "opciones" ? "cerrada" : "abierta";
+      showKind();
+      $("#dlg-materia").textContent = `${serieName(item, state.series.indexOf(item))}: ${TIPO_NAME[item.tipo].toLowerCase()} de ${state.materia}`;
       $("#dlg-title").textContent = state.slot
         ? `${titleOf(state.slot)} · ${state.slot.tipo === "diagnostico" ? "no suma" : `Bimestre ${bimOf(state.slot)}`} · grupo ${state.group}`
         : `Grupo ${state.group || "—"}`;
       addedNow = [];
       renderAdded();
       $("#q-error").textContent = "";
-      updateCounts();
+      updateDlgCounts();
       drawPreview();
       dlg.showModal();
       $("#q-prompt").focus();
     }
 
-    $("#open-q").onclick = openDialog;
     $("#dlg-x").onclick = () => dlg.close();
     $("#dlg-done").onclick = () => dlg.close();
     dlg.addEventListener("click", (event) => { if (event.target === dlg) dlg.close(); });
@@ -752,7 +915,9 @@
       if (!response.ok) { $("#q-error").textContent = await readError(response); return; }
       const item = await response.json();
       addedNow.push(item);
-      await reloadBank([...pickedIds(), item.id]);
+      const target = state.series.find((entry) => entry.uid === dialogSeries);
+      if (target) target.ids.push(item.id);
+      await reloadBank();
       $("#q-prompt").value = "";
       $("#q-answer").value = "";
       $("#q-criterion").value = "";
@@ -806,6 +971,7 @@
         <h3>${esc(subjectOf(exam))} · ${esc(exam.titulo)}</h3>
         <div class="tags"><span class="tag grp">Grupo ${esc(exam.group)}</span><span class="tag ${exam.tipo === "final" ? "final" : ""}">vale ${fmt(exam.nota_total)}</span>${exam.suma ? "" : `<span class="tag muted">no suma</span>`}${exam.apagado ? `<span class="tag off">apagado</span>` : ""}</div>
         <p class="lede">${when(exam.created)} · ${exam.students.length} alumnos</p>
+        ${exam.series && exam.series.length ? `<p class="lede" style="margin-top:0;">${exam.series.map((item, index) => `${esc(item.nombre || `Serie ${ROMAN[index] || index + 1}`)}: ${item.tipo === "opciones" ? "opciones" : "escrita"}, ${num(item.puntos)} pts`).join(" · ")}</p>` : ""}
         <div class="row" style="margin-top:6px;">${pdf}
           <button type="button" class="secondary" data-off="${exam.id}" data-to="${exam.apagado ? "0" : "1"}" title="Un examen apagado ya no recibe hojas en la cámara, pero conserva sus notas.">${exam.apagado ? "Encender examen" : "Apagar examen"}</button>
           <button type="button" class="danger" data-del="${exam.id}">Eliminar</button></div>
@@ -895,12 +1061,12 @@
     }
 
     /* ---------- arranque ---------- */
-    function renderAll(resetPicker = false) {
+    function renderAll() {
       renderGroups();
       renderMaterias();
       renderSlots();
       renderTotal();
-      if (resetPicker) renderPicker(null);
+      renderSeries();
       renderFilters();
       renderList();
       renderBar();
@@ -921,14 +1087,9 @@
         state.group = found ? found.name : "";
       }
       renderTrash(trashed);
-      if (first) {
-        renderAll(true);
-      } else {
-        const keep = pickedIds();
-        renderAll(false);
-        renderPicker(keep.length ? keep : null);
-        renderBar();
-      }
+      const alive = new Set(questions.map((q) => q.id));
+      state.series.forEach((item) => { item.ids = item.ids.filter((id) => alive.has(id)); });
+      renderAll();
     }
 
     loadAll(true);

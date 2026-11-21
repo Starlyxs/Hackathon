@@ -77,6 +77,10 @@ def _group_line(sheet):
 
 
 def render_sheet(sheet):
+    if sheet.get("format") == "series":
+        from app.series import render_page
+
+        return render_page(sheet)
     if sheet.get("format") == "abierta":
         return _render_open(sheet)
     image = Image.new("RGB", (W, H), PAPER)

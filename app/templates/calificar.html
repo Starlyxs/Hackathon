@@ -170,7 +170,7 @@
           : "Falta calificar otra hoja de este alumno para dar la nota.";
       }
       gradeBox.innerHTML = `
-        <p class="score">${esc(result.student_name)}: ${fmt(result.score)}/${fmt(result.total)} aciertos</p>
+        <p class="score">${esc(result.student_name)}: ${fmt(result.score)}/${fmt(result.total)} ${result.items.some((item) => item.puntos) ? "puntos" : "aciertos"}</p>
         <p class="lede">${exam ? esc(exam.titulo) + " · " : ""}${nota}</p>
         <details><summary>Ver respuestas</summary><ul>${items}</ul></details>`;
       return exam;
@@ -182,8 +182,10 @@
       banner("look", `Hoja de ${result.student_name}`, "Tiene preguntas abiertas: lee lo que escribió y marca cada una.");
       gradeBox.innerHTML = `
         <p class="score">${esc(result.student_name)}</p>
+        ${result.opciones ? `<p class="ok">Las burbujas ya se leyeron: ${result.opciones.bien} de ${result.opciones.total} bien (${fmt(result.opciones.puntos)} puntos). Falta lo escrito.</p>` : ""}
         ${result.items.map((item, index) => `
           <div class="card">
+            ${item.puntos ? `<p class="lede" style="margin:0;">${esc(item.serie || "")}${item.serie ? " · " : ""}vale ${fmt(item.puntos)} ${item.puntos === 1 ? "punto" : "puntos"}</p>` : ""}
             <p>${esc(item.prompt)}</p>
             <p class="lede">Se espera: ${esc(item.criterion)}</p>
             <div class="row">
@@ -222,7 +224,7 @@
     }
 
     function success(result, exam) {
-      const nota = exam && exam.state === "listo" ? `Nota ${fmt(exam.nota_real)} de ${fmt(exam.nota_total)}` : `${fmt(result.score)}/${fmt(result.total)} aciertos`;
+      const nota = exam && exam.state === "listo" ? `Nota ${fmt(exam.nota_real)} de ${fmt(exam.nota_total)}` : `${fmt(result.score)}/${fmt(result.total)} ${result.items.some((item) => item.puntos) ? "puntos" : "aciertos"}`;
       banner("ok", `${result.student_name} ✓`, `${nota}. Pasa la siguiente hoja.`);
       beep(true);
     }

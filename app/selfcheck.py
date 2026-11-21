@@ -280,6 +280,118 @@ def check_grupos_apagar_papelera():
     print("Grupos, preguntas elegidas, examen apagado y papelera.")
 
 
+def check_series_exam():
+    import io
+    import random
+
+    from PIL import Image
+
+    from app.service import add_question, create_series_exam, preview_series_exam, save_group, save_interpretation
+    from app.series import bubble_slots, save_image
+    from app.notas import grid
+
+    group = f"series-{random.randrange(10**6)}"
+    save_group(group, ["Ana", "Luis"])
+    closed = [
+        add_question(f"Serie de prueba: ¿cuánto es {a} + {b}?", str(a + b), "general", "Matemática")["id"]
+        for a, b in ((3, 4), (5, 6), (7, 8))
+    ]
+    opened = [
+        add_question(f"Serie de prueba {n}: explica con tus palabras qué viste.", materia="Matemática", kind="abierta", criterion="Describe lo principal.")["id"]
+        for n in (1, 2)
+    ]
+    buffer = io.BytesIO()
+    Image.new("RGB", (400, 120), (180, 210, 190)).save(buffer, "PNG")
+    picture = save_image(buffer.getvalue())
+
+    def serie(tipo, ids, puntos, **more):
+        return {"tipo": tipo, "question_ids": ids, "puntos": puntos, **more}
+
+    meta = {"tipo": "parcial", "bimestre": 4, "numero": 1, "nota_total": 20}
+    for bad, text in (
+        ([serie("opciones", closed, 15), serie("escrita", opened, 8)], "suman 23"),
+        ([serie("opciones", closed, 0)], "cuántos puntos"),
+        ([serie("opciones", opened, 5)], "quita las preguntas del otro tipo"),
+        ([serie("opciones", closed, 5), serie("escrita", closed[:1], 5)], "dos series"),
+        ([serie("opciones", [], 5)], "no tiene preguntas"),
+        ([serie("opciones", closed, 5, imagen="0123456789")], "imagen"),
+    ):
+        try:
+            create_series_exam(group, [], random.Random(1), bad, materias=["Matemática"], meta=meta)
+        except ValueError as exc:
+            if text not in str(exc):
+                raise SystemExit(f"Mensaje de series inesperado ({text}): {exc}") from exc
+        else:
+            raise SystemExit(f"Se aceptó una serie inválida ({text}).")
+
+    good = [serie("opciones", closed, 12, instruccion="Marca la respuesta.", imagen=picture["id"]), serie("escrita", opened, 8)]
+    preview = preview_series_exam(group, [], random.Random(2), good, materias=["Matemática"], meta=meta)
+    if len(preview["pngs"]) != 1:
+        raise SystemExit("Una serie corta debía caber en una sola hoja.")
+    made = create_series_exam(group, [], random.Random(3), good, materias=["Matemática"], meta=meta)
+    if len(made["sheets"]) != 2 or made["paginas"] != 1:
+        raise SystemExit("El examen por series dejó hojas de más o de menos.")
+    db = load()
+    sheet = db["sheets"][made["sheets"][0]["id"]]
+    if [q["puntos"] for q in sheet["questions"]] != [4, 4, 4, 4, 4]:
+        raise SystemExit("No repartió los puntos de la serie entre sus preguntas.")
+    answers = [q["answer"] for q in sheet["questions"] if q.get("format") != "abierta"]
+    photo = simulate_photo(
+        mark_bubbles(pil_to_bgr(render_sheet(sheet)), answers, bubble_slots(sheet)), seed=91
+    )
+    pending = grade_photo(photo, made["form_id"])
+    if not pending.get("needs_review") or pending["opciones"]["bien"] != 3 or len(pending["items"]) != 2:
+        raise SystemExit(f"La hoja mezclada no pidió revisar lo escrito: {pending}")
+    saved = save_interpretation(sheet["id"], ["logrado", "parcial"])
+    if saved["score"] != 18 or saved["total"] != 20:
+        raise SystemExit(f"La nota de la hoja mezclada salió mal: {saved['score']}/{saved['total']}")
+    # Luis responde 1 de 3 de opciones y deja lo escrito en cero.
+    other = db["sheets"][made["sheets"][1]["id"]]
+    mine = [q["answer"] for q in other["questions"] if q.get("format") != "abierta"]
+    mine = [mine[0], None, None]
+    photo = simulate_photo(mark_bubbles(pil_to_bgr(render_sheet(other)), mine, bubble_slots(other)), seed=92)
+    grade_photo(photo, made["form_id"])
+    saved = save_interpretation(other["id"], ["aun_no", "aun_no"])
+    if saved["score"] != 4:
+        raise SystemExit(f"Una sola acertada debía valer 4 puntos, salió {saved['score']}")
+    data = grid(load(), group, 4)
+    notas = {row["student_name"]: row["cells"][made["form_id"]]["nota_real"] for row in data["students"]}
+    if notas != {"Ana" if sheet["student_name"] == "Ana" else "Luis": 18, ("Luis" if sheet["student_name"] == "Ana" else "Ana"): 4}:
+        raise SystemExit(f"Las notas del examen por series salieron mal: {notas}")
+
+    # Un examen largo pasa a una segunda hoja sin dejar hojas vacías.
+    long_ids = [
+        add_question(f"Serie larga: ¿cuánto es {n} + {n}?", str(n + n), "general", "Matemática")["id"]
+        for n in range(2, 14)
+    ]
+    long_group = f"larga-{random.randrange(10**6)}"
+    save_group(long_group, ["Ana"])
+    long = create_series_exam(
+        long_group,
+        [],
+        random.Random(4),
+        [serie("opciones", long_ids[:6], 10, imagen=picture["id"]), serie("opciones", long_ids[6:], 10)],
+        materias=["Matemática"],
+        meta=meta,
+    )
+    if len(long["sheets"]) != 2 or long["paginas"] != 2:
+        raise SystemExit(f"Se esperaban 2 hojas, salieron {len(long['sheets'])}.")
+    db = load()
+    pages = [db["sheets"][info["id"]] for info in long["sheets"]]
+    if any(len(page["questions"]) < 3 for page in pages):
+        raise SystemExit("Quedó una hoja casi vacía.")
+    for index, page in enumerate(pages):
+        answers = [q["answer"] for q in page["questions"]]
+        photo = simulate_photo(mark_bubbles(pil_to_bgr(render_sheet(page)), answers, bubble_slots(page)), seed=95 + index)
+        result = grade_photo(photo, long["form_id"])
+        if result["score"] != result["total"]:
+            raise SystemExit("Una hoja perfecta de series no sacó todos sus puntos.")
+    final = grid(load(), long_group, 4)["students"][0]["cells"][long["form_id"]]
+    if final["nota_real"] != 20:
+        raise SystemExit(f"Las dos hojas debían sumar 20, salió {final['nota_real']}")
+    print("Series: puntos repartidos, imagen, hojas sin espacios vacíos y nota por hoja.")
+
+
 def main():
     ensure_dirs()
     try:
@@ -288,6 +400,7 @@ def main():
         check_authored_variants()
         check_notas_y_bimestres()
         check_grupos_apagar_papelera()
+        check_series_exam()
     except GradeError as exc:
         print(f"Falló la visión: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
