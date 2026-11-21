@@ -1,6 +1,6 @@
-# EduScan
+# Nexam
 
-EduScan califica exámenes impresos. El maestro crea el examen, lo imprime con un QR por alumno, escanea las hojas con el celular en un solo PDF y lo sube. El programa lee las respuestas, pone las notas y muestra qué le falta a cada alumno y al grupo.
+Nexam califica exámenes impresos. El maestro crea el examen, lo imprime con un QR por alumno, escanea las hojas con el celular en un solo PDF y lo sube. El programa lee las respuestas, pone las notas y muestra qué le falta a cada alumno y al grupo.
 
 Funciona en la computadora del maestro, sin internet y sin celulares para los alumnos.
 
@@ -23,7 +23,7 @@ Necesita Windows 10 u 11 (también sirve Mac o Linux), un navegador, 4 GB de mem
 
 1. Copia la carpeta completa a la computadora.
 2. Doble clic en **`iniciar.bat`**. La primera vez tarda unos minutos; no cierres la ventana negra.
-3. Se abre el navegador con EduScan. Si no, escribe `http://127.0.0.1:8000`.
+3. Se abre el navegador con Nexam. Si no, escribe `http://127.0.0.1:8000`.
 
 Si la computadora **no tiene Python**, `iniciar.bat` lo descarga e instala solo (necesita internet). Si no hay internet, instálalo desde <https://www.python.org/downloads/> (versión 3.11, 3.12 o 3.13, marcando «Add python.exe to PATH») y abre `iniciar.bat` otra vez.
 
@@ -33,7 +33,7 @@ Si Windows dice «protegió su PC», pulsa **Más información** y **Ejecutar de
 
 ## Volver a abrir y cerrar
 
-- **Abrir:** el icono **EduScan** del escritorio, o `iniciar.bat`. Abre en segundos y sin internet.
+- **Abrir:** el icono **Nexam** del escritorio, o `iniciar.bat`. Abre en segundos y sin internet.
 - **Cerrar:** cierra la ventana negra. Los datos quedan guardados.
 - Si cierras solo la pestaña, escribe `http://127.0.0.1:8000` en el navegador.
 
@@ -53,7 +53,7 @@ En **Inicio**, «Cargar prueba simulada» crea un grupo de ejemplo con exámenes
 
 Todo se guarda solo en esa computadora, en `programa/data/`, con una copia automática diaria. En Inicio puedes descargar una copia de seguridad. Para pasar el programa a otra computadora, copia la carpeta completa.
 
-Si la carpeta está dentro de OneDrive, mejor muévela a `C:\EduScan`: la sincronización puede dañar el archivo de datos.
+Si la carpeta está dentro de OneDrive, mejor muévela a `C:\Nexam`: la sincronización puede dañar el archivo de datos.
 
 ## Si algo falla
 

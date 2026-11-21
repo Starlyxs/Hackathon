@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions
-title EduScan
+title Nexam
 cd /d "%~dp0programa"
 if errorlevel 1 (
   echo No encuentro la carpeta "programa". Tiene que estar junto a este archivo.
@@ -8,7 +8,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo  EduScan
+echo  Nexam
 echo  ---------------
 echo.
 
@@ -46,7 +46,7 @@ if not exist "%VPY%" (
 if errorlevel 1 goto fail
 
 rem Acceso directo con el logo en el escritorio, solo la primera vez.
-powershell -NoProfile -Command "$d=[Environment]::GetFolderPath('Desktop'); $l=Join-Path $d 'EduScan.lnk'; if (-not (Test-Path $l)) { $s=(New-Object -ComObject WScript.Shell).CreateShortcut($l); $s.TargetPath='%~dp0iniciar.bat'; $s.WorkingDirectory='%~dp0'; $s.IconLocation='%~dp0programa\app\static\logo.ico'; $s.Save(); Write-Host 'Puse un acceso directo en el escritorio.' }" 2>nul
+powershell -NoProfile -Command "$d=[Environment]::GetFolderPath('Desktop'); $l=Join-Path $d 'Nexam.lnk'; if (-not (Test-Path $l)) { $s=(New-Object -ComObject WScript.Shell).CreateShortcut($l); $s.TargetPath='%~dp0iniciar.bat'; $s.WorkingDirectory='%~dp0'; $s.IconLocation='%~dp0programa\app\static\logo.ico'; $s.Save(); Write-Host 'Puse un acceso directo en el escritorio.' }" 2>nul
 
 "%VPY%" run.py
 echo.
