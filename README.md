@@ -1,27 +1,31 @@
 # Hojas en papel
 
-Corrección de diagnósticos impresos con la cámara de la laptop del maestro. El programa vive en esa computadora: no hace falta internet, ni un celular por alumno, ni subir las hojas a un servidor.
+Corrección de diagnósticos impresos con la cámara de la laptop del maestro. El programa vive en esa computadora: no hace falta internet ni un celular por alumno.
 
-## Por qué no es un APK ni un sitio en Astro
+## Descargar y ejecutar
 
-El motor es Python y OpenCV. Un APK obligaría a reescribirlo para Android, y el celular del encargo solo hace de cámara sobre un soporte. Astro arma páginas estáticas: no abre la webcam, no corre OpenCV y no trabaja sin red. La interfaz es una página local que el navegador abre en `http://127.0.0.1:8000`.
+Hace falta Python 3.11 o más nuevo. En Windows, durante la instalación, marca **Add python.exe to PATH**. Se descarga en [python.org/downloads](https://www.python.org/downloads/).
 
-## Arranque
+1. Descarga esta carpeta (ZIP o `git clone`) y descomprímela.
+2. Ábrela y ejecuta el arranque:
+   - Windows: doble clic en `iniciar.bat`
+   - Mac o Linux: en la terminal, `bash iniciar.sh`
+3. La primera vez descarga las librerías, así que esa vez sí necesita internet. El navegador abre `http://127.0.0.1:8000`.
+
+No copies la carpeta `.venv` de una computadora a otra. El script la crea en la máquina donde se ejecuta. Las hojas y las preguntas quedan en `data/` de esa misma laptop.
+
+Para comprobar la cámara simulada, sin imprimir:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -m app.selfcheck
-.\.venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-`selfcheck` genera hojas, les toma una foto simulada (perspectiva, escritorio y JPEG) y comprueba que el lector recupere al alumno, la calificación y el patrón de grupo.
+En Mac o Linux el comando es `.venv/bin/python -m app.selfcheck`.
 
-## Qué hace hoy
+## Qué hace
 
-- Imprime un diagnóstico de opción múltiple, el mismo para el grupo, con un QR por alumno.
-- Alinea la hoja con los cuadros negros de las esquinas, lee el QR y las burbujas.
-- Si un mismo error aparece en la mitad del grupo o más, lo dice en una frase.
-- Genera una hoja de refuerzo con reactivos de las habilidades que ese alumno falló.
-
-La letra manuscrita queda fuera de esta versión. Con una webcam modesta, la burbuja llena se lee con fiabilidad; un párrafo escrito a lápiz, no.
+- El maestro escribe preguntas por materia y el programa arma las opciones A, B, C y D, con números distintos para cada alumno.
+- Imprime la hoja con un QR por alumno.
+- La cámara lee las burbujas, califica y señala si el mismo error se repite en la mitad del grupo o más.
+- En las preguntas abiertas, el alumno escribe con lápiz. La cámara identifica la hoja y el maestro marca si logró la idea.
+- Genera una hoja de refuerzo para quien falló.
