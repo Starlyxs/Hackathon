@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/logo.png">
+  <title>Exámenes</title>
+  <style>
+    :root {
+      --paper: #f3efe4; --card: #fffdf8; --ink: #1c2420; --muted: #5c675f;
+      --line: #ddd4c4; --green: #145c43; --green-soft: #e5f2eb;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: var(--ink); background: var(--paper); }
+    header, main { width: min(1080px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 28px 0 8px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { width: 56px; height: 56px; border-radius: 14px; }
+    h1 { font-size: 2rem; margin: 0; }
+    h2 { font-size: 1.25rem; margin: 0 0 8px; }
+    p { line-height: 1.45; }
+    .lede { color: var(--muted); max-width: 68ch; }
+    nav { display: flex; gap: 16px; margin: 12px 0; font-family: "Segoe UI", sans-serif; }
+    nav a { color: var(--green); text-decoration: none; }
+    nav a.active { border-bottom: 2px solid var(--green); }
+    article {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 18px; margin-bottom: 16px;
+      display: grid; grid-template-columns: 180px 1fr; gap: 16px;
+    }
+    img.thumb { width: 180px; border-radius: 8px; border: 1px solid var(--line); background: white; }
+    table { width: 100%; border-collapse: collapse; font-family: "Segoe UI", sans-serif; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+    a { color: var(--green); }
+    a.button {
+      font-family: "Segoe UI", sans-serif; background: var(--green); color: white;
+      border-radius: 999px; padding: 8px 14px; text-decoration: none; display: inline-block;
+    }
+    @media (max-width: 700px) { article { grid-template-columns: 1fr; } img.thumb { width: 100%; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="/static/logo.png" alt="">
+      <h1>Hojas en papel</h1>
+    </div>
+    <nav>
+      <a href="/">Calificar</a>
+      <a href="/preguntas">Preguntas</a>
+      <a class="active" href="/examenes">Exámenes</a>
+    </nav>
+    <p class="lede">Los exámenes y las notas se quedan en esta computadora. Otra persona que instale el programa en su laptop empieza con su propia lista.</p>
+    <p class="lede">La nota real es el porcentaje de aciertos. La relativa compara con el mejor resultado de ese examen: el más alto vale 100.</p>
+  </header>
+  <main id="list"><p class="lede">Cargando exámenes…</p></main>
+  <script>
+    function when(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleString("es-GT", { dateStyle: "medium", timeStyle: "short" });
+    }
+
+    function table(grades) {
+      if (!grades.length) return "<p class=\"lede\">Todavía no hay hojas calificadas de este examen.</p>";
+      const rows = grades.map((grade) =>
+        `<tr><td>${grade.student_name}</td><td>${grade.score}/${grade.total}</td><td>${grade.nota_real}</td><td>${grade.nota_relativa}</td></tr>`
+      ).join("");
+      return `<table><thead><tr><th>Alumno</th><th>Aciertos</th><th>Nota real</th><th>Nota relativa</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    async function load() {
+      const response = await fetch("/api/examenes");
+      const body = await response.json();
+      const main = document.querySelector("#list");
+      if (!body.exams.length) {
+        main.innerHTML = "<p class=\"lede\">Aún no hay exámenes. Genéralos en Calificar.</p>";
+        return;
+      }
+      main.innerHTML = body.exams.map((exam) => {
+        const names = [...new Set(exam.students)];
+        const thumb = exam.preview ? `<img class="thumb" src="${exam.preview}" alt="Primera hoja">` : "<div></div>";
+        const pdf = exam.pdf ? `<p><a class="button" href="${exam.pdf}" target="_blank">Imprimir todo en un PDF</a></p>` : "";
+        return `<article>${thumb}<div><h2>Grupo ${exam.group}</h2><p class="lede">${when(exam.created)} · ${names.length} alumnos</p>${pdf}${table(exam.grades)}</div></article>`;
+      }).join("");
+    }
+
+    load();
+  </script>
+</body>
+</html>

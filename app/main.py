@@ -20,15 +20,20 @@ from app.service import (
     create_reinforcement,
     delete_question,
     grade_photo,
+    list_exams,
     list_questions,
+    preview_diagnostic,
     save_interpretation,
 )
 from app.store import SHEETS, ensure_dirs
 from app.variants import preview_variants
 
 ensure_dirs()
+STATIC = Path(__file__).resolve().parent / "static"
+STATIC.mkdir(parents=True, exist_ok=True)
 app = FastAPI(title="Hojas en papel")
 app.mount("/archivos", StaticFiles(directory=str(SHEETS)), name="archivos")
+app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
 def html_page(name):
     path = Path(__file__).parent / "templates" / name
@@ -76,6 +81,27 @@ def home():
 @app.get("/preguntas")
 def questions_page():
     return html_page("preguntas.html")
+
+
+@app.get("/examenes")
+def exams_page():
+    return html_page("examenes.html")
+
+
+@app.get("/api/examenes")
+def get_exams():
+    return list_exams()
+
+
+@app.post("/api/vista-examen")
+def post_exam_preview(body: DiagnosticIn):
+    names = [name.strip() for name in body.names if name.strip()]
+    if not names:
+        raise HTTPException(400, "Escribe al menos un nombre para la vista previa.")
+    try:
+        return preview_diagnostic(body.group.strip(), names, random.Random(), materias=body.materias)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
 
 
 @app.get("/api/preguntas")

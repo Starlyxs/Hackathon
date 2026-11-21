@@ -9,17 +9,28 @@ if not defined BOOT (
   python -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)" >nul 2>&1
   if not errorlevel 1 set "BOOT=python"
 )
+set "LOCALPY=%LOCALAPPDATA%\Programs\Python\Python311\python.exe"
+if not defined BOOT if exist "%LOCALPY%" (
+  "%LOCALPY%" -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)" >nul 2>&1
+  if not errorlevel 1 set "BOOT=%LOCALPY%"
+)
 if not defined BOOT (
-  echo Necesitas Python 3.11 o mas nuevo.
-  echo Descargalo en https://www.python.org/downloads/
-  echo En el instalador marca "Add python.exe to PATH".
-  pause
-  exit /b 1
+  echo No encontre Python. Lo voy a descargar e instalar solo para este usuario.
+  powershell -NoProfile -Command "Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe -OutFile $env:TEMP\python-3.11.9-amd64.exe"
+  if errorlevel 1 goto fail
+  "%TEMP%\python-3.11.9-amd64.exe" /quiet InstallAllUsers=0 PrependPath=1 Include_launcher=1 Include_test=0
+  if exist "%LOCALPY%" set "BOOT=%LOCALPY%"
 )
 
 if not exist ".venv\Scripts\python.exe" (
   echo Creando el entorno local...
-  %BOOT% -m venv .venv
+  if "%BOOT%"=="py -3" (
+    py -3 -m venv .venv
+  ) else if "%BOOT%"=="python" (
+    python -m venv .venv
+  ) else (
+    "%BOOT%" -m venv .venv
+  )
   if errorlevel 1 goto fail
 )
 

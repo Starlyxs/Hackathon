@@ -4,15 +4,15 @@ Corrección de diagnósticos impresos con la cámara de la laptop del maestro. E
 
 ## Descargar y ejecutar
 
-Hace falta Python 3.11 o más nuevo. En Windows, durante la instalación, marca **Add python.exe to PATH**. Se descarga en [python.org/downloads](https://www.python.org/downloads/).
+La forma más parecida a un programa instalado es la carpeta `dist\HojasEnPapel`. Ahí está `HojasEnPapel.exe`, con el logo y con Python ya adentro. Se copia **toda** la carpeta a la otra computadora y se abre el exe. Los exámenes quedan en una carpeta `datos` al lado del exe, solo en esa máquina.
 
-1. Descarga esta carpeta (ZIP o `git clone`) y descomprímela.
-2. Ábrela y ejecuta el arranque:
-   - Windows: doble clic en `iniciar.bat`
-   - Mac o Linux: en la terminal, `bash iniciar.sh`
-3. La primera vez descarga las librerías, así que esa vez sí necesita internet. El navegador abre `http://127.0.0.1:8000`.
+Windows puede bloquear ese exe porque no tiene firma digital. Si aparece “una directiva de Control de aplicaciones bloqueó este archivo”, usa el arranque con código:
 
-No copies la carpeta `.venv` de una computadora a otra. El script la crea en la máquina donde se ejecuta. Las hojas y las preguntas quedan en `data/` de esa misma laptop.
+1. Copia la carpeta del proyecto.
+2. Doble clic en `iniciar.bat`. Si falta Python, lo descarga e instala solo.
+3. En Mac o Linux: `bash iniciar.sh` (ahí sí hace falta Python 3.11).
+
+La primera vez con `iniciar.bat` usa internet. Después el programa abre `http://127.0.0.1:8000` y trabaja sin red.
 
 Para comprobar la cámara simulada, sin imprimir:
 

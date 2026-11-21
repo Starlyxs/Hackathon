@@ -2,14 +2,28 @@
 
 import json
 import os
+import sys
 import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA = ROOT / "data"
-STORE = Path(os.environ.get("EDU_STORE", str(DATA / "store.json")))
-SHEETS = Path(os.environ.get("EDU_SHEETS", str(DATA / "sheets")))
-DEBUG = DATA / "debug"
+
+
+def _default_data():
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent / "datos"
+    return ROOT / "data"
+
+
+if os.environ.get("EDU_STORE"):
+    STORE = Path(os.environ["EDU_STORE"])
+    SHEETS = Path(os.environ.get("EDU_SHEETS", str(STORE.parent / "sheets")))
+    DEBUG = STORE.parent / "debug"
+else:
+    DATA = _default_data()
+    STORE = DATA / "store.json"
+    SHEETS = DATA / "sheets"
+    DEBUG = DATA / "debug"
 
 _lock = threading.Lock()
 

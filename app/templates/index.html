@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/logo.png">
   <title>Hojas en papel</title>
   <style>
     :root {
@@ -25,7 +26,8 @@
     }
     header, main { width: min(1080px, calc(100% - 32px)); margin: 0 auto; }
     header { padding: 28px 0 8px; }
-    h1 { font-size: 2rem; margin: 0 0 6px; font-weight: 700; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { width: 56px; height: 56px; border-radius: 14px; }
     h2 { font-size: 1.25rem; margin: 0 0 12px; }
     p { line-height: 1.45; }
     .lede { color: var(--muted); max-width: 62ch; margin-top: 0; }
@@ -84,10 +86,14 @@
 </head>
 <body>
   <header>
-    <h1>Hojas en papel</h1>
+    <div class="brand">
+      <img src="/static/logo.png" alt="">
+      <h1>Hojas en papel</h1>
+    </div>
     <nav>
       <a class="active" href="/">Calificar</a>
       <a href="/preguntas">Preguntas</a>
+      <a href="/examenes">Exámenes</a>
     </nav>
     <p class="lede">Imprime el diagnóstico, pasa cada hoja frente a la cámara y revisa qué está fallando el grupo. Todo queda en esta laptop.</p>
     <label for="group">Grupo</label>
@@ -105,14 +111,16 @@ María
 Pedro
 Sofía</textarea>
       <div class="row">
+        <button id="preview-exam" type="button" class="secondary">Ver cómo queda</button>
         <button id="make" type="button">Generar hojas</button>
       </div>
+      <div id="preview-box"></div>
       <div id="sheets"></div>
     </section>
 
     <section>
       <h2>2. Calificar con la cámara</h2>
-      <p>La cámara en vivo funciona en esta laptop. Desde un celular en la red puedes subir la foto.</p>
+      <p>La cámara en vivo funciona en esta laptop. Desde un celular en la red puedes subir la foto. El QR tiene que verse grande, quieto y sin flash.</p>
       <div class="row">
         <button id="cam" type="button" class="secondary">Encender cámara</button>
         <button id="shoot" type="button" disabled>Capturar hoja</button>
@@ -126,6 +134,7 @@ Sofía</textarea>
 
     <section class="span">
       <h2>3. Patrón del grupo</h2>
+      <p class="lede">La nota real es el porcentaje de aciertos. La relativa compara con el mejor del mismo grupo: si el mejor sacó 80, esa nota relativa es 100.</p>
       <div class="row">
         <button id="refresh" type="button" class="secondary">Actualizar</button>
         <button id="simulate" type="button" class="secondary">Simular una clase</button>
@@ -251,7 +260,7 @@ Sofía</textarea>
         ? patterns.map((item) => `<div class="pattern">${item.message}</div>`).join("")
         : `<p class="ok">${report.students < 3 ? "Califica al menos 3 hojas para ver un patrón de grupo." : "Ningún error se repite en la mitad de la clase o más."}</p>`;
       const rows = (report.results || []).map((item) =>
-        `<li>${item.student_name}: ${item.score}/${item.total} <button type="button" data-student="${item.student_name}" class="secondary">Refuerzo</button></li>`
+        `<li>${item.student_name}: ${item.score}/${item.total} · real ${item.nota_real} · relativa ${item.nota_relativa} <button type="button" data-student="${item.student_name}" class="secondary">Refuerzo</button></li>`
       ).join("");
       rosterBox.innerHTML = rows ? `<ul>${rows}</ul>` : "";
       rosterBox.querySelectorAll("button").forEach((button) => {
@@ -295,9 +304,28 @@ Sofía</textarea>
       }
       const body = await response.json();
       const warning = body.warning ? `<p class="error">${body.warning}</p>` : "";
-      document.querySelector("#sheets").innerHTML = `${warning}<ul>${body.sheets.map((sheet) =>
+      const together = body.pdf ? `<p><a href="${body.pdf}" target="_blank">Imprimir todas las hojas en un solo PDF</a></p>` : "";
+      document.querySelector("#sheets").innerHTML = `${warning}${together}<ul>${body.sheets.map((sheet) =>
         `<li><a href="${sheet.pdf}" target="_blank">${sheet.label || sheet.student_name}</a></li>`
       ).join("")}</ul>`;
+    };
+
+    document.querySelector("#preview-exam").onclick = async () => {
+      const box = document.querySelector("#preview-box");
+      box.innerHTML = "<p class=\"lede\">Armando la vista previa…</p>";
+      const names = document.querySelector("#names").value.split("\n");
+      const materias = [...document.querySelectorAll("#materias input:checked")].map((input) => input.value);
+      const response = await fetch("/api/vista-examen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ group: group(), names, materias }),
+      });
+      if (!response.ok) {
+        box.innerHTML = `<p class="error">${await readError(response)}</p>`;
+        return;
+      }
+      const body = await response.json();
+      box.innerHTML = `<p class="lede">Así vería la hoja ${body.student_name}.</p><img src="${body.png}" alt="Vista previa del examen" style="width:100%; border-radius:12px; border:1px solid var(--line);">`;
     };
 
     async function loadQuestionSource() {
@@ -331,7 +359,10 @@ Sofía</textarea>
     document.querySelector("#cam").onclick = async () => {
       gradeError.textContent = "";
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false,
+        });
       } catch {
         gradeError.textContent = "Esta laptop no dejó usar la cámara. Sube una foto de la hoja.";
         return;
