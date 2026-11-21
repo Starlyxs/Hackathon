@@ -1339,6 +1339,224 @@
       "nota_total": 20.0,
       "pdf": "/archivos/6270c26f-grupo.pdf",
       "papelera": "2026-11-21T17:48:16+00:00"
+    },
+    "cfaf9a87": {
+      "id": "cfaf9a87",
+      "group": "selfcheck",
+      "kind": "diagnostico",
+      "created": "2026-11-21T17:56:00+00:00",
+      "questions": [
+        "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+        "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+        "¿Cuánto es 1/3 + 1/3?",
+        "¿Cuánto es 3/4 + 1/4?",
+        "En el número 82, ¿cuánto vale el 8?",
+        "En el número 47, ¿cuánto vale el 4?",
+        "Luis tenía 15 pesos y gastó 7. ¿Cuánto le queda?",
+        "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?"
+      ],
+      "question_ids": [],
+      "materias": [],
+      "tipo": "diagnostico",
+      "bimestre": 0,
+      "numero": 0,
+      "nombre": "",
+      "nota_total": 100.0,
+      "pdf": "/archivos/cfaf9a87-grupo.pdf"
+    },
+    "0b2b795d": {
+      "id": "0b2b795d",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "created": "2026-11-21T17:56:00+00:00",
+      "questions": [
+        "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+        "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+        "¿Cuánto es 3/4 + 1/4?",
+        "¿Cuánto es 1/3 + 1/3?",
+        "En el número 82, ¿cuánto vale el 8?",
+        "En el número 305, ¿cuánto vale el 3?",
+        "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+        "Lee: «El gato duerme en la silla.» ¿Quién duerme?"
+      ],
+      "question_ids": [],
+      "materias": [],
+      "tipo": "diagnostico",
+      "bimestre": 0,
+      "numero": 0,
+      "nombre": "Clase de ejemplo",
+      "nota_total": 100.0,
+      "pdf": "/archivos/0b2b795d-grupo.pdf"
+    },
+    "8996d8f4": {
+      "id": "8996d8f4",
+      "group": "variantes",
+      "kind": "diagnostico",
+      "created": "2026-11-21T17:56:04+00:00",
+      "questions": [
+        "Un rectángulo mide 5 cm por 3 cm. ¿Cuál es su área?",
+        "¿Cuánto es 1/2 + 1/4?",
+        "Lee: «El gato duerme en la silla.» ¿Quién duerme?"
+      ],
+      "question_ids": [
+        "8634f6e2",
+        "609da3db",
+        "5cd0ab14"
+      ],
+      "materias": [
+        "Matemática"
+      ],
+      "tipo": "diagnostico",
+      "bimestre": 0,
+      "numero": 0,
+      "nombre": "",
+      "nota_total": 100.0,
+      "pdf": "/archivos/8996d8f4-grupo.pdf"
+    },
+    "01ac3aa9": {
+      "id": "01ac3aa9",
+      "group": "notas-978695",
+      "kind": "diagnostico",
+      "created": "2026-11-21T17:56:04+00:00",
+      "questions": [
+        "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+        "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+        "¿Cuánto es 1/3 + 1/3?",
+        "¿Cuánto es 1/2 + 1/4?",
+        "En el número 305, ¿cuánto vale el 3?",
+        "En el número 82, ¿cuánto vale el 8?",
+        "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+        "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?"
+      ],
+      "question_ids": [],
+      "materias": [],
+      "tipo": "parcial",
+      "bimestre": 2,
+      "numero": 1,
+      "nombre": "",
+      "nota_total": 20.0,
+      "pdf": "/archivos/01ac3aa9-grupo.pdf",
+      "papelera": "2026-11-21T17:56:05+00:00"
+    },
+    "c72c43d6": {
+      "id": "c72c43d6",
+      "group": "notas-978695",
+      "kind": "diagnostico",
+      "created": "2026-11-21T17:56:04+00:00",
+      "questions": [
+        "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+        "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+        "¿Cuánto es 1/3 + 1/3?",
+        "¿Cuánto es 3/4 + 1/4?",
+        "En el número 82, ¿cuánto vale el 8?",
+        "En el número 47, ¿cuánto vale el 4?",
+        "Luis tenía 15 pesos y gastó 7. ¿Cuánto le queda?",
+        "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?"
+      ],
+      "question_ids": [],
+      "materias": [],
+      "tipo": "parcial",
+      "bimestre": 2,
+      "numero": 2,
+      "nombre": "",
+      "nota_total": 20.0,
+      "pdf": "/archivos/c72c43d6-grupo.pdf"
+    },
+    "f47b992d": {
+      "id": "f47b992d",
+      "group": "notas-978695",
+      "kind": "diagnostico",
+      "created": "2026-11-21T17:56:05+00:00",
+      "questions": [
+        "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+        "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+        "¿Cuánto es 1/2 + 1/4?",
+        "¿Cuánto es 1/3 + 1/3?",
+        "En el número 305, ¿cuánto vale el 3?",
+        "En el número 47, ¿cuánto vale el 4?",
+        "Luis tenía 15 pesos y gastó 7. ¿Cuánto le queda?",
+        "Lee: «El gato duerme en la silla.» ¿Quién duerme?"
+      ],
+      "question_ids": [],
+      "materias": [],
+      "tipo": "final",
+      "bimestre": 2,
+      "numero": 0,
+      "nombre": "",
+      "nota_total": 40.0,
+      "pdf": "/archivos/f47b992d-grupo.pdf"
+    },
+    "3e6e4126": {
+      "id": "3e6e4126",
+      "group": "notas-978695",
+      "kind": "diagnostico",
+      "created": "2026-11-21T17:56:05+00:00",
+      "questions": [
+        "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+        "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+        "¿Cuánto es 3/4 + 1/4?",
+        "¿Cuánto es 1/3 + 1/3?",
+        "En el número 82, ¿cuánto vale el 8?",
+        "En el número 47, ¿cuánto vale el 4?",
+        "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+        "Lee: «El gato duerme en la silla.» ¿Quién duerme?"
+      ],
+      "question_ids": [],
+      "materias": [],
+      "tipo": "parcial",
+      "bimestre": 2,
+      "numero": 1,
+      "nombre": "",
+      "nota_total": 20.0,
+      "pdf": "/archivos/3e6e4126-grupo.pdf"
+    },
+    "182ef2a5": {
+      "id": "182ef2a5",
+      "group": "grupo-347261",
+      "kind": "diagnostico",
+      "created": "2026-11-21T17:56:06+00:00",
+      "questions": [
+        "Un rectángulo mide 5 cm por 3 cm. ¿Cuál es su área?",
+        "¿Cuánto es 1/2 + 1/4?"
+      ],
+      "question_ids": [
+        "8634f6e2",
+        "609da3db"
+      ],
+      "materias": [
+        "Matemática"
+      ],
+      "tipo": "parcial",
+      "bimestre": 3,
+      "numero": 1,
+      "nombre": "",
+      "nota_total": 20.0,
+      "pdf": "/archivos/182ef2a5-grupo.pdf",
+      "apagado": false
+    },
+    "252c011e": {
+      "id": "252c011e",
+      "group": "grupo-347261",
+      "kind": "diagnostico",
+      "created": "2026-11-21T17:56:06+00:00",
+      "questions": [
+        "Un rectángulo mide 5 cm por 3 cm. ¿Cuál es su área?",
+        "¿Cuánto es 1/2 + 1/4?"
+      ],
+      "question_ids": [
+        "8634f6e2",
+        "609da3db"
+      ],
+      "materias": [
+        "Matemática"
+      ],
+      "tipo": "parcial",
+      "bimestre": 3,
+      "numero": 1,
+      "nombre": "",
+      "nota_total": 20.0,
+      "pdf": "/archivos/252c011e-grupo.pdf",
+      "papelera": "2026-11-21T17:56:07+00:00"
     }
   },
   "sheets": {
@@ -16587,6 +16805,2583 @@
       "titulo": "Parcial 1",
       "bimestre": 3,
       "nota_total": 20.0
+    },
+    "2d35b887": {
+      "id": "2d35b887",
+      "form_id": "cfaf9a87",
+      "group": "selfcheck",
+      "student_name": "Camila",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Camila",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+          "options": [
+            "20 cm",
+            "16 cm²",
+            "10 cm²",
+            "32 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 47, ¿cuánto vale el 4?",
+          "options": [
+            "4",
+            "40",
+            "47",
+            "400"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Luis tenía 15 pesos y gastó 7. ¿Cuánto le queda?",
+          "options": [
+            "8",
+            "22",
+            "9",
+            "7"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?",
+          "options": [
+            "juega",
+            "riega las plantas",
+            "duerme",
+            "come"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "elige una acción que el texto no dice"
+        }
+      ],
+      "created": "2026-11-21T17:56:00+00:00",
+      "titulo": "Diagnóstico",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "e8182476": {
+      "id": "e8182476",
+      "form_id": "0b2b795d",
+      "group": "6A-demo",
+      "student_name": "Ana",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Ana",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:00+00:00",
+      "titulo": "Clase de ejemplo",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "4536a07e": {
+      "id": "4536a07e",
+      "form_id": "0b2b795d",
+      "group": "6A-demo",
+      "student_name": "Luis",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Luis",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:00+00:00",
+      "titulo": "Clase de ejemplo",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "27b7e874": {
+      "id": "27b7e874",
+      "form_id": "0b2b795d",
+      "group": "6A-demo",
+      "student_name": "María",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "María",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:00+00:00",
+      "titulo": "Clase de ejemplo",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "c0100179": {
+      "id": "c0100179",
+      "form_id": "0b2b795d",
+      "group": "6A-demo",
+      "student_name": "Pedro",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Pedro",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:00+00:00",
+      "titulo": "Clase de ejemplo",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "e44e7cfc": {
+      "id": "e44e7cfc",
+      "form_id": "0b2b795d",
+      "group": "6A-demo",
+      "student_name": "Sofía",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Sofía",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:00+00:00",
+      "titulo": "Clase de ejemplo",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "5ee42f7e": {
+      "id": "5ee42f7e",
+      "form_id": "0b2b795d",
+      "group": "6A-demo",
+      "student_name": "Diego",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Diego",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:01+00:00",
+      "titulo": "Clase de ejemplo",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "199b5918": {
+      "id": "199b5918",
+      "form_id": "0b2b795d",
+      "group": "6A-demo",
+      "student_name": "Lucía",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Lucía",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:01+00:00",
+      "titulo": "Clase de ejemplo",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "0f4201a8": {
+      "id": "0f4201a8",
+      "form_id": "0b2b795d",
+      "group": "6A-demo",
+      "student_name": "Jorge",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Jorge",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:01+00:00",
+      "titulo": "Clase de ejemplo",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "31ccdc5f": {
+      "id": "31ccdc5f",
+      "form_id": "0b2b795d",
+      "group": "6A-demo",
+      "student_name": "Valeria",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Valeria",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:01+00:00",
+      "titulo": "Clase de ejemplo",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "d59c285f": {
+      "id": "d59c285f",
+      "form_id": "0b2b795d",
+      "group": "6A-demo",
+      "student_name": "Hugo",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Hugo",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:01+00:00",
+      "titulo": "Clase de ejemplo",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "616a54fc": {
+      "id": "616a54fc",
+      "form_id": "8996d8f4",
+      "group": "variantes",
+      "student_name": "Ana",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "Matemática",
+      "label": "Ana · opciones",
+      "questions": [
+        {
+          "prompt": "Un rectángulo mide 9 cm por 11 cm. ¿Cuál es su área?",
+          "options": [
+            "11",
+            "99",
+            "40",
+            "9"
+          ],
+          "answer": 1,
+          "trap": 2,
+          "trap_label": "confunde el área con el perímetro",
+          "skill": "area"
+        },
+        {
+          "prompt": "¿Cuánto es 2/3 + 1/2?",
+          "options": [
+            "13/6",
+            "1/6",
+            "0.6",
+            "7/6"
+          ],
+          "answer": 3,
+          "trap": 2,
+          "trap_label": "suma numeradores y denominadores por separado",
+          "skill": "fracciones"
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "duerme",
+            "el gato",
+            "Lee",
+            "gato"
+          ],
+          "answer": 1,
+          "trap": null,
+          "trap_label": null,
+          "skill": "comprension"
+        }
+      ],
+      "created": "2026-11-21T17:56:04+00:00",
+      "titulo": "Diagnóstico",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "a1e62ef0": {
+      "id": "a1e62ef0",
+      "form_id": "8996d8f4",
+      "group": "variantes",
+      "student_name": "Luis",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "Matemática",
+      "label": "Luis · opciones",
+      "questions": [
+        {
+          "prompt": "Un rectángulo mide 7 cm por 4 cm. ¿Cuál es su área?",
+          "options": [
+            "22",
+            "4",
+            "28",
+            "7"
+          ],
+          "answer": 2,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro",
+          "skill": "area"
+        },
+        {
+          "prompt": "¿Cuánto es 4/6 + 2/6?",
+          "options": [
+            "0",
+            "1",
+            "2",
+            "1/2"
+          ],
+          "answer": 1,
+          "trap": 3,
+          "trap_label": "suma numeradores y denominadores por separado",
+          "skill": "fracciones"
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "el gato",
+            "duerme",
+            "Lee",
+            "gato"
+          ],
+          "answer": 0,
+          "trap": null,
+          "trap_label": null,
+          "skill": "comprension"
+        }
+      ],
+      "created": "2026-11-21T17:56:04+00:00",
+      "titulo": "Diagnóstico",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "32be9458": {
+      "id": "32be9458",
+      "form_id": "8996d8f4",
+      "group": "variantes",
+      "student_name": "María",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "Matemática",
+      "label": "María · opciones",
+      "questions": [
+        {
+          "prompt": "Un rectángulo mide 8 cm por 4 cm. ¿Cuál es su área?",
+          "options": [
+            "32",
+            "24",
+            "8",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "confunde el área con el perímetro",
+          "skill": "area"
+        },
+        {
+          "prompt": "¿Cuánto es 2/3 + 2/3?",
+          "options": [
+            "7/3",
+            "4/3",
+            "1/3",
+            "2/3"
+          ],
+          "answer": 1,
+          "trap": 3,
+          "trap_label": "suma numeradores y denominadores por separado",
+          "skill": "fracciones"
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "duerme",
+            "el gato",
+            "gato",
+            "Lee"
+          ],
+          "answer": 1,
+          "trap": null,
+          "trap_label": null,
+          "skill": "comprension"
+        }
+      ],
+      "created": "2026-11-21T17:56:04+00:00",
+      "titulo": "Diagnóstico",
+      "bimestre": 0,
+      "nota_total": 100.0
+    },
+    "30610669": {
+      "id": "30610669",
+      "form_id": "01ac3aa9",
+      "group": "notas-978695",
+      "student_name": "Camila",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Camila",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+          "options": [
+            "20 cm",
+            "16 cm²",
+            "10 cm²",
+            "32 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/2 + 1/4?",
+          "options": [
+            "2/6",
+            "3/4",
+            "1/6",
+            "1/8"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?",
+          "options": [
+            "juega",
+            "riega las plantas",
+            "duerme",
+            "come"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "elige una acción que el texto no dice"
+        }
+      ],
+      "created": "2026-11-21T17:56:04+00:00",
+      "titulo": "Parcial 1",
+      "bimestre": 2,
+      "nota_total": 20.0
+    },
+    "68ea06c2": {
+      "id": "68ea06c2",
+      "form_id": "01ac3aa9",
+      "group": "notas-978695",
+      "student_name": "Raúl",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Raúl",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+          "options": [
+            "20 cm",
+            "16 cm²",
+            "10 cm²",
+            "32 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/2 + 1/4?",
+          "options": [
+            "2/6",
+            "3/4",
+            "1/6",
+            "1/8"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?",
+          "options": [
+            "juega",
+            "riega las plantas",
+            "duerme",
+            "come"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "elige una acción que el texto no dice"
+        }
+      ],
+      "created": "2026-11-21T17:56:04+00:00",
+      "titulo": "Parcial 1",
+      "bimestre": 2,
+      "nota_total": 20.0
+    },
+    "81e0ce4d": {
+      "id": "81e0ce4d",
+      "form_id": "c72c43d6",
+      "group": "notas-978695",
+      "student_name": "Camila",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Camila",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+          "options": [
+            "20 cm",
+            "16 cm²",
+            "10 cm²",
+            "32 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 47, ¿cuánto vale el 4?",
+          "options": [
+            "4",
+            "40",
+            "47",
+            "400"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Luis tenía 15 pesos y gastó 7. ¿Cuánto le queda?",
+          "options": [
+            "8",
+            "22",
+            "9",
+            "7"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?",
+          "options": [
+            "juega",
+            "riega las plantas",
+            "duerme",
+            "come"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "elige una acción que el texto no dice"
+        }
+      ],
+      "created": "2026-11-21T17:56:04+00:00",
+      "titulo": "Parcial 2",
+      "bimestre": 2,
+      "nota_total": 20.0
+    },
+    "951fd9aa": {
+      "id": "951fd9aa",
+      "form_id": "c72c43d6",
+      "group": "notas-978695",
+      "student_name": "Raúl",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Raúl",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+          "options": [
+            "20 cm",
+            "16 cm²",
+            "10 cm²",
+            "32 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 47, ¿cuánto vale el 4?",
+          "options": [
+            "4",
+            "40",
+            "47",
+            "400"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Luis tenía 15 pesos y gastó 7. ¿Cuánto le queda?",
+          "options": [
+            "8",
+            "22",
+            "9",
+            "7"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?",
+          "options": [
+            "juega",
+            "riega las plantas",
+            "duerme",
+            "come"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "elige una acción que el texto no dice"
+        }
+      ],
+      "created": "2026-11-21T17:56:05+00:00",
+      "titulo": "Parcial 2",
+      "bimestre": 2,
+      "nota_total": 20.0
+    },
+    "58486530": {
+      "id": "58486530",
+      "form_id": "f47b992d",
+      "group": "notas-978695",
+      "student_name": "Camila",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Camila",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/2 + 1/4?",
+          "options": [
+            "2/6",
+            "3/4",
+            "1/6",
+            "1/8"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 47, ¿cuánto vale el 4?",
+          "options": [
+            "4",
+            "40",
+            "47",
+            "400"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Luis tenía 15 pesos y gastó 7. ¿Cuánto le queda?",
+          "options": [
+            "8",
+            "22",
+            "9",
+            "7"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:05+00:00",
+      "titulo": "Examen final",
+      "bimestre": 2,
+      "nota_total": 40.0
+    },
+    "4baa3a8b": {
+      "id": "4baa3a8b",
+      "form_id": "f47b992d",
+      "group": "notas-978695",
+      "student_name": "Raúl",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Raúl",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "options": [
+            "16 cm",
+            "15 cm²",
+            "8 cm²",
+            "30 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/2 + 1/4?",
+          "options": [
+            "2/6",
+            "3/4",
+            "1/6",
+            "1/8"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "options": [
+            "3",
+            "300",
+            "30",
+            "305"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 47, ¿cuánto vale el 4?",
+          "options": [
+            "4",
+            "40",
+            "47",
+            "400"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Luis tenía 15 pesos y gastó 7. ¿Cuánto le queda?",
+          "options": [
+            "8",
+            "22",
+            "9",
+            "7"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:05+00:00",
+      "titulo": "Examen final",
+      "bimestre": 2,
+      "nota_total": 40.0
+    },
+    "3f3777c2": {
+      "id": "3f3777c2",
+      "form_id": "3e6e4126",
+      "group": "notas-978695",
+      "student_name": "Camila",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "",
+      "label": "Camila",
+      "questions": [
+        {
+          "skill": "area",
+          "prompt": "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+          "options": [
+            "20 cm",
+            "16 cm²",
+            "10 cm²",
+            "32 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "area",
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "options": [
+            "24 cm",
+            "36 cm²",
+            "12 cm²",
+            "6 cm"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "options": [
+            "4/8",
+            "1",
+            "3/8",
+            "1/4"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "fracciones",
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "options": [
+            "2/6",
+            "2/3",
+            "1/6",
+            "1/9"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "options": [
+            "8",
+            "80",
+            "82",
+            "800"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "valor_posicional",
+          "prompt": "En el número 47, ¿cuánto vale el 4?",
+          "options": [
+            "4",
+            "40",
+            "47",
+            "400"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "skill": "operaciones",
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "options": [
+            "8",
+            "16",
+            "9",
+            "4"
+          ],
+          "answer": 0,
+          "trap": 1,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "skill": "comprension",
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "options": [
+            "la silla",
+            "el gato",
+            "el niño",
+            "nadie"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:05+00:00",
+      "titulo": "Parcial 1",
+      "bimestre": 2,
+      "nota_total": 20.0
+    },
+    "fb861ef9": {
+      "id": "fb861ef9",
+      "form_id": "182ef2a5",
+      "group": "grupo-347261",
+      "student_name": "Ana",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "Matemática",
+      "label": "Ana · opciones",
+      "questions": [
+        {
+          "prompt": "Un rectángulo mide 7 cm por 12 cm. ¿Cuál es su área?",
+          "options": [
+            "84",
+            "12",
+            "38",
+            "7"
+          ],
+          "answer": 0,
+          "trap": 2,
+          "trap_label": "confunde el área con el perímetro",
+          "skill": "area"
+        },
+        {
+          "prompt": "¿Cuánto es 2/6 + 1/2?",
+          "options": [
+            "11/6",
+            "3/8",
+            "0",
+            "5/6"
+          ],
+          "answer": 3,
+          "trap": 1,
+          "trap_label": "suma numeradores y denominadores por separado",
+          "skill": "fracciones"
+        }
+      ],
+      "created": "2026-11-21T17:56:06+00:00",
+      "titulo": "Parcial 1",
+      "bimestre": 3,
+      "nota_total": 20.0
+    },
+    "bb460fc6": {
+      "id": "bb460fc6",
+      "form_id": "182ef2a5",
+      "group": "grupo-347261",
+      "student_name": "Luis",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "Matemática",
+      "label": "Luis · opciones",
+      "questions": [
+        {
+          "prompt": "Un rectángulo mide 11 cm por 9 cm. ¿Cuál es su área?",
+          "options": [
+            "40",
+            "99",
+            "9",
+            "11"
+          ],
+          "answer": 1,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro",
+          "skill": "area"
+        },
+        {
+          "prompt": "¿Cuánto es 7/8 + 1/2?",
+          "options": [
+            "19/8",
+            "3/8",
+            "0.8",
+            "11/8"
+          ],
+          "answer": 3,
+          "trap": 2,
+          "trap_label": "suma numeradores y denominadores por separado",
+          "skill": "fracciones"
+        }
+      ],
+      "created": "2026-11-21T17:56:06+00:00",
+      "titulo": "Parcial 1",
+      "bimestre": 3,
+      "nota_total": 20.0
+    },
+    "96f0cd7b": {
+      "id": "96f0cd7b",
+      "form_id": "182ef2a5",
+      "group": "grupo-347261",
+      "student_name": "María",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "Matemática",
+      "label": "María · opciones",
+      "questions": [
+        {
+          "prompt": "Un rectángulo mide 5 cm por 6 cm. ¿Cuál es su área?",
+          "options": [
+            "22",
+            "5",
+            "30",
+            "6"
+          ],
+          "answer": 2,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro",
+          "skill": "area"
+        },
+        {
+          "prompt": "¿Cuánto es 1/6 + 2/4?",
+          "options": [
+            "0.3",
+            "0",
+            "2/3",
+            "5/3"
+          ],
+          "answer": 2,
+          "trap": 0,
+          "trap_label": "suma numeradores y denominadores por separado",
+          "skill": "fracciones"
+        }
+      ],
+      "created": "2026-11-21T17:56:06+00:00",
+      "titulo": "Parcial 1",
+      "bimestre": 3,
+      "nota_total": 20.0
+    },
+    "7920db32": {
+      "id": "7920db32",
+      "form_id": "252c011e",
+      "group": "grupo-347261",
+      "student_name": "Ana",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "Matemática",
+      "label": "Ana · opciones",
+      "questions": [
+        {
+          "prompt": "Un rectángulo mide 12 cm por 3 cm. ¿Cuál es su área?",
+          "options": [
+            "12",
+            "36",
+            "3",
+            "30"
+          ],
+          "answer": 1,
+          "trap": 3,
+          "trap_label": "confunde el área con el perímetro",
+          "skill": "area"
+        },
+        {
+          "prompt": "¿Cuánto es 1/8 + 1/4?",
+          "options": [
+            "3/8",
+            "0",
+            "1/6",
+            "11/8"
+          ],
+          "answer": 0,
+          "trap": 2,
+          "trap_label": "suma numeradores y denominadores por separado",
+          "skill": "fracciones"
+        }
+      ],
+      "created": "2026-11-21T17:56:06+00:00",
+      "titulo": "Parcial 1",
+      "bimestre": 3,
+      "nota_total": 20.0
+    },
+    "39f39b5b": {
+      "id": "39f39b5b",
+      "form_id": "252c011e",
+      "group": "grupo-347261",
+      "student_name": "Luis",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "Matemática",
+      "label": "Luis · opciones",
+      "questions": [
+        {
+          "prompt": "Un rectángulo mide 2 cm por 12 cm. ¿Cuál es su área?",
+          "options": [
+            "28",
+            "2",
+            "12",
+            "24"
+          ],
+          "answer": 3,
+          "trap": 0,
+          "trap_label": "confunde el área con el perímetro",
+          "skill": "area"
+        },
+        {
+          "prompt": "¿Cuánto es 1/4 + 2/6?",
+          "options": [
+            "0",
+            "0.3",
+            "7/12",
+            "19/12"
+          ],
+          "answer": 2,
+          "trap": 1,
+          "trap_label": "suma numeradores y denominadores por separado",
+          "skill": "fracciones"
+        }
+      ],
+      "created": "2026-11-21T17:56:06+00:00",
+      "titulo": "Parcial 1",
+      "bimestre": 3,
+      "nota_total": 20.0
+    },
+    "7d8f39cc": {
+      "id": "7d8f39cc",
+      "form_id": "252c011e",
+      "group": "grupo-347261",
+      "student_name": "María",
+      "kind": "diagnostico",
+      "format": "cerrada",
+      "materia_label": "Matemática",
+      "label": "María · opciones",
+      "questions": [
+        {
+          "prompt": "Un rectángulo mide 12 cm por 7 cm. ¿Cuál es su área?",
+          "options": [
+            "7",
+            "84",
+            "12",
+            "38"
+          ],
+          "answer": 1,
+          "trap": 3,
+          "trap_label": "confunde el área con el perímetro",
+          "skill": "area"
+        },
+        {
+          "prompt": "¿Cuánto es 4/6 + 2/4?",
+          "options": [
+            "1/6",
+            "7/6",
+            "13/6",
+            "0.6"
+          ],
+          "answer": 1,
+          "trap": 3,
+          "trap_label": "suma numeradores y denominadores por separado",
+          "skill": "fracciones"
+        }
+      ],
+      "created": "2026-11-21T17:56:06+00:00",
+      "titulo": "Parcial 1",
+      "bimestre": 3,
+      "nota_total": 20.0
     }
   },
   "results": [
@@ -26832,38 +29627,1511 @@
         }
       ],
       "created": "2026-11-21T17:48:15+00:00"
+    },
+    {
+      "sheet_id": "2d35b887",
+      "student_name": "Camila",
+      "group": "selfcheck",
+      "kind": "diagnostico",
+      "score": 8,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 47, ¿cuánto vale el 4?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Luis tenía 15 pesos y gastó 7. ¿Cuánto le queda?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:00+00:00"
+    },
+    {
+      "sheet_id": "e8182476",
+      "student_name": "Ana",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "score": 0,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 1,
+          "answer": 0,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:01+00:00"
+    },
+    {
+      "sheet_id": "4536a07e",
+      "student_name": "Luis",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "score": 6,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:02+00:00"
+    },
+    {
+      "sheet_id": "27b7e874",
+      "student_name": "María",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "score": 6,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:02+00:00"
+    },
+    {
+      "sheet_id": "c0100179",
+      "student_name": "Pedro",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "score": 6,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:02+00:00"
+    },
+    {
+      "sheet_id": "e44e7cfc",
+      "student_name": "Sofía",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "score": 6,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:02+00:00"
+    },
+    {
+      "sheet_id": "5ee42f7e",
+      "student_name": "Diego",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "score": 0,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "suma numeradores y denominadores por separado"
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "lee el dígito y no su valor de posición"
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 1,
+          "answer": 0,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "suma cuando el problema pide restar"
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "contesta con el lugar y no con quien hace la acción"
+        }
+      ],
+      "created": "2026-11-21T17:56:03+00:00"
+    },
+    {
+      "sheet_id": "199b5918",
+      "student_name": "Lucía",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "score": 6,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": true,
+          "trap_label": "confunde el área con el perímetro"
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:03+00:00"
+    },
+    {
+      "sheet_id": "0f4201a8",
+      "student_name": "Jorge",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "score": 8,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:03+00:00"
+    },
+    {
+      "sheet_id": "31ccdc5f",
+      "student_name": "Valeria",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "score": 8,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:03+00:00"
+    },
+    {
+      "sheet_id": "d59c285f",
+      "student_name": "Hugo",
+      "group": "6A-demo",
+      "kind": "diagnostico",
+      "score": 6,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 2,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Un cuadrado tiene lados de 6 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 2,
+          "answer": 1,
+          "correct": false,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 3/4 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:04+00:00"
+    },
+    {
+      "sheet_id": "616a54fc",
+      "student_name": "Ana",
+      "group": "variantes",
+      "kind": "diagnostico",
+      "score": 3,
+      "total": 3,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 9 cm por 11 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 2/3 + 1/2?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 3,
+          "answer": 3,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:04+00:00"
+    },
+    {
+      "sheet_id": "30610669",
+      "student_name": "Camila",
+      "group": "notas-978695",
+      "kind": "diagnostico",
+      "score": 8,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/2 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:05+00:00"
+    },
+    {
+      "sheet_id": "68ea06c2",
+      "student_name": "Raúl",
+      "group": "notas-978695",
+      "kind": "diagnostico",
+      "score": 1,
+      "total": 8,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 5 cm de largo y 3 cm de ancho. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 1,
+          "answer": 1,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Un rectángulo mide 8 cm por 2 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": null,
+          "answer": 1,
+          "correct": false,
+          "status": "vacia",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/3 + 1/3?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": null,
+          "answer": 1,
+          "correct": false,
+          "status": "vacia",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 1/2 + 1/4?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": null,
+          "answer": 1,
+          "correct": false,
+          "status": "vacia",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 305, ¿cuánto vale el 3?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": null,
+          "answer": 1,
+          "correct": false,
+          "status": "vacia",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "En el número 82, ¿cuánto vale el 8?",
+          "skill": "valor_posicional",
+          "skill_name": "valor posicional",
+          "choice": null,
+          "answer": 1,
+          "correct": false,
+          "status": "vacia",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Había 12 aves y se fueron 4. ¿Cuántas quedan?",
+          "skill": "operaciones",
+          "skill_name": "operaciones",
+          "choice": null,
+          "answer": 0,
+          "correct": false,
+          "status": "vacia",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "Lee: «Lucía riega las plantas cada mañana.» ¿Qué hace Lucía?",
+          "skill": "comprension",
+          "skill_name": "comprensión lectora",
+          "choice": null,
+          "answer": 1,
+          "correct": false,
+          "status": "vacia",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:05+00:00"
+    },
+    {
+      "sheet_id": "fb861ef9",
+      "student_name": "Ana",
+      "group": "grupo-347261",
+      "kind": "diagnostico",
+      "score": 2,
+      "total": 2,
+      "items": [
+        {
+          "prompt": "Un rectángulo mide 7 cm por 12 cm. ¿Cuál es su área?",
+          "skill": "area",
+          "skill_name": "área y perímetro",
+          "choice": 0,
+          "answer": 0,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        },
+        {
+          "prompt": "¿Cuánto es 2/6 + 1/2?",
+          "skill": "fracciones",
+          "skill_name": "fracciones",
+          "choice": 3,
+          "answer": 3,
+          "correct": true,
+          "status": "marcada",
+          "format": "cerrada",
+          "trap": false,
+          "trap_label": null
+        }
+      ],
+      "created": "2026-11-21T17:56:06+00:00"
     }
   ],
   "authored": [
     {
-      "id": "3463a478",
+      "id": "8634f6e2",
       "prompt": "Un rectángulo mide 5 cm por 3 cm. ¿Cuál es su área?",
       "answer": "15",
       "criterion": "",
       "skill": "area",
       "materia": "Matemática",
       "kind": "cerrada",
-      "created": "2026-11-21T17:48:12+00:00"
+      "created": "2026-11-21T17:56:04+00:00"
     },
     {
-      "id": "27e1f2c5",
+      "id": "609da3db",
       "prompt": "¿Cuánto es 1/2 + 1/4?",
       "answer": "3/4",
       "criterion": "",
       "skill": "fracciones",
       "materia": "Matemática",
       "kind": "cerrada",
-      "created": "2026-11-21T17:48:12+00:00"
+      "created": "2026-11-21T17:56:04+00:00"
     },
     {
-      "id": "a7fa2891",
+      "id": "5cd0ab14",
       "prompt": "Lee: «El gato duerme en la silla.» ¿Quién duerme?",
       "answer": "el gato",
       "criterion": "",
       "skill": "comprension",
       "materia": "Matemática",
       "kind": "cerrada",
-      "created": "2026-11-21T17:48:12+00:00"
+      "created": "2026-11-21T17:56:04+00:00"
     }
   ],
   "materias": [
@@ -26947,6 +31215,23 @@
         "María"
       ],
       "created": "2026-11-21T17:48:15+00:00"
+    },
+    "notas-978695": {
+      "name": "notas-978695",
+      "students": [
+        "Camila",
+        "Raúl"
+      ],
+      "created": "2026-11-21T17:56:04+00:00"
+    },
+    "grupo-347261": {
+      "name": "grupo-347261",
+      "students": [
+        "Ana",
+        "Luis",
+        "María"
+      ],
+      "created": "2026-11-21T17:56:06+00:00"
     }
   }
 }

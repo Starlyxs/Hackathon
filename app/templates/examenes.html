@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -20,12 +20,32 @@
     .picker h4 button { padding: 3px 10px; font-size: 0.8rem; }
     .q { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid #eee7d8; font-family: "Segoe UI", sans-serif; }
     .q input { width: auto; margin-top: 4px; }
+    .q button { padding: 3px 10px; font-size: 0.8rem; }
     .q small { color: var(--muted); display: block; }
     .count { font-family: "Segoe UI", sans-serif; }
     .count.over { color: var(--rust); font-weight: 700; }
     .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px; font-family: "Segoe UI", sans-serif; z-index: 10; }
     .toast button { background: transparent; color: #9fe0c3; padding: 0 0 0 10px; border: 0; text-decoration: underline; }
-    @media (max-width: 700px) { .exam { grid-template-columns: 1fr; } img.thumb { width: 100%; } }
+    .picker-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-top: 16px; }
+    dialog#qdlg { width: min(720px, calc(100% - 24px)); max-height: 92vh; border: 0; border-radius: 18px; padding: 0; background: var(--card); color: var(--ink); box-shadow: 0 24px 60px rgba(28, 36, 32, 0.35); }
+    dialog#qdlg[open] { display: flex; flex-direction: column; }
+    dialog#qdlg::backdrop { background: rgba(28, 36, 32, 0.5); }
+    .dlg-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 16px 20px 8px; }
+    .dlg-head h2 { margin: 0; }
+    .dlg-body { overflow: auto; padding: 0 20px 12px; flex: 1; }
+    .dlg-foot { border-top: 1px solid var(--line); background: #faf6ec; padding: 10px 20px 14px; border-radius: 0 0 18px 18px; }
+    .dlg-foot h4 { margin: 0 0 6px; font-family: "Segoe UI", sans-serif; font-size: 0.9rem; color: var(--muted); font-weight: 600; }
+    #dlg-preview { display: flex; gap: 10px; max-height: 170px; overflow: auto; }
+    .paper { flex: 1; min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; font-family: "Segoe UI", sans-serif; }
+    .paper strong { font-size: 0.75rem; color: var(--muted); font-weight: 600; }
+    .paper p { margin: 4px 0; }
+    .paper .opt { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+    .paper .bub { width: 13px; height: 13px; border: 1.5px solid #555; border-radius: 50%; display: inline-block; flex: none; }
+    .paper .line { border-bottom: 1px solid #bbb; height: 16px; }
+    .added { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee7d8; font-family: "Segoe UI", sans-serif; font-size: 0.9rem; }
+    .added button { padding: 3px 10px; font-size: 0.8rem; }
+    #dlg-body-form textarea { min-height: 80px; }
+    @media (max-width: 700px) { .exam { grid-template-columns: 1fr; } img.thumb { width: 100%; } #dlg-preview { flex-direction: column; max-height: 140px; } }
   </style>
 </head>
 <body>
@@ -81,7 +101,10 @@
       </div>
       <p id="resumen" class="ok"></p>
 
-      <h3 style="margin-top:16px;">Preguntas de este examen</h3>
+      <div class="picker-head">
+        <h3>Preguntas de este examen</h3>
+        <button id="open-q" type="button" class="secondary">+ Escribir preguntas</button>
+      </div>
       <p id="picker-help" class="lede"></p>
       <div id="picker" class="picker"></div>
       <p id="counts" class="count"></p>
@@ -119,6 +142,79 @@
       </details>
     </section>
   </main>
+
+  <dialog id="qdlg">
+    <div class="dlg-head">
+      <div>
+        <h2>Preguntas del examen</h2>
+        <p class="lede" id="dlg-title" style="margin:2px 0 0;"></p>
+      </div>
+      <button type="button" class="secondary" id="dlg-x">Cerrar</button>
+    </div>
+    <div class="dlg-body" id="dlg-body-form">
+      <div class="fields">
+        <div>
+          <label for="q-materia">Materia</label>
+          <select id="q-materia"></select>
+        </div>
+        <div>
+          <label for="q-kind">Tipo</label>
+          <select id="q-kind">
+            <option value="cerrada">Opción múltiple</option>
+            <option value="abierta">Abierta, de interpretación</option>
+          </select>
+        </div>
+      </div>
+      <div id="q-otra-box" hidden>
+        <label for="q-otra">Nombre de la materia</label>
+        <input id="q-otra" maxlength="48" placeholder="Por ejemplo K'iche'">
+      </div>
+      <label for="q-prompt">Pregunta</label>
+      <textarea id="q-prompt" maxlength="220" placeholder="Por ejemplo: Un rectángulo mide 5 cm por 3 cm. ¿Cuál es su área?"></textarea>
+      <div id="q-closed">
+        <div class="fields">
+          <div>
+            <label for="q-answer">Respuesta correcta</label>
+            <input id="q-answer" maxlength="40" placeholder="15">
+          </div>
+          <div>
+            <label for="q-skill">Tema</label>
+            <select id="q-skill">
+              <option value="area">Área y perímetro</option>
+              <option value="operaciones">Operaciones</option>
+              <option value="fracciones">Fracciones</option>
+              <option value="valor_posicional">Valor posicional</option>
+              <option value="comprension">Comprensión lectora</option>
+              <option value="general">Otro</option>
+            </select>
+          </div>
+        </div>
+        <p class="lede">El programa inventa las opciones A, B, C y D y cambia los números para cada alumno.</p>
+      </div>
+      <div id="q-open" hidden>
+        <label for="q-criterion">Qué idea debe lograr el alumno</label>
+        <textarea id="q-criterion" maxlength="180" placeholder="Explica con sus palabras que el área es la superficie de adentro."></textarea>
+        <p class="lede">El alumno escribe a mano y tú marcas si lo logró.</p>
+      </div>
+      <div class="row">
+        <button type="button" id="q-add">Agregar al examen</button>
+        <span id="q-error" class="error"></span>
+      </div>
+      <div id="q-added-box" hidden>
+        <h4 style="font-family:'Segoe UI',sans-serif; margin:16px 0 4px;">Agregadas ahora</h4>
+        <div id="q-added"></div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <h4>Así se verá</h4>
+      <div id="dlg-preview"><span class="lede">Escribe la pregunta y aquí aparece.</span></div>
+      <div class="row" style="justify-content: space-between;">
+        <span id="dlg-counts" class="count"></span>
+        <button type="button" id="dlg-done">Listo</button>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     const $ = (selector) => document.querySelector(selector);
     const esc = (text) => String(text).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
@@ -206,29 +302,34 @@
     function updateCounts() {
       if (!questions.length) {
         $("#counts").textContent = "";
+        $("#dlg-counts").textContent = "";
         return;
       }
       const picked = new Set(pickedIds());
       const closed = questions.filter((q) => picked.has(q.id) && q.kind !== "abierta").length;
       const open = questions.filter((q) => picked.has(q.id) && q.kind === "abierta").length;
-      $("#counts").innerHTML = `<span class="${closed > MAX_CLOSED ? "over" : ""}">Opciones: ${closed} de ${MAX_CLOSED}</span> · <span class="${open > MAX_OPEN ? "over" : ""}">Abiertas: ${open} de ${MAX_OPEN}</span>`;
+      const html = `<span class="${closed > MAX_CLOSED ? "over" : ""}">Opciones: ${closed} de ${MAX_CLOSED}</span> · <span class="${open > MAX_OPEN ? "over" : ""}">Abiertas: ${open} de ${MAX_OPEN}</span>`;
+      $("#counts").innerHTML = html;
+      $("#dlg-counts").innerHTML = html;
     }
 
-    function renderPicker() {
+    function renderPicker(keep = null) {
       const box = $("#picker");
       if (!questions.length) {
-        $("#picker-help").innerHTML = `Todavía no escribiste preguntas, así que se usará un diagnóstico de ejemplo. <a href="/preguntas">Escribir mis preguntas</a>`;
+        $("#picker-help").innerHTML = `Todavía no escribiste preguntas. Pulsa «Escribir preguntas», o crea el examen y se usará un diagnóstico de ejemplo.`;
         box.hidden = true;
+        updateCounts();
         return;
       }
       box.hidden = false;
-      $("#picker-help").innerHTML = `Marca las preguntas que entran en este examen (hasta ${MAX_CLOSED} de opciones y ${MAX_OPEN} abiertas). Las que no se han usado ya vienen marcadas. <a href="/preguntas">Editar preguntas</a>`;
+      $("#picker-help").innerHTML = `Marca las preguntas que entran en este examen (hasta ${MAX_CLOSED} de opciones y ${MAX_OPEN} abiertas). Las que no se han usado ya vienen marcadas.`;
       const used = new Set(exams.filter((exam) => exam.group === $("#group").value).flatMap((exam) => exam.question_ids));
       let closedLeft = MAX_CLOSED;
       let openLeft = MAX_OPEN;
-      const preset = new Set();
+      const preset = new Set(keep || []);
       questions.forEach((q) => {
-        if (used.has(q.id)) return;
+        if (used.has(q.id) || preset.has(q.id)) return;
+        if (keep) return;
         if (q.kind === "abierta" && openLeft > 0) { preset.add(q.id); openLeft -= 1; }
         if (q.kind !== "abierta" && closedLeft > 0) { preset.add(q.id); closedLeft -= 1; }
       });
@@ -238,9 +339,20 @@
         ${questions.filter((q) => q.materia === name).map((q) => {
           const before = usedIn(q);
           return `<label class="q"><input type="checkbox" value="${q.id}" ${preset.has(q.id) ? "checked" : ""}>
-            <span>${esc(q.prompt)}<small>${q.kind === "abierta" ? "Abierta" : "Opciones"}${before.length ? ` · ya usada en ${esc(before.join(", "))}` : ""}</small></span></label>`;
+            <span style="flex:1;">${esc(q.prompt)}<small>${q.kind === "abierta" ? "Abierta" : "Opciones"}${before.length ? ` · ya usada en ${esc(before.join(", "))}` : ""}</small></span>
+            <button type="button" class="danger" data-drop="${q.id}" title="Borrar esta pregunta de tu banco">Borrar</button></label>`;
         }).join("")}`).join("");
       box.querySelectorAll("input").forEach((input) => { input.onchange = updateCounts; });
+      box.querySelectorAll("[data-drop]").forEach((button) => {
+        button.onclick = async (event) => {
+          event.preventDefault();
+          const q = questions.find((item) => item.id === button.dataset.drop);
+          if (!confirm(`¿Borrar esta pregunta?\n\n${q.prompt}\n\nLos exámenes que ya hiciste con ella no cambian.`)) return;
+          const keep = pickedIds().filter((value) => value !== q.id);
+          await fetch(`/api/preguntas/${q.id}`, { method: "DELETE" });
+          await reloadBank(keep);
+        };
+      });
       box.querySelectorAll("[data-all]").forEach((button) => {
         button.onclick = () => {
           const name = button.dataset.all;
@@ -295,6 +407,145 @@
         ${body.pdf ? `<a class="button" style="margin-left:8px;" href="${body.pdf}" target="_blank">Imprimir todo en un PDF</a>` : ""}
         <a href="/calificar" style="margin-left:8px;">Ir a calificar</a></div>`;
       await loadList();
+    };
+
+    /* ---------- ventana para escribir preguntas ---------- */
+    const dlg = $("#qdlg");
+    const LETTERS = ["A", "B", "C", "D"];
+    let addedNow = [];
+    let previewTimer = null;
+    let previewSeq = 0;
+
+    function questionPayload() {
+      const otra = $("#q-materia").value === "__otra";
+      return {
+        prompt: $("#q-prompt").value.trim(),
+        answer: $("#q-answer").value.trim(),
+        criterion: $("#q-criterion").value.trim(),
+        skill: $("#q-skill").value,
+        materia: otra ? $("#q-otra").value.trim() : $("#q-materia").value,
+        kind: $("#q-kind").value,
+      };
+    }
+
+    function fillMaterias(selected) {
+      const names = materias.length ? materias : ["Matemática"];
+      $("#q-materia").innerHTML = names.map((name) => `<option>${esc(name)}</option>`).join("") + `<option value="__otra">Otra materia…</option>`;
+      $("#q-materia").value = names.includes(selected) ? selected : names[0];
+      $("#q-otra-box").hidden = $("#q-materia").value !== "__otra";
+    }
+
+    function showKind() {
+      const open = $("#q-kind").value === "abierta";
+      $("#q-closed").hidden = open;
+      $("#q-open").hidden = !open;
+      schedulePreview();
+    }
+
+    function schedulePreview() {
+      clearTimeout(previewTimer);
+      previewTimer = setTimeout(drawPreview, 350);
+    }
+
+    async function drawPreview() {
+      const box = $("#dlg-preview");
+      const data = questionPayload();
+      const seq = ++previewSeq;
+      if (data.prompt.length < 8) {
+        box.innerHTML = `<span class="lede">Escribe la pregunta y aquí aparece.</span>`;
+        return;
+      }
+      if (data.kind === "abierta") {
+        box.innerHTML = `<div class="paper"><strong>Todos los alumnos ven lo mismo</strong><p>${esc(data.prompt)}</p><div class="line"></div><div class="line"></div><div class="line"></div></div>`;
+        return;
+      }
+      if (!data.answer) {
+        box.innerHTML = `<span class="lede">Escribe la respuesta correcta para ver las opciones.</span>`;
+        return;
+      }
+      const response = await fetch("/api/preguntas/vista", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (seq !== previewSeq) return;
+      if (!response.ok) {
+        box.innerHTML = `<span class="lede">${esc(await readError(response))}</span>`;
+        return;
+      }
+      const rows = (await response.json()).variants.slice(0, 2);
+      box.innerHTML = rows.map((row) => `<div class="paper"><strong>${esc(row.student_name)}</strong><p>${esc(row.prompt)}</p>
+        ${row.options.map((option, index) => `<div class="opt"><span class="bub"></span>${LETTERS[index]}. ${esc(option)}</div>`).join("")}</div>`).join("");
+    }
+
+    function renderAdded() {
+      $("#q-added-box").hidden = !addedNow.length;
+      $("#q-added").innerHTML = addedNow.map((item) => `<div class="added"><span>${esc(item.prompt)}<br><small style="color:var(--muted)">${esc(item.materia)} · ${item.kind === "abierta" ? "Abierta" : "Opciones"}</small></span>
+        <button type="button" class="danger" data-rm="${item.id}">Quitar</button></div>`).join("");
+      $("#q-added").querySelectorAll("[data-rm]").forEach((button) => {
+        button.onclick = async () => {
+          const id = button.dataset.rm;
+          await fetch(`/api/preguntas/${id}`, { method: "DELETE" });
+          addedNow = addedNow.filter((item) => item.id !== id);
+          const keep = pickedIds().filter((value) => value !== id);
+          await reloadBank(keep);
+          renderAdded();
+        };
+      });
+    }
+
+    async function reloadBank(keep) {
+      const body = await (await fetch("/api/preguntas")).json();
+      questions = body.questions;
+      materias = body.materias;
+      renderPicker(keep);
+    }
+
+    function openDialog() {
+      const p = payload();
+      $("#dlg-title").textContent = `${titleOf(p)} · ${p.tipo === "diagnostico" ? "no suma" : `Bimestre ${p.bimestre}`} · ${p.group || "elige el grupo"}`;
+      addedNow = [];
+      renderAdded();
+      fillMaterias(questionPayload().materia || materias[0]);
+      $("#q-error").textContent = "";
+      updateCounts();
+      drawPreview();
+      dlg.showModal();
+      $("#q-prompt").focus();
+    }
+
+    $("#open-q").onclick = openDialog;
+    $("#dlg-x").onclick = () => dlg.close();
+    $("#dlg-done").onclick = () => dlg.close();
+    dlg.addEventListener("click", (event) => { if (event.target === dlg) dlg.close(); });
+    $("#q-kind").onchange = showKind;
+    $("#q-materia").onchange = () => { $("#q-otra-box").hidden = $("#q-materia").value !== "__otra"; };
+    ["q-prompt", "q-answer", "q-skill", "q-criterion"].forEach((id) => $(`#${id}`).addEventListener("input", schedulePreview));
+
+    $("#q-add").onclick = async () => {
+      const button = $("#q-add");
+      const data = questionPayload();
+      $("#q-error").textContent = "";
+      if (data.prompt.length < 8) { $("#q-error").textContent = "Escribe la pregunta completa."; return; }
+      if (!data.materia) { $("#q-error").textContent = "Escribe el nombre de la materia."; return; }
+      button.disabled = true;
+      const response = await fetch("/api/preguntas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      button.disabled = false;
+      if (!response.ok) { $("#q-error").textContent = await readError(response); return; }
+      const item = await response.json();
+      addedNow.push(item);
+      await reloadBank([...pickedIds(), item.id]);
+      fillMaterias(item.materia);
+      $("#q-prompt").value = "";
+      $("#q-answer").value = "";
+      $("#q-criterion").value = "";
+      renderAdded();
+      drawPreview();
+      $("#q-prompt").focus();
     };
 
     /* ---------- lista ---------- */

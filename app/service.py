@@ -644,10 +644,8 @@ def overview():
                 pending_titles.append(f"{meta['titulo_completo']} ({meta['group']})")
         if not rows or students == 0:
             step = {"paso": "grupos", "texto": "Empieza creando tu grupo y poniendo la lista de alumnos.", "enlace": "/grupos", "boton": "Crear mi grupo"}
-        elif questions == 0:
-            step = {"paso": "preguntas", "texto": "Escribe las preguntas de tu examen con su respuesta correcta.", "enlace": "/preguntas", "boton": "Escribir preguntas"}
         elif not exams:
-            step = {"paso": "examenes", "texto": "Crea tu primer examen: elige el bimestre, si es parcial o final, y la nota total.", "enlace": "/examenes", "boton": "Crear un examen"}
+            step = {"paso": "examenes", "texto": "Crea tu primer examen: elige el bimestre, si es parcial o final, la nota total y escribe sus preguntas.", "enlace": "/examenes", "boton": "Crear un examen"}
         elif pending:
             where = ", ".join(pending_titles[:2]) + ("…" if len(pending_titles) > 2 else "")
             step = {"paso": "calificar", "texto": f"Quedan {pending} alumnos por calificar en {where}.", "enlace": "/calificar", "boton": "Calificar con la cámara"}

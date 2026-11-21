@@ -35,13 +35,12 @@ En Mac o Linux el comando es `.venv/bin/python -m app.selfcheck`.
 La pantalla de **Inicio** dice qué sigue en cada momento. Los pasos son:
 
 1. **Grupos.** Crea cada grupo con su lista de alumnos una sola vez. Los exámenes usan esa lista.
-2. **Preguntas.** Escribe las preguntas por materia, con su respuesta correcta.
-3. **Exámenes.** Eliges grupo, bimestre (1 a 4), si es parcial, examen final, actividad o diagnóstico, la nota total (los puntos que vale) y marcas qué preguntas entran (hasta 8 de opciones y 4 abiertas). Un mismo examen no se puede crear dos veces: por ejemplo, el Parcial 1 del Bimestre 2 del mismo grupo y materia. Todas las hojas salen en un solo PDF.
+2. **Exámenes.** Eliges grupo, bimestre (1 a 4), si es parcial, examen final, actividad o diagnóstico, la nota total (los puntos que vale) y marcas qué preguntas entran (hasta 8 de opciones y 4 abiertas). Las preguntas se escriben aquí mismo: «Escribir preguntas» abre una ventana con una vista previa abajo, y al agregarlas quedan marcadas en el examen. Las guardadas se reutilizan y se pueden borrar. Un mismo examen no se puede crear dos veces: por ejemplo, el Parcial 1 del Bimestre 2 del mismo grupo y materia. Todas las hojas salen en un solo PDF.
    - **Apagar examen:** un examen apagado ya no recibe hojas en la cámara, pero conserva sus notas. Se vuelve a encender cuando quieras.
    - **Eliminar:** manda el examen a la papelera. Se puede deshacer o restaurar con sus notas. Solo «Borrar para siempre» lo quita de verdad.
-4. **Calificar.** Elige el examen, enciende la cámara y pasa las hojas. El programa lee el QR solo y suena un aviso con cada hoja. Si una hoja es de otro examen o el examen está apagado, lo avisa. Las notas caen en un cuadro tipo Excel, que se filtra por bimestre y se descarga para Excel. También se puede subir una foto.
-5. **Notas del año.** Los cuatro bimestres juntos: zona (parciales y actividades), examen final y total de cada bimestre, más el promedio anual.
-6. **Análisis (opcional).** Qué falló el grupo y hojas de refuerzo para quien lo necesita.
+3. **Calificar.** Elige el examen, enciende la cámara y pasa las hojas. El programa lee el QR solo y suena un aviso con cada hoja. Si una hoja es de otro examen o el examen está apagado, lo avisa. Las notas caen en un cuadro tipo Excel, que se filtra por bimestre y se descarga para Excel. También se puede subir una foto.
+4. **Notas del año.** Los cuatro bimestres juntos: zona (parciales y actividades), examen final y total de cada bimestre, más el promedio anual.
+5. **Análisis (opcional).** Qué falló el grupo y hojas de refuerzo para quien lo necesita.
 
 La nota real son los puntos sobre la nota total del examen. La nota relativa usa la misma escala, pero el mejor del examen se lleva la nota completa. El diagnóstico no suma a los bimestres.
 

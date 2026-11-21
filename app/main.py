@@ -6,7 +6,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -50,10 +50,9 @@ app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 PASOS = (
     ("inicio", "/", "Inicio"),
     ("grupos", "/grupos", "1. Grupos"),
-    ("preguntas", "/preguntas", "2. Preguntas"),
-    ("examenes", "/examenes", "3. Exámenes"),
-    ("calificar", "/calificar", "4. Calificar"),
-    ("notas", "/notas", "5. Notas del año"),
+    ("examenes", "/examenes", "2. Exámenes"),
+    ("calificar", "/calificar", "3. Calificar"),
+    ("notas", "/notas", "4. Notas del año"),
     ("analisis", "/analisis", "Análisis"),
 )
 
@@ -182,7 +181,8 @@ def remove_group(name: str):
 
 @app.get("/preguntas")
 def questions_page():
-    return html_page("preguntas.html", "preguntas")
+    # Las preguntas ahora se escriben dentro de Exámenes; se mantiene el enlace viejo.
+    return RedirectResponse("/examenes")
 
 
 @app.get("/examenes")
